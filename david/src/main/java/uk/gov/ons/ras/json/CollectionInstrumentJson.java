@@ -11,7 +11,10 @@ public class CollectionInstrumentJson {
     /** The survey identifier for the survey this instrument relates to. */
     public String surveyId;
 
-    /** The type of this collection instrument, which should be eQ or SEFT. */
+    /** The URN. Just because. */
+    public String urn;
+
+    /** The type of this collection instrument, which should be questionnaire or spreadsheet. */
     public String type;
 
     /** A link to access the collection instrument. */
