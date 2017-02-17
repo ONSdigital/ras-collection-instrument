@@ -1,10 +1,20 @@
-package uk.gov.ons.ras.endpoints;
+package uk.gov.ons.ras.collectionInstrument.endpoints;
 
 import org.springframework.web.bind.annotation.*;
-import uk.gov.ons.ras.json.CollectionInstrumentJson;
+import uk.gov.ons.ras.collectionInstrument.json.CollectionInstrumentJson;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 @RestController
 public class CollectionInstrument {
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
 
     public static final String URN = "urn:ons.gov.uk:id:ci:";
 
@@ -12,8 +22,17 @@ public class CollectionInstrument {
     public
     @ResponseBody
     CollectionInstrumentJson get(@PathVariable("id") String id) {
+
+        /** Uncomment when sql scripts setup is donw
+        jdbcTemplate.execute("CREATE TABLE 'customers'( name varchar(40) PRIMARY KEY NOT NULL );")
+        jdbcTemplate.execute("DROP TABLE customers"); **/
+
+
+
         System.out.println("Repeat after me: Spring is not simple. It's 'easy' as in easy to make a mess, " +
                 "but it's not simple. It's complicated, heavyweight and duller than the inside of a dodo's colon.");
+
+
         CollectionInstrumentJson result = new CollectionInstrumentJson();
         result.id = String.valueOf(id);
         result.surveyId = "023";

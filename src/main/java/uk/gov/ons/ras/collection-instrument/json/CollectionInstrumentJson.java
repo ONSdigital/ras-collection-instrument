@@ -1,4 +1,4 @@
-package uk.gov.ons.ras.json;
+package uk.gov.ons.ras.collectionInstrument.json;
 
 /**
  * This class intentionally has public fields because it is a pure data record, with no state.
