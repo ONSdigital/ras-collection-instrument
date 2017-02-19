@@ -20,6 +20,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 	   name = "ras_collection_instruments")
 public class CollectionInstrument {
 
+	/**
+	 * The primary key for this CollectionInstrument.
+	 */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "G1")
     @SequenceGenerator(name = "G1", sequenceName = "ras_collection_instrument.ras_collection_instruments_id_seq")
@@ -52,19 +55,36 @@ public class CollectionInstrument {
 	
 	*/
 	
+	/**
+	 * urn of the CollectionInstrument.
+	 * @return
+	 */
 	public String getUrn() {	
 		return getNode("id").asText();
 	}
 
+	/**
+	 * Type of CollectionInstrument.
+	 * @return
+	 */
 	public String getCiType() {	
 		return getNode("ciType").asText();
 	}
 
+	/**
+	 * Survey ID of this CollectionInstrument.
+	 * @return
+	 */
 	public String getSurveyId() {	
 		return getNode("surveyId").asText();
 	}
 
-	public String getClassifiers() {	
+	/**
+	 * The array of Classifiers and their values for this CollectionInstrument.
+	 * @return
+	 */
+	public String getClassifiers() {
+		//TODO: This will need to be parsed into a HashMap not pulled as a string
 		return getNode("classifiers").asText();
 	}
 	
