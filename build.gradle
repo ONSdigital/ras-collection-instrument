@@ -38,12 +38,20 @@ dependencyManagement {
 }
 
 dependencies {
+	
 	compile('org.springframework.cloud:spring-cloud-starter-eureka-server')
-	compile('org.springframework.boot:spring-boot-starter-web')
-	compile('org.springframework.boot:spring-boot-starter-jdbc')
+	
+	compile('org.springframework.boot:spring-boot-starter-web') 
 	compile("org.springframework.boot:spring-boot-starter-actuator")
-	compile("org.springframework:spring-jdbc")
-	compile('org.postgresql:postgresql:9.4.1212')
+	compile("org.springframework.boot:spring-boot-starter-data-jpa")
+	compile("org.springframework.boot:spring-boot-starter-log4j2")
+		
+    compile("org.postgresql:postgresql")
+
+	configurations {
+	    compile.exclude module: 'logback-classic'
+	}
+
 	    
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 }
@@ -51,7 +59,8 @@ dependencies {
 processResources {
     
     filter ReplaceTokens, tokens: [
-        "application.version": project.property("application.version"),
+        "application.name": project.property("application.name"),
+		"application.version": project.property("application.version"),
         "application.version.type": project.property("application.version.type"),
         "application.version.builddate": currentDateTimeFormatted()
     ]
