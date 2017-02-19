@@ -16,13 +16,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 @Entity
-@Table(schema = "collection_instrument",
+@Table(schema = "ras_collection_instrument",
 	   name = "ras_collection_instruments")
 public class CollectionInstrument {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "G1")
-    @SequenceGenerator(name = "G1", sequenceName = "collection_instrument.ras_collection_instruments_id_seq")
+    @SequenceGenerator(name = "G1", sequenceName = "ras_collection_instrument.ras_collection_instruments_id_seq")
     @Column(name = "ID", nullable = false, unique = true)
     private Long id;
 	
