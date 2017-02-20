@@ -9,10 +9,10 @@ NOTE: ras-collection-instrument container will start, fail then stop if the ras_
 
 Once started, the following endpoints can be requested
 
-http://localhost:8070/servicestatus [ json text of service info inc. name, version, build / deploy dates ]
-http://localhost:8070/collectioninstrument [ should return an arrary of application/json of all CIs HTTP 200 ]
-http://localhost:8070/collectioninstrument/id/1 [ should return application/json for CI id 1 HTTP 200 ]
-http://localhost:8070/collectioninstrument/id/999 [ non existent CI should return HTTP 404 ]
+  * [http://localhost:8070/servicestatus](http://localhost:8070/servicestatus) [ json text of service info inc. name, version, build / deploy dates ]
+  * [http://localhost:8070/collectioninstrument](http://localhost:8070/collectioninstrument) [ should return an arrary of application/json of all CIs HTTP 200 ]
+  * [http://localhost:8070/collectioninstrument/id/1](http://localhost:8070/collectioninstrument/id/1) [ should return application/json for CI id 1 HTTP 200 ]
+  * [http://localhost:8070/collectioninstrument/id/999](http://localhost:8070/collectioninstrument/id/999) [ non existent CI should return HTTP 404 ]
 
 Application and springboot logs in container at
 /logs/springboot_ras-collectioninstrument.log
