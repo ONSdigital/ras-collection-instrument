@@ -73,7 +73,7 @@ public class MainController {
 	}
 
 	@RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
-	public void collectioninstrument(@RequestBody CollectionInstrument. payload){
+	public void collectioninstrument(@RequestBody CollectionInstrument payload){
 
 	}
 
