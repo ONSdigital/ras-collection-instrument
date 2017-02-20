@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 
@@ -39,7 +41,7 @@ public class MainController {
 	 * @param id
 	 * @return the collection instrument
 	 */
-	@RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/vnd.collection+json")
+	@RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/vnd.collection+json", method = RequestMethod.GET)
 	public ResponseEntity<CollectionInstrument> getCollectionInstrument(@PathVariable("id") Long id) {
 		logger.debug("Request for /collectioninstrument/id/{}", id);
 		CollectionInstrument collectionInstrument = repository.findById(id);
@@ -56,7 +58,7 @@ public class MainController {
 	 * 
 	 * @return a list of all collection instruments.
 	 */
-	@RequestMapping(value = "/collectioninstrument", produces = "application/vnd.collection+json")
+	@RequestMapping(value = "/collectioninstrument", produces = "application/vnd.collection+json", method = RequestMethod.GET)
 	public ResponseEntity<List<CollectionInstrument>> getCollectionInstruments() {
 		logger.debug("Request for /collectioninstrument");
 		List<CollectionInstrument> collectionInstruments = (List<CollectionInstrument>) repository.findAll();
@@ -69,4 +71,12 @@ public class MainController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
 	}
+
+	@RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
+	public void collectioninstrument(@RequestBody CollectionInstrument. payload){
+
+	}
+
+
+
 }
