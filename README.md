@@ -20,10 +20,12 @@ Application and springboot logs in container at
 
 Key Libraries
 -------------
-Spring Core: 4.3.5
-Spring Boot: 1.4.3
-Spring Cloud: 1.1
-Logging: log4j2 2.6.2 (over slf4j)
-Monitoring: Springboot Actuator
-Persistence: Hibernate 5.0.11
-JSON databind: jackson 2.8.5
+
+  * Spring Core: 4.3.5
+  * Spring Boot: 1.4.3
+  * Spring Cloud: 1.1
+  * Logging: log4j2 2.6.2 (over slf4j)
+  * Monitoring: Springboot Actuator
+  * Persistence: Hibernate 5.0.11
+  * JSON databind: jackson 2.8.5
+ 
