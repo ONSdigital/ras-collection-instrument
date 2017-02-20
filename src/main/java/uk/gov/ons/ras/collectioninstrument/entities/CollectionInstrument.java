@@ -15,11 +15,11 @@ import java.io.IOException;
 	   name = "ras_collection_instruments")
 public class CollectionInstrument {
 
-	static class Json {
-		String urn;
-		String ciType;
-		String surveyId;
-		String classifiers;
+	public static class Json {
+        public String urn;
+        public String ciType;
+		public String surveyId;
+		public String classifiers;
 	}
 
 	/**
