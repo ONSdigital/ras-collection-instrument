@@ -1,24 +1,26 @@
 package uk.gov.ons.ras.collectioninstrument.entities;
 
-import java.io.IOException;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import javax.persistence.*;
+import java.io.IOException;
 
 @Entity
 @Table(schema = "ras_collection_instrument",
 	   name = "ras_collection_instruments")
 public class CollectionInstrument {
+
+	static class Json {
+		String urn;
+		String ciType;
+		String surveyId;
+		String classifiers;
+	}
 
 	/**
 	 * The primary key for this CollectionInstrument.
@@ -34,6 +36,7 @@ public class CollectionInstrument {
      */
 	@Column(name = "CONTENT", nullable = false, unique = false)
     private String content;
+	private Json json;
 	
     public Long getId() {
 		return id;
@@ -59,24 +62,25 @@ public class CollectionInstrument {
 	 * urn of the CollectionInstrument.
 	 * @return
 	 */
-	public String getUrn() {	
-		return getNode("id").asText();
+	public String getUrn() {
+		return parse().urn;
 	}
 
 	/**
 	 * Type of CollectionInstrument.
 	 * @return
 	 */
-	public String getCiType() {	
-		return getNode("ciType").asText();
+	public String getCiType() {
+		return parse().ciType;
+
 	}
 
 	/**
 	 * Survey ID of this CollectionInstrument.
 	 * @return
 	 */
-	public String getSurveyId() {	
-		return getNode("surveyId").asText();
+	public String getSurveyId() {
+		return parse().surveyId;
 	}
 
 	/**
@@ -84,31 +88,17 @@ public class CollectionInstrument {
 	 * @return
 	 */
 	public String getClassifiers() {
-		//TODO: This will need to be parsed into a HashMap not pulled as a string
-		return getNode("classifiers").asText();
+		return parse().classifiers;
 	}
 	
 	/**
-	 * Returns a child JSON node of this collection instrument's content JSON
-	 * @param name
-	 * @return The child JSON node requested
+	 * Parses the content to a Json structure.
 	 */
-	private JsonNode getNode(String name) {	
-		JsonNode contentJson = null;
-		ObjectMapper mapper = new ObjectMapper();
-        try {
-			contentJson = mapper.readTree(content);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	private Json parse() {
+		if (json == null) {
+			json = new Gson().fromJson(content, Json.class);
 		}
-		
-		JsonNode node = contentJson.get(name);
-		if (node != null)
-		{
-		    return node;
-		}
-		return contentJson;		
+		return json;
 	}
 	
     /**
@@ -117,15 +107,9 @@ public class CollectionInstrument {
      */
     @Override
     public final String toString() {
-        String json = null;
-        final ObjectWriter writer = new ObjectMapper()
-                    .writer()
-                    .withDefaultPrettyPrinter();
-        try {
-            json = writer.writeValueAsString(this);
-        } catch (final JsonProcessingException e) {
-           // LOGGER.error(e);
-        }
-        return json;
+    	// Enable pretty printing
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		return gson.toJson(content);
     }
+
 }
