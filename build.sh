@@ -1,4 +1,7 @@
 #!/bin/bash
 
+# Use the current directory name to tag the Docker image:
+name=${PWD##*/}
+
 gradle clean build
-docker build --tag ras-collection-instrument .
+docker build --tag $name .
