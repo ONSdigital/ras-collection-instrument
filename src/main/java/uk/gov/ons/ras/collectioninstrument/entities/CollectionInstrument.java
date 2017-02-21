@@ -52,6 +52,7 @@ public class CollectionInstrument {
     /**
      * {@link Json} object Parsed from {@link #content} field.
      */
+    @Transient
     private Json json;
 
     public Long getId() {
