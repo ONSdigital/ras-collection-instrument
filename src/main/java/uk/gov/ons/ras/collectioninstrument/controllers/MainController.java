@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrumentDao;
 import uk.gov.ons.ras.collectioninstrument.entities.CollectionInstrument;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 public class MainController {
 
@@ -68,6 +70,8 @@ public class MainController {
 
 	/**
 	 * Endpoint to return a list of collection instruments.
+	 *
+	 * NB this endpoint can return an empty list, with 200 OK.
 	 * 
 	 * @return a list of all collection instruments.
 	 */
@@ -81,9 +85,6 @@ public class MainController {
 				result.add(collectionInstrument.getJson());
 				logger.debug(collectionInstrument.getContent());
 			});
-			System.out.println("Got stuff ******************* xi");
-		} else {
-			System.out.println("Got nafink ******************* xi");
 		}
 		return result;
 	}
