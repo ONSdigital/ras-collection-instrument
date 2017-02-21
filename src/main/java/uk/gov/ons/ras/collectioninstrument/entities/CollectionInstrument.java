@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import javax.persistence.*;
+import java.util.Map;
 
 @Entity
 @Table(schema = "ras_collection_instrument",
@@ -14,7 +15,23 @@ public class CollectionInstrument {
         public String urn;
         public String ciType;
         public String surveyId;
-        public String classifiers;
+        public Map<String, String> classifiers;
+    }
+
+    /**
+     * Default constructor.
+     */
+    public CollectionInstrument() {
+        // Default constructor
+    }
+
+    /**
+     * Use this constructor when creating a new collection instrument.
+     *
+     * @param json The Json data to be saved.
+     */
+    public CollectionInstrument(Json json) {
+        content = new Gson().toJson(json);
     }
 
     /**
@@ -31,6 +48,10 @@ public class CollectionInstrument {
      */
     @Column(name = "CONTENT", nullable = false, unique = false)
     private String content;
+
+    /**
+     * {@link Json} object Parsed from {@link #content} field.
+     */
     private Json json;
 
     public Long getId() {
@@ -39,6 +60,10 @@ public class CollectionInstrument {
 
     public String getContent() {
         return content;
+    }
+
+    public Json getJson() {
+        return parse();
     }
 
 	/* Once content is assigned we can pull out the individual fields from the content e.g
@@ -86,7 +111,7 @@ public class CollectionInstrument {
      *
      * @return
      */
-    public String getClassifiers() {
+    public Map<String, String> getClassifiers() {
         return parse().classifiers;
     }
 
@@ -107,7 +132,7 @@ public class CollectionInstrument {
      */
     @Override
     public final String toString() {
-        // Enable pretty printing
+        // Use pretty printing
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(content);
     }
