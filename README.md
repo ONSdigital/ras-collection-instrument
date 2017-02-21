@@ -5,7 +5,8 @@
   1. ./build at /ras-compose as normal
   2. ./run at /ras-compose as normal
 NOTE: ras-collection-instrument container will start, fail then stop if the ras_collection_instrument schema has not been created. Therefore...
-  3. connect to postgres via PGAdmin and run in ras_collection_instrument_D0001_initial_build.sql
+  3. connect to postgres via PGAdmin and run in ras_collection_instrument_D0001_initial_build.sql e.g.: 
+    `psql -h localhost -p 5431 -U postgres -a -f ras_collection_instrument_D0001_initial_build.sql`
   4. docker start rascompose_ras-collection-instrument_1 (simply restart this stopped container)
   5. docker logs -f rascompose_ras-collection-instrument_1 (check the service starts as expected with no errors)
 
