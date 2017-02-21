@@ -1,5 +1,6 @@
 package uk.gov.ons.ras.collectioninstrument.controllers;
 
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,8 +28,19 @@ public class MainController {
 	private CollectionInstrumentDao repository;
 
 	/**
+	 * Test endpoint.
+	 *
+	 * @return Whatevs.
+	 */
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String politicalBollocks() {
+		// NB this is here to keep the team's spirits up.
+		return "The team has been forced to use Spring against our will. Help us, Obi-Wan, you're our only hope.";
+	}
+
+	/**
 	 * Endpoint to return a basic status string.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "/status")
@@ -41,7 +54,7 @@ public class MainController {
 	 * @param id
 	 * @return the collection instrument
 	 */
-	@RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/vnd.collection+json", method = RequestMethod.GET)
+	@RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/json", method = RequestMethod.GET)
 	public ResponseEntity<CollectionInstrument> getCollectionInstrument(@PathVariable("id") Long id) {
 		logger.debug("Request for /collectioninstrument/id/{}", id);
 		CollectionInstrument collectionInstrument = repository.findById(id);
@@ -59,22 +72,28 @@ public class MainController {
 	 * @return a list of all collection instruments.
 	 */
 	@RequestMapping(value = "/collectioninstrument", produces = "application/vnd.collection+json", method = RequestMethod.GET)
-	public ResponseEntity<List<CollectionInstrument>> getCollectionInstruments() {
+	public List<CollectionInstrument.Json> getCollectionInstruments() {
 		logger.debug("Request for /collectioninstrument");
 		List<CollectionInstrument> collectionInstruments = (List<CollectionInstrument>) repository.findAll();
+		List<CollectionInstrument.Json> result = new ArrayList<>();
 		if (collectionInstruments != null && collectionInstruments.size() > 0) {
 			collectionInstruments.forEach((collectionInstrument) -> {
-				logger.debug(collectionInstrument.toString());
+				result.add(collectionInstrument.getJson());
+				logger.debug(collectionInstrument.getContent());
 			});
-			return ResponseEntity.status(HttpStatus.OK).body(collectionInstruments);
+			System.out.println("Got stuff ******************* xi");
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+			System.out.println("Got nafink ******************* xi");
 		}
+		return result;
 	}
 
 	@RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
-	public void collectioninstrument(@RequestBody CollectionInstrument payload){
-
+	public void collectioninstrument(@RequestBody CollectionInstrument.Json json){
+		logger.debug("Request to create /collectioninstrument: {}", new Gson().toJson(json));
+		CollectionInstrument collectionInstrument = new CollectionInstrument(json);
+		collectionInstrument = repository.save(collectionInstrument);
+		logger.debug("Created new collection instrument: {}", collectionInstrument.getId());
 	}
 
 
