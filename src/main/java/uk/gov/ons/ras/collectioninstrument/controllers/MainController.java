@@ -30,17 +30,6 @@ public class MainController {
 	private CollectionInstrumentDao repository;
 
 	/**
-	 * Test endpoint.
-	 *
-	 * @return Whatevs.
-	 */
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String politicalBollocks() {
-		// NB this is here to keep the team's spirits up.
-		return "The team has been forced to use Spring against our will. Help us, Obi-Wan, you're our only hope.";
-	}
-
-	/**
 	 * Endpoint to return a basic status string.
 	 *
 	 * @return
@@ -95,6 +84,17 @@ public class MainController {
 		CollectionInstrument collectionInstrument = new CollectionInstrument(json);
 		collectionInstrument = repository.save(collectionInstrument);
 		logger.debug("Created new collection instrument: {}", collectionInstrument.getId());
+	}
+
+	/**
+	 * Test endpoint.
+	 *
+	 * @return Whatevs.
+	 */
+	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public String politicalBollocks() {
+		// NB this is here to keep the team's spirits up.
+		return "The team has been forced to use Spring against our will. Help us, Obi-Wan, you're our only hope.";
 	}
 
 
