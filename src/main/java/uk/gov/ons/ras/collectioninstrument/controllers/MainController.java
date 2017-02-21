@@ -81,7 +81,7 @@ public class MainController {
     @RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
     public void collectioninstrument(@RequestBody uk.gov.ons.ras.collectioninstrument.jdbc.CollectionInstrument.Json json) {
         logger.debug("Request to create /collectioninstrument: {}", new Gson().toJson(json));
-        uk.gov.ons.ras.collectioninstrument.jdbc.CollectionInstrument.create(json);
+        new uk.gov.ons.ras.collectioninstrument.jdbc.CollectionInstrument().create(json);
         //CollectionInstrument collectionInstrument = new CollectionInstrument(json);
         //collectionInstrument = repository.save(collectionInstrument);
         logger.debug("Created new collection instrument.");
