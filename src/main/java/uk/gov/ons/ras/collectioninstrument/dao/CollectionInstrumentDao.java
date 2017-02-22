@@ -22,6 +22,7 @@ import java.util.Map;
  * which seems to be tricky and more complex to do through Hibernate.
  * <p>
  * Credit to: http://sivalabs.in/2016/03/springboot-working-with-jdbctemplate/
+ * and to: http://www.pateldenish.com/2013/05/inserting-json-data-into-postgres-using-jdbc-driver.html
  */
 @Repository
 public class CollectionInstrumentDao {
