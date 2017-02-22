@@ -1,6 +1,7 @@
 package uk.gov.ons.ras.collectioninstrument.controllers;
 
 import com.google.gson.Gson;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,5 +104,12 @@ public class MainController {
 
     }
 
+    @RequestMapping(value = "/schema/collectioninstrument", method = RequestMethod.GET, produces = "application/json")
+    public String schema() throws IOException {
+        String schema = "uk.gov.ons.ras.collectioninstrument/schema.json";
+        try (InputStream inputStream = MainController.class.getClassLoader().getResourceAsStream(schema)) {
+            return IOUtils.toString(inputStream, "UTF8");
+        }
+    }
 
 }

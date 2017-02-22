@@ -48,6 +48,8 @@ dependencies {
 
 	compile("com.google.code.gson:gson:2.8.0")
 	compile("org.postgresql:postgresql")
+	
+	compile("commons-io:commons-io:2.5")
 
 	configurations {
 	    compile.exclude module: 'logback-classic'

@@ -1,0 +1,27 @@
+{
+  "title": "Collection Instrument",
+  "type": "object",
+  "properties": {
+    "reference": {
+      "type": "string"
+    },
+    "urn": {
+      "type": "string"
+    },
+    "ciType": {
+      "type": "string"
+    },
+    "surveyId": {
+      "type": "string"
+    },
+    "classifiers": {
+      "type": "object",
+      "properties": {
+        "LEGAL_STATUS": { "type": "number" },
+        "INDUSTRY": { "type": "number" },
+        "RU_REF": { "type": "number" }
+      }
+    }
+  },
+  "required": ["reference", "urn", "itType", "surveyId", "classifiers"]
+}
