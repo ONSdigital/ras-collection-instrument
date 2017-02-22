@@ -38,17 +38,19 @@ CREATE INDEX ras_coi_content_idx ON ras_collection_instrument.ras_collection_ins
 INSERT INTO ras_collection_instrument.ras_collection_instruments
  (content,file_uuid)
 VALUES
- ('{"id":"urn:ons.gov.uk:id:ci:001.001.00001",
+ ('{"reference":"rsi-fuel",
+    "urn":"urn:ons.gov.uk:id:ci:001.001.00001",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00001",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B"}
    }'::JSONB
    ,NULL)
-,('{"id":"urn:ons.gov.uk:id:ci:001.001.00002",
-   "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
-   "ciType":"OFFLINE",
-   "classifiers": {"RU_REF":"01234567890"}
-  }'::JSONB
+,('{"reference":"rsi-nonfuel",
+    "urn":"urn:ons.gov.uk:id:ci:001.001.00002",
+    "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
+    "ciType":"OFFLINE",
+    "classifiers": {"RU_REF":"01234567890"}
+   }'::JSONB
    ,'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11');
 
 COMMIT;

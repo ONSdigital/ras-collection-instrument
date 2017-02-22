@@ -17,9 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrumentDao;
-import uk.gov.ons.ras.collectioninstrument.entities.CollectionInstrument;
-
-import javax.servlet.http.HttpServletResponse;
+import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrument;
 
 @RestController
 public class MainController {
@@ -40,15 +38,33 @@ public class MainController {
     }
 
     /**
-     * Endpoint to return the requested collection instrument.
+     * Endpoint to return a requested collection instrument.
      *
-     * @param id
+     * @param reference The reference identifier for the desired instrument.
+     * @return the collection instrument
+     */
+    @RequestMapping(value = "/collectioninstrument/{reference}", produces = "application/json", method = RequestMethod.GET)
+    public ResponseEntity<CollectionInstrument> getCollectionInstrumentByReference(@PathVariable("reference") String reference) {
+        logger.debug("Request for /collectioninstrument/{}", reference);
+        CollectionInstrument collectionInstrument = repository.read(reference);
+        if (collectionInstrument != null) {
+            logger.debug(collectionInstrument.toString());
+            return ResponseEntity.status(HttpStatus.OK).body(collectionInstrument);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    /**
+     * Endpoint to return the a collection instrument.
+     *
+     * @param id The database row identifier for the desired instrument.
      * @return the collection instrument
      */
     @RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/json", method = RequestMethod.GET)
-    public ResponseEntity<CollectionInstrument> getCollectionInstrument(@PathVariable("id") Long id) {
+    public ResponseEntity<CollectionInstrument> getCollectionInstrumentByRowId(@PathVariable("id") int id) {
         logger.debug("Request for /collectioninstrument/id/{}", id);
-        CollectionInstrument collectionInstrument = repository.findById(id);
+        CollectionInstrument collectionInstrument = repository.read(id);
         if (collectionInstrument != null) {
             logger.debug(collectionInstrument.toString());
             return ResponseEntity.status(HttpStatus.OK).body(collectionInstrument);
@@ -65,26 +81,24 @@ public class MainController {
      * @return a list of all collection instruments.
      */
     @RequestMapping(value = "/collectioninstrument", produces = "application/vnd.collection+json", method = RequestMethod.GET)
-    public List<CollectionInstrument.Json> getCollectionInstruments() {
+    public List<CollectionInstrument> getCollectionInstruments() {
         logger.debug("Request for /collectioninstrument");
-        List<CollectionInstrument> collectionInstruments = (List<CollectionInstrument>) repository.findAll();
-        List<CollectionInstrument.Json> result = new ArrayList<>();
+        List<CollectionInstrument> collectionInstruments = (List<CollectionInstrument>) repository.list();
+        List<CollectionInstrument> result = new ArrayList<>();
         if (collectionInstruments != null && collectionInstruments.size() > 0) {
             collectionInstruments.forEach((collectionInstrument) -> {
-                result.add(collectionInstrument.getJson());
-                logger.debug(collectionInstrument.getContent());
+                result.add(collectionInstrument);
             });
         }
         return result;
     }
 
     @RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
-    public void collectioninstrument(@RequestBody uk.gov.ons.ras.collectioninstrument.jdbc.CollectionInstrument.Json json) {
+    public void collectioninstrument(@RequestBody CollectionInstrument json) {
         logger.debug("Request to create /collectioninstrument: {}", new Gson().toJson(json));
-        new uk.gov.ons.ras.collectioninstrument.jdbc.CollectionInstrument().create(json);
-        //CollectionInstrument collectionInstrument = new CollectionInstrument(json);
-        //collectionInstrument = repository.save(collectionInstrument);
-        logger.debug("Created new collection instrument.");
+        long rowId = repository.create(json);
+        logger.debug("Created new collection instrument row: " + rowId);
+
     }
 
 
