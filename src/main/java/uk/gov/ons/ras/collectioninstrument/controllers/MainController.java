@@ -97,8 +97,6 @@ public class MainController {
     public void collectioninstrument(@RequestBody CollectionInstrument json) {
         logger.debug("Request to create /collectioninstrument: {}", new Gson().toJson(json));
         long rowId = repository.create(json);
-        //CollectionInstrument collectionInstrument = new CollectionInstrument(json);
-        //collectionInstrument = repository.save(collectionInstrument);
         logger.debug("Created new collection instrument row: " + rowId);
 
     }
