@@ -39,18 +39,6 @@ public class CollectionInstrumentDao {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    /**
-     * Represents the Json stored in the content column.
-     * As a convenience, this includes the database ID field when loaded.
-     */
-    public static class CollectionInstrument {
-        public String reference;
-        public String urn;
-        public String ciType;
-        public String surveyId;
-        public Map<String, String> classifiers;
-    }
-
     static final String selectAll = "select * from ras_collection_instruments";
     static final String selectReference = "select * from ras_collection_instruments " +
             "where content @> ?::jsonb";

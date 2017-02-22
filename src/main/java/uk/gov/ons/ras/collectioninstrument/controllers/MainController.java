@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrumentDao;
-import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrumentDao.CollectionInstrument;
+import uk.gov.ons.ras.collectioninstrument.dao.CollectionInstrument;
 
 @RestController
 public class MainController {
