@@ -38,13 +38,31 @@ public class MainController {
     }
 
     /**
-     * Endpoint to return the requested collection instrument.
+     * Endpoint to return a requested collection instrument.
      *
-     * @param id
+     * @param reference The reference identifier for the desired instrument.
+     * @return the collection instrument
+     */
+    @RequestMapping(value = "/collectioninstrument/{reference}", produces = "application/json", method = RequestMethod.GET)
+    public ResponseEntity<CollectionInstrument> getCollectionInstrumentByReference(@PathVariable("reference") String reference) {
+        logger.debug("Request for /collectioninstrument/{}", reference);
+        CollectionInstrument collectionInstrument = repository.read(reference);
+        if (collectionInstrument != null) {
+            logger.debug(collectionInstrument.toString());
+            return ResponseEntity.status(HttpStatus.OK).body(collectionInstrument);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    /**
+     * Endpoint to return the a collection instrument.
+     *
+     * @param id The database row identifier for the desired instrument.
      * @return the collection instrument
      */
     @RequestMapping(value = "/collectioninstrument/id/{id}", produces = "application/json", method = RequestMethod.GET)
-    public ResponseEntity<CollectionInstrument> getCollectionInstrument(@PathVariable("id") int id) {
+    public ResponseEntity<CollectionInstrument> getCollectionInstrumentByRowId(@PathVariable("id") int id) {
         logger.debug("Request for /collectioninstrument/id/{}", id);
         CollectionInstrument collectionInstrument = repository.read(id);
         if (collectionInstrument != null) {
@@ -78,11 +96,11 @@ public class MainController {
     @RequestMapping(value = "/collectioninstrument", method = RequestMethod.POST)
     public void collectioninstrument(@RequestBody CollectionInstrument json) {
         logger.debug("Request to create /collectioninstrument: {}", new Gson().toJson(json));
-        CollectionInstrument collectionInstrument = repository.create(json);
+        long rowId = repository.create(json);
         //CollectionInstrument collectionInstrument = new CollectionInstrument(json);
         //collectionInstrument = repository.save(collectionInstrument);
-        logger.debug("Created new collection instrument: " + collectionInstrument.id);
-        logger.debug(" >> " + new Gson().toJson(collectionInstrument.id));
+        logger.debug("Created new collection instrument row: " + rowId);
+
     }
 
 
