@@ -1,0 +1,6 @@
+Flask==0.12
+flask-cors==3.0.0
+sqlalchemy==1.0.15
+Flask-SQLAlchemy==2.1
+python-jose==1.2.0
+requests==2.11.1
