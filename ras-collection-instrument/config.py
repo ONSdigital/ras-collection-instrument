@@ -1,6 +1,10 @@
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+#ENV VARIABLES BELOW, SET THESE ON YOUR TERMINAL
+#export APP_SETTINGS=config.Config
+#export FLASK_APP=app.py
+
 
 
 class Config(object):

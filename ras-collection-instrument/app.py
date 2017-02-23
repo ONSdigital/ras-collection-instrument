@@ -29,7 +29,7 @@ import uuid
 from models import *
 
 print "before"
-
+import json
 a = Result.query.all()
 print a
 
@@ -39,10 +39,15 @@ print "after"
 def collection():
 
     print "help"
+    result = []
     for key in a:
-        print key.id
+        print key.id #dont need this
+        print key.file_uuid
+        print key.content
+        print key.content
+        result.append(key.content)
 
-    return "hello"  #jsonify(a)
+    return jsonify(result)
 
 
 @app.route('/collectioninstrument', methods=['POST'])
