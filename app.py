@@ -36,7 +36,7 @@ def create():
                     "hint": "you may need to pass a content-type: application/json header"}), 400
 
 
-@app.route('/collectioninstrument/<int:_id>', methods=['GET'])
+@app.route('/collectioninstrument/id/<int:_id>', methods=['GET'])
 def get_id(_id):
     """ Locate a collection instrument by row ID.
 
