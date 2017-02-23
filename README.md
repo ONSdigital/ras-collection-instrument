@@ -1,6 +1,9 @@
-# ras-collection-instrument
+# ras-collection-instrument (Python)
 
-## Gettingt started:
+## Gettingt started with the Python version of the CI micro service:
+
+** Note: This explains how to use the Collection Instrument micro service using the Python-Flask based micro
+** service container.
 
   1. ./build at /ras-compose as normal
   2. ./run at /ras-compose as normal
