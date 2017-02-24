@@ -69,20 +69,27 @@ def create():
                     "hint": "you may need to pass a content-type: application/json header"}), 400
 
 
-@app.route('/collectioninstrument/id/<int:_id>', methods=['GET'])
+@app.route('/collectioninstrument/id/<string:_id>', methods=['GET'])
 def get_id(_id):
     """ Locate a collection instrument by row ID.
 
     This method is intended for locating collection instruments by a non-human-readable 'id'
     as opposed to by human-readable reference.
     """
-    object = Result.query.get_or_404(_id)
-
-    object_string = object.content
+    #object = Result.query.get_or_404(_id)
 
 
-    print object_string
-    res = Response(response=str(object_string),status=200, mimetype="collection+json")
+    object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
+
+    #object_string = object.content
+
+
+    print object_list
+
+    res = Response(response=str(object_list), status=200, mimetype="collection+json")
+
+    #res = Response(response=str(object_string),status=200, mimetype="collection+json")
+
     return res
 
 
@@ -98,7 +105,7 @@ def get_ref(file_uuid):
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
 
-    res = Response(response=str(object_list),status=200, mimetype="collection+json")
+    res = Response(response=str(object_list), status=200, mimetype="collection+json")
 
     return res
 
