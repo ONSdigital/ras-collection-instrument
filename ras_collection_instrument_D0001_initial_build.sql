@@ -39,14 +39,14 @@ INSERT INTO ras_collection_instrument.ras_collection_instruments
  (content,file_uuid)
 VALUES
  ('{"reference":"rsi-fuel",
-    "urn":"urn:ons.gov.uk:id:ci:001.001.00001",
+    "id":"urn:ons.gov.uk:id:ci:001.001.00001",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00001",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B"}
    }'::JSONB
    ,NULL)
 ,('{"reference":"rsi-nonfuel",
-    "urn":"urn:ons.gov.uk:id:ci:001.001.00002",
+    "id":"urn:ons.gov.uk:id:ci:001.001.00002",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
     "ciType":"OFFLINE",
     "classifiers": {"RU_REF":"01234567890"}
