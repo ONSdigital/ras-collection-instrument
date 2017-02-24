@@ -20,10 +20,8 @@ collection_instruments = []
 #
 """
 [{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00001',
-u'urn': u'urn:ons.gov.uk:id:ci:001.001.00001', u'reference': u'rsi-fuel', u'ciType': u'ONLINE',
-u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},
-
-{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00002', u'urn': u'urn:ons.gov.uk:id:ci:001.001.00002',
+u'urn': u'urn:ons.gov.uk:id:ci:001.001.00001', u'reference': u'rsi-nonfuel', u'ciType': u'ONLINE',
+u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00002', u'urn': u'urn:ons.gov.uk:id:ci:001.001.00002',
 u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF': u'01234567890'}}]
 """
 
@@ -97,18 +95,10 @@ def get_ref(file_uuid):
     as opposed to by database Id.
     """
 
-    queryset = Result.query.all()
 
-    print "XXXXXX"
-    somelist =[]
-    for x in queryset:
-        print x.content['reference']
+    object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
 
-        if x.content['reference'] == file_uuid:
-
-            somelist.append(x.content)
-
-    res = Response(response=str(somelist),status=200, mimetype="collection+json")
+    res = Response(response=str(object_list),status=200, mimetype="collection+json")
 
     return res
 
