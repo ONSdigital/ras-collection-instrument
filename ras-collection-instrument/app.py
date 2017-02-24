@@ -97,41 +97,20 @@ def get_ref(file_uuid):
     as opposed to by database Id.
     """
 
-
-    #expr = TestMetadata.metadata_item[("nested_field", "a simple text")]
-    #q = (session.query(TestMetadata.id, expr.label("deep_value")).filter(expr != None).all())
-
-
-    #referenceCI = Result.content[("reference",)]
-
-       #testCI =Result.query.filter(Result.content.contains({'reference':'rsi-fuel'}))
-
     queryset = Result.query.all()
 
     print "XXXXXX"
     somelist =[]
     for x in queryset:
         print x.content['reference']
-        #print x.id
-        if x.content['reference'] == 'rsi-fuel':
-            object = Result.query.get_or_404(x.id)
-            #print str(object)
-            #somelist.append(object)
 
+        if x.content['reference'] == file_uuid:
 
-    #print list_string
+            somelist.append(x.content)
 
+    res = Response(response=str(somelist),status=200, mimetype="collection+json")
 
-    #querySet = (session.query(Result.id, referenceCI.label(file_uuid)))
-    #object = Result.query.get_or_404(file_uuid)
-    #object_string = str(object)
-
-    #expr = Result.content
-
-
-    #res = Response(response=list_string,status=200, mimetype="collection+json")
-
-    return "hello"
+    return res
 
 
 
