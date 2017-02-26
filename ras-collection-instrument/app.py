@@ -1,6 +1,7 @@
 from flask import *
 #from flask_cors import CORS
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask import request
 #from models import Result
 import os
 
@@ -44,6 +45,8 @@ print "after"
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
 
+    
+
     print "help"
     a = Result.query.all()
     result = []
@@ -76,6 +79,13 @@ def get_id(_id):
     This method is intended for locating collection instruments by a non-human-readable 'id'
     as opposed to by human-readable reference.
     """
+    # We need to determine the application type from the header. Business logic dictates that we provide the correct
+    # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
+    # if it's JSON we should provide ON-LINE collection instrument
+    content-type-requested = request.headers['content-type']
+    print "This request is asking for content type of: {}".format(content-type-requested)
+    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
+
     #object = Result.query.get_or_404(_id)
 
 
@@ -101,6 +111,12 @@ def get_ref(file_uuid):
     This method is intended for locating collection instruments by a human-readable 'reference'
     as opposed to by database Id.
     """
+    # We need to determine the application type from the header. Business logic dictates that we provide the correct
+    # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
+    # if it's JSON we should provide ON-LINE collection instrument
+    content-type-requested = request.headers['content-type']
+    print "This request is asking for content type of: {}".format(content-type-requested)
+    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
