@@ -5,6 +5,9 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 #export APP_SETTINGS=config.Config
 #export FLASK_APP=app.py
 
+# Default values
+if "APP_SETTINGS" not in os.environ:
+   os.environ["APP_SETTINGS"] = "config.Config"
 
 
 class Config(object):
