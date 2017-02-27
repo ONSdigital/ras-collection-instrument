@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from flask import request
-#from models import Result
+from models import *
 import os
 import sys
 import hashlib
@@ -33,27 +33,15 @@ u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF':
 if 'APP_SETTINGS' in os.environ:
     app.config.from_object(os.environ['APP_SETTINGS'])
 
-#app.config.from_object("config.StagingConfig")
+# app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-import uuid
-from models import *
-
-
 ONSpath = 'urn:ons.gov.uk'
-print "before"
-#i#mport json
-#a = Result.query.all()
-#print a
-
-print "after"
-
 
 
 # Utility class for parsing URL/URI this checks we conform to ONS URI
 def validateURI(uri):
-
 
     print "Validating our URI: {}".format(uri)
     if uri[0:14] == ONSpath:
@@ -64,13 +52,8 @@ def validateURI(uri):
         return False
 
 
-
-
-
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
-
-
 
     print "help"
     a = Result.query.all()
@@ -81,7 +64,6 @@ def collection():
     res_string = str(result)
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
-
 
 
 @app.route('/collectioninstrument', methods=['POST'])
@@ -103,11 +85,9 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-
         if not validateURI(json["id"]):
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
-
 
         new_object= Result(content=json, file_uuid=None)
         db.session.add(new_object)
@@ -135,11 +115,11 @@ def get_id(_id):
     # We need to determine the application type from the header. Business logic dictates that we provide the correct
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
-    #content-type-requested = request.headers['content-type']
-    #print "This request is asking for content type of: {}".format(content-type-requested)
-    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
+    # content-type-requested = request.headers['content-type']
+    # print "This request is asking for content type of: {}".format(content-type-requested)
+    # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
-    #object = Result.query.get_or_404(_id)
+    # object = Result.query.get_or_404(_id)
 
     if not validateURI(_id):
             res = Response(response="Invalide URI", status=404, mimetype="text/html")
@@ -151,10 +131,11 @@ def get_id(_id):
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. "
+                                "Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
-    #print "The URI is: {}".format(object_list)
+    # print "The URI is: {}".format(object_list)
 
     if not object_list:
         print "object is empty"
@@ -167,16 +148,13 @@ def get_id(_id):
             res = Response(response="Invalide URI", status=404, mimetype="text/html")
             return res
 
-
-
-    #print object_list
+    # print object_list
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
 
-    #res = Response(response=str(object_string),status=200, mimetype="collection+json")
+    # res = Response(response=str(object_string),status=200, mimetype="collection+json")
 
     return res
-
 
 
 @app.route('/collectioninstrument/<string:file_uuid>', methods=['GET'])
@@ -189,19 +167,16 @@ def get_ref(file_uuid):
     # We need to determine the application type from the header. Business logic dictates that we provide the correct
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
-    #content-type-requested = request.headers['content-type']
+    # content-type-requested = request.headers['content-type']
     print "This request is asking for content type of: {}".format(content-type-requested)
-    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
-
+    # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
-
 
     if not object_list:
         print "object is empty"
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
-
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
     return res
