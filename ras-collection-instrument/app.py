@@ -121,8 +121,13 @@ def get_ref(file_uuid):
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
 
-    res = Response(response=str(object_list), status=200, mimetype="collection+json")
 
+    if object_list = []:
+        res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
+        return res
+
+
+    res = Response(response=str(object_list), status=200, mimetype="collection+json")
     return res
 
 
