@@ -5,11 +5,9 @@ from sqlalchemy import exc
 from flask import request
 #from models import Result
 import os
-<<<<<<< HEAD
 import sys
-=======
 import hashlib
->>>>>>> a81001077b9544727d28600c4a1053bba410c6d5
+
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -91,11 +89,10 @@ def create():
     json = request.json
     if json:
         response = make_response("")
-<<<<<<< HEAD
+
         collection_instruments.append(request.json)
         json["id"] = len(collection_instruments)
         response.headers["location"] = "/collectioninstrument/" + str(json["id"])
-=======
 
         try:
             json["id"]
@@ -123,7 +120,6 @@ def create():
         response.set_etag(etag)
 
         response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
->>>>>>> a81001077b9544727d28600c4a1053bba410c6d5
         return response, 201
     return jsonify({"message": "Please provide a valid Json object.",
                     "hint": "you may need to pass a content-type: application/json header"}), 400
