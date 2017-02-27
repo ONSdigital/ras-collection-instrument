@@ -91,7 +91,10 @@ def get_id(_id):
 
     object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
 
-    #object_string = object.content
+    if not object_list:
+        print "object is empty"
+        res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
+        return res
 
 
     print object_list
@@ -122,7 +125,8 @@ def get_ref(file_uuid):
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
 
 
-    if object_list = []:
+    if not object_list:
+        print "object is empty"
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
 
