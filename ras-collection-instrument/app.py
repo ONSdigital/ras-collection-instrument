@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import request
 #from models import Result
 import os
+import hashlib
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -105,6 +106,12 @@ def create():
         new_object= Result(content=json, file_uuid=None)
         db.session.add(new_object)
         db.session.commit()
+
+        collection_path = response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+
+        etag = hashlib.sha1(collection_path).hexdigest()
+
+        response.set_etag(etag)
 
         response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
         return response, 201
