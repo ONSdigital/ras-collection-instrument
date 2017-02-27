@@ -1,5 +1,5 @@
 from flask import *
-#from flask_cors import CORS
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from flask import request
@@ -11,7 +11,7 @@ import hashlib
 
 # Enable cross-origin requests
 app = Flask(__name__)
-#CORS(app)
+CORS(app)
 
 collection_instruments = []
 
@@ -207,6 +207,11 @@ def get_ref(file_uuid):
     return res
 
 
+if __name__ == '__main__':
 
-app.run(port=5052)
+    # Initialise SqlAlchemy configuration here to avoid circular dependency
+    db.init_app(app)
+
+    # Run
+    app.run(port=5052)
 
