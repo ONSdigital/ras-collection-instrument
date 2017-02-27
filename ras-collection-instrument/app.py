@@ -1,6 +1,5 @@
-import config
 from flask import *
-from flask_cors import CORS
+#from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from flask import request
@@ -10,7 +9,7 @@ import sys
 
 # Enable cross-origin requests
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
 
 collection_instruments = []
 
@@ -34,7 +33,7 @@ if 'APP_SETTINGS' in os.environ:
 
 #app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy()
+db = SQLAlchemy(app)
 
 import uuid
 from models import *
@@ -69,7 +68,7 @@ def validateURI(uri):
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
 
-    
+
 
     print "help"
     a = Result.query.all()
@@ -86,30 +85,11 @@ def collection():
 @app.route('/collectioninstrument', methods=['POST'])
 def create():
     json = request.json
-
     if json:
         response = make_response("")
-
-        try:
-            json["id"]
-            json["surveyId"]
-            json["ciType"]
-            print json["id"]
-        except KeyError:
-            res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
-            return res
-
-
-        if not validateURI(json["id"]):
-            res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
-            return res
-
-
-        new_object= Result(content=json, file_uuid=None)
-        db.session.add(new_object)
-        db.session.commit()
-
-        response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+        collection_instruments.append(request.json)
+        json["id"] = len(collection_instruments)
+        response.headers["location"] = "/collectioninstrument/" + str(json["id"])
         return response, 201
     return jsonify({"message": "Please provide a valid Json object.",
                     "hint": "you may need to pass a content-type: application/json header"}), 400
@@ -180,7 +160,7 @@ def get_ref(file_uuid):
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
     #content-type-requested = request.headers['content-type']
-    #print "This request is asking for content type of: {}".format(content-type-requested)
+    print "This request is asking for content type of: {}".format(content-type-requested)
     #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
 
@@ -197,11 +177,6 @@ def get_ref(file_uuid):
     return res
 
 
-if __name__ == '__main__':
 
-    # Initialise SqlAlchemy configuration here to avoid circular dependency
-    db.init_app(app)
-
-    # Run
-    app.run(port=5052)
+app.run(port=5052)
 
