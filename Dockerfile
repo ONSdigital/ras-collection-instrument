@@ -5,6 +5,6 @@ WORKDIR /app
 ADD ras-collection-instrument ./ras-collection-instrument
 ADD requirements.txt ./
 
-CMD pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 ENTRYPOINT python ras-collection-instrument/app.py
