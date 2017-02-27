@@ -70,10 +70,15 @@ def validateURI(uri):
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
 
+    try:
+        print "Making query to DB"
+        a = Result.query.all()
 
+    except exc.OperationalError:
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
 
-    print "help"
-    a = Result.query.all()
     result = []
     for key in a:
         result.append(key.content)
@@ -103,11 +108,9 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-
         if not validateURI(json["id"]):
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
-
 
         new_object= Result(content=json, file_uuid=None)
         db.session.add(new_object)
@@ -142,7 +145,7 @@ def get_id(_id):
     #object = Result.query.get_or_404(_id)
 
     if not validateURI(_id):
-            res = Response(response="Invalide URI", status=404, mimetype="text/html")
+            res = Response(response="Invalide URI", status=400, mimetype="text/html")
             return res
 
     try:
@@ -164,12 +167,8 @@ def get_id(_id):
     for key in object_list:
         print "The id is: {}".format(key['id'])
         if not validateURI(key['id']):
-            res = Response(response="Invalide URI", status=404, mimetype="text/html")
+            res = Response(response="Invalide URI", status=400, mimetype="text/html")
             return res
-
-
-
-    #print object_list
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
 
@@ -190,12 +189,19 @@ def get_ref(file_uuid):
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
     #content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content-type-requested)
+    #print "This request is asking for content type of: {}".format(content-type-requested)
     #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
 
-    object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
+    try:
+        print "Making query to DB"
+        object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
 
+    except exc.OperationalError:
+
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
 
     if not object_list:
         print "object is empty"
