@@ -1,9 +1,11 @@
 from flask import *
 #from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exc
 from flask import request
 #from models import Result
 import os
+import sys
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -113,7 +115,14 @@ def get_id(_id):
             res = Response(response="Invalide URI", status=404, mimetype="text/html")
             return res
 
-    object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
+    try:
+        print "Making query to DB"
+        object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
+
+    except exc.OperationalError:
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
 
     #print "The URI is: {}".format(object_list)
 
