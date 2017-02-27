@@ -82,8 +82,8 @@ def get_id(_id):
     # We need to determine the application type from the header. Business logic dictates that we provide the correct
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
-    content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content-type-requested)
+    #content-type-requested = request.headers['content-type']
+    #print "This request is asking for content type of: {}".format(content-type-requested)
     #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
     #object = Result.query.get_or_404(_id)
@@ -114,7 +114,7 @@ def get_ref(file_uuid):
     # We need to determine the application type from the header. Business logic dictates that we provide the correct
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
-    content-type-requested = request.headers['content-type']
+    #content-type-requested = request.headers['content-type']
     print "This request is asking for content type of: {}".format(content-type-requested)
     #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
