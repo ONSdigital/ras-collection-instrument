@@ -26,7 +26,8 @@ u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},{u'surveyId': u'urn:
 u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF': u'01234567890'}}]
 """
 
-app.config.from_object(os.environ['APP_SETTINGS'])
+if 'APP_SETTINGS' in os.environ:
+    app.config.from_object(os.environ['APP_SETTINGS'])
 
 #app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
