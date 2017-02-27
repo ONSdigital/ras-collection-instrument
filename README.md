@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument)
+
+
 # ras-collection-instrument (Python)
 
 ## Gettingt started with the Python version of the CI micro service:

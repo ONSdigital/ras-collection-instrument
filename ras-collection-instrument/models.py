@@ -15,9 +15,9 @@ class Result(db.Model):
 
 
 
-   def __init__(self, url, result_all, result_no_stop_words):
+   def __init__(self, file_uuid, content):
        self.file_uuid = file_uuid
        self.content = content
-       self.created_on = created_on
+       #self.created_on = created_on
 
 
