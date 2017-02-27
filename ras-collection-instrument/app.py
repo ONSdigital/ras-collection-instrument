@@ -35,12 +35,32 @@ db = SQLAlchemy(app)
 import uuid
 from models import *
 
+
+ONSpath = 'urn:ons.gov.uk'
 print "before"
 #i#mport json
 #a = Result.query.all()
 #print a
 
 print "after"
+
+
+
+# Utility class for parsing URL/URI this checks we conform to ONS URI
+def validateURI(uri):
+
+
+    print "Validating our URI: {}".format(uri)
+    if uri[0:14] == ONSpath:
+        print "URI is good: {}".format(uri[0:14])
+        return True
+    else:
+        print "URI is bad: {}. It should be: {}".format(uri[0:14], ONSpath)
+        return False
+
+
+
+
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
@@ -54,7 +74,7 @@ def collection():
         result.append(key.content)
 
     res_string = str(result)
-    resp = Response(response=res_string,status=200, mimetype="collection+json")
+    resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
 
 
@@ -88,16 +108,28 @@ def get_id(_id):
 
     #object = Result.query.get_or_404(_id)
 
+    if not validateURI(_id):
+            res = Response(response="Invalide URI", status=404, mimetype="text/html")
+            return res
 
     object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
+
+    #print "The URI is: {}".format(object_list)
 
     if not object_list:
         print "object is empty"
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
 
+    for key in object_list:
+        print "The id is: {}".format(key['id'])
+        if not validateURI(key['id']):
+            res = Response(response="Invalide URI", status=404, mimetype="text/html")
+            return res
 
-    print object_list
+
+
+    #print object_list
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
 
