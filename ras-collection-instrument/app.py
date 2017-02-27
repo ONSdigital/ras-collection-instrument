@@ -1,6 +1,6 @@
 from flask import *
 #from flask_cors import CORS
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from flask import request
 #from models import Result
 import os
@@ -168,5 +168,5 @@ def get_ref(file_uuid):
 
 
 
-app.run(port=5051)
+app.run(port=5052)
 
