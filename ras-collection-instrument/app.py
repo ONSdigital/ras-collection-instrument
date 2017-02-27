@@ -1,5 +1,6 @@
+import config
 from flask import *
-#from flask_cors import CORS
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask import request
 #from models import Result
@@ -7,7 +8,7 @@ import os
 
 # Enable cross-origin requests
 app = Flask(__name__)
-#CORS(app)
+CORS(app)
 
 collection_instruments = []
 
@@ -31,7 +32,7 @@ if 'APP_SETTINGS' in os.environ:
 
 #app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db = SQLAlchemy()
 
 import uuid
 from models import *
@@ -170,7 +171,7 @@ def get_ref(file_uuid):
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
     #content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content-type-requested)
+    #print "This request is asking for content type of: {}".format(content-type-requested)
     #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
 
@@ -187,6 +188,11 @@ def get_ref(file_uuid):
     return res
 
 
+if __name__ == '__main__':
 
-app.run(port=5052)
+    # Initialise SqlAlchemy configuration here to avoid circular dependency
+    db.init_app(app)
+
+    # Run
+    app.run(port=5052)
 
