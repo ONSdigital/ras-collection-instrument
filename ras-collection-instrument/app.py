@@ -3,11 +3,9 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from flask import request
-from models import *
 import os
 import sys
 import hashlib
-
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -37,12 +35,13 @@ if 'APP_SETTINGS' in os.environ:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+from models import *
+
 ONSpath = 'urn:ons.gov.uk'
 
 
 # Utility class for parsing URL/URI this checks we conform to ONS URI
 def validateURI(uri):
-
     print "Validating our URI: {}".format(uri)
     if uri[0:14] == ONSpath:
         print "URI is good: {}".format(uri[0:14])
@@ -54,7 +53,6 @@ def validateURI(uri):
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
-
     print "help"
     a = Result.query.all()
     result = []
@@ -89,17 +87,17 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        new_object= Result(content=json, file_uuid=None)
+        new_object = Result(content=json, file_uuid=None)
         db.session.add(new_object)
         db.session.commit()
 
-        collection_path = response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+        collection_path = response.headers["location"] = "/collectioninstrument/" + str(new_object.id)
 
         etag = hashlib.sha1(collection_path).hexdigest()
 
         response.set_etag(etag)
 
-        response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+        response.headers["location"] = "/collectioninstrument/" + str(new_object.id)
         return response, 201
     return jsonify({"message": "Please provide a valid Json object.",
                     "hint": "you may need to pass a content-type: application/json header"}), 400
@@ -122,8 +120,8 @@ def get_id(_id):
     # object = Result.query.get_or_404(_id)
 
     if not validateURI(_id):
-            res = Response(response="Invalide URI", status=404, mimetype="text/html")
-            return res
+        res = Response(response="Invalide URI", status=404, mimetype="text/html")
+        return res
 
     try:
         print "Making query to DB"
@@ -168,7 +166,7 @@ def get_ref(file_uuid):
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
     # content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content-type-requested)
+    print "This request is asking for content type of: {}".format(content - type - requested)
     # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
@@ -183,10 +181,8 @@ def get_ref(file_uuid):
 
 
 if __name__ == '__main__':
-
     # Initialise SqlAlchemy configuration here to avoid circular dependency
     db.init_app(app)
 
     # Run
     app.run(port=5052)
-
