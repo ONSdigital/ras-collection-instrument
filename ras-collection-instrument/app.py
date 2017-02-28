@@ -78,6 +78,7 @@ def collection():
     return resp
 
 
+#curl -X PUT --form "fileupload=@requirements.txt"  http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
 @app.route('/collectioninstrument/id/<string:file_uuid>', methods=['PUT'])
 def add_binary(file_uuid):
 
