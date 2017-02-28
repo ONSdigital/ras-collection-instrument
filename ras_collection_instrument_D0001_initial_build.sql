@@ -26,6 +26,7 @@ CREATE TABLE ras_collection_instrument.ras_collection_instruments
 ,content       JSONB
 ,file_uuid     UUID
 ,created_on    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+,file_path   TEXT 
 ,CONSTRAINT ras_coi_pk
   PRIMARY KEY (id)
 );

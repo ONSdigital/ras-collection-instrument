@@ -92,7 +92,14 @@ def add_binary(file_uuid):
 
     if not os.path.isdir("uploads"):
         os.mkdir("uploads")
-    uploaded_file.save('uploads/{}'.format(str(uuid.uuid4()) +uploaded_file.filename ))
+
+    newpath = str(uuid.uuid4()) +uploaded_file.filename
+    uploaded_file.save('uploads/{}'.format(newpath ))
+
+    new_object.file_path = newpath
+
+    db.session.add(new_object)
+    db.session.commit()
 
     res = Response(response="Item updated", status=201, mimetype="text/html")
     return res
