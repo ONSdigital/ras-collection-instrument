@@ -3,10 +3,12 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from flask import request
-from models import *
 import os
 import sys
 import hashlib
+import psycopg2
+from uuid import UUID
+import uuid
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -36,6 +38,7 @@ if 'APP_SETTINGS' in os.environ:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+from models import *
 
 # Utility class for parsing URL/URI this checks we conform to ONS URI
 def validateURI(uri, idType):
@@ -75,8 +78,16 @@ def validateURI(uri, idType):
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
-    print "help"
-    a = Result.query.all()
+
+    try:
+        print "Making query to DB"
+        a = Result.query.all()
+
+    except exc.OperationalError:
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
+
     result = []
     for key in a:
         result.append(key.content)
@@ -84,6 +95,36 @@ def collection():
     res_string = str(result)
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
+
+
+#curl -X PUT --form "fileupload=@requirements.txt"  http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+@app.route('/collectioninstrument/id/<string:file_uuid>', methods=['PUT'])
+def add_binary(file_uuid):
+
+    try:
+        new_object = db.session.query(Result).filter(Result.file_uuid==file_uuid)[0]#.first()
+    except:
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+        return res
+
+    uploaded_file = request.files['fileupload']
+
+    if not os.path.isdir("uploads"):
+        os.mkdir("uploads")
+
+    newpath = str(uuid.uuid4()) +uploaded_file.filename
+    uploaded_file.save('uploads/{}'.format(newpath ))
+
+    new_object.file_path = newpath
+
+    db.session.add(new_object)
+    db.session.commit()
+
+    response = make_response("")
+    etag = hashlib.sha1('/collectioninstrument/id/'+ str(file_uuid)).hexdigest()
+    response.set_etag(etag)
+
+    return response, 201
 
 
 @app.route('/collectioninstrument', methods=['POST'])
@@ -110,6 +151,7 @@ def create():
             return res
 
         new_object = Result(content=json, file_uuid=None)
+
         db.session.add(new_object)
         db.session.commit()
 
@@ -142,7 +184,7 @@ def get_id(_id):
     # object = Result.query.get_or_404(_id)
 
     if not validateURI(_id, 'ci'):
-        res = Response(response="Invalide URI", status=404, mimetype="text/html")
+        res = Response(response="Invalide ID supplied", status=400, mimetype="text/html")
         return res
 
     try:
@@ -164,16 +206,12 @@ def get_id(_id):
 
     for key in object_list:
         print "The id is: {}".format(key['id'])
+
         if not validateURI(key['id'], 'ci'):
-            res = Response(response="Invalide URI", status=404, mimetype="text/html")
+            res = Response(response="Invalide URI", status=400, mimetype="text/html")
             return res
 
-    # print object_list
-
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
-
-    # res = Response(response=str(object_string),status=200, mimetype="collection+json")
-
     return res
 
 
@@ -187,11 +225,19 @@ def get_ref(file_uuid):
     # We need to determine the application type from the header. Business logic dictates that we provide the correct
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
-    # content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content - type - requested)
-    # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
-    object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
+    #content-type-requested = request.headers['content-type']
+    #print "This request is asking for content type of: {}".format(content-type-requested)
+    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
+
+    try:
+        print "Making query to DB"
+        object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
+
+    except exc.OperationalError:
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
 
     if not object_list:
         print "object is empty"
