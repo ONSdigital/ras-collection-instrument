@@ -8,8 +8,8 @@
 ** Note: This explains how to use the Collection Instrument micro service using the Python-Flask based micro
 ** service container.
 
-  1. ./build at /ras-compose as normal
-  2. ./run at /ras-compose as normal
+  1. [./build](https://github.com/ONSdigital/ras-compose/blob/master/build.sh) at [ras-compose](https://github.com/ONSdigital/ras-compose) as normal
+  2. [./run](https://github.com/ONSdigital/ras-compose/blob/master/run.sh) at [ras-compose](https://github.com/ONSdigital/ras-compose) as normal
 NOTE: ras-collection-instrument container will start, fail then stop if the ras_collection_instrument schema has not been created. Therefore...
   3. connect to postgres via PGAdmin and run in ras_collection_instrument_D0001_initial_build.sql e.g.: 
     `psql -h localhost -p 5431 -U postgres -a -f ras_collection_instrument_D0001_initial_build.sql`
