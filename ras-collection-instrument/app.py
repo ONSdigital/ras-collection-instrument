@@ -6,6 +6,7 @@ from flask import request
 import os
 import sys
 import hashlib
+import ast
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -53,7 +54,7 @@ def validateURI(uri):
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
-
+    print "We are in collections"
     try:
         print "Making query to DB"
         a = Result.query.all()
@@ -72,8 +73,76 @@ def collection():
     return resp
 
 
+@app.route('/collectioninstrument/', methods=['GET'])
+def classifier():
+    print "We are in classifier"
+    queryClassifer = request.args.get('classifier')                                 # get the query string from the URL.
+    if queryClassifer:
+        try:
+            queryDict = ast.literal_eval(queryClassifer)                            # convert our string into a dictionary
+        except ValueError:
+            # Something went wrong with our conversion, maybe they did not give us a valid dictionary? Keep calm and carry on. Let the user know what they have to type to get this to work
+            res = Response(response='Bad input parameter.\n To search for a classifier your querry string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} ', status=400, mimetype="text/html")
+            return res
+    else:
+        # We had no query string with 'classifier', let the user know what they should type.
+        res = Response(response='Bad input parameter.\n To search for a classifier your querry string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} ', status=400, mimetype="text/html")
+        return res
+
+    # Get a query set of all objects to search
+    try:
+        print "Making query to DB"
+        collection_instruments = Result.query.all()
+        #collection_instruments = [x.content for x in Result.query.all() if x.content['classifier']]
+
+    except exc.OperationalError:
+        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        return res
+
+    # We are looking for matches for 'classifier' types which look like: {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
+    # So we need to loop through our query string and our DB to do our matching
+    # TODO Use sqlalcemy 'filter' to do all this. We should not be manually searching our DB
+    matchedclasifiers =[]                                                       # This will hold a list of our classifier objects
+    for collection_instrument_object in collection_instruments:                 # Loop through all objects and search for matches of classifiers
+        dictClasifier = collection_instrument_object.content['classifiers']
+        match = False # Make sure we set our match flag to false for each new object we check
+
+        # Lets take a classifier dictionary e.g. {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
+        # And make sure all our query string classifiers are a match if we don't have them all then it's not a match.
+        for queryVal in queryDict:
+            try:
+                if queryDict[queryVal] == dictClasifier[queryVal]:
+                    match = True
+                else:
+                    # The dictionary item name does exist but it's value is different.
+                    match = False
+                    #print "*** NO MATCH FOR: ", queryDict[queryVal], " and ", dictClasifier[queryVal], "***"
+                    break
+            except KeyError:
+                # The dictionary item does not exist in our dict so this is not a match either
+                match = False
+                #print "We don't have a key for: ", queryDict[queryVal]
+                break
+
+        if match:
+            print " ***** Success We have a match for this object ****"
+            matchedclasifiers.append(collection_instrument_object.content)
+    if matchedclasifiers:
+        print "We have some matches"
+        for key in matchedclasifiers:
+            print key
+
+    res_string = str(matchedclasifiers)
+    resp = Response(response=res_string, status=200, mimetype="collection+json")
+    return resp
+
+
+
+
 @app.route('/collectioninstrument', methods=['POST'])
 def create():
+    print "We are in create"
     json = request.json
     if json:
         response = make_response("")
@@ -161,6 +230,7 @@ def get_id(_id):
 
 @app.route('/collectioninstrument/<string:file_uuid>', methods=['GET'])
 def get_ref(file_uuid):
+    print "we are in get_ref"
     """ Locate a collection instrument by reference.
 
     This method is intended for locating collection instruments by a human-readable 'reference'
