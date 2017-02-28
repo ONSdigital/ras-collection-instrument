@@ -6,6 +6,10 @@ from flask import request
 import os
 import sys
 import hashlib
+import psycopg2
+from uuid import UUID
+import uuid
+
 
 # Enable cross-origin requests
 app = Flask(__name__)
@@ -40,6 +44,8 @@ from models import *
 ONSpath = 'urn:ons.gov.uk'
 
 
+
+
 # Utility class for parsing URL/URI this checks we conform to ONS URI
 def validateURI(uri):
     print "Validating our URI: {}".format(uri)
@@ -70,6 +76,25 @@ def collection():
     res_string = str(result)
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
+
+
+@app.route('/collectioninstrument/id/<string:file_uuid>', methods=['PUT'])
+def add_binary(file_uuid):
+
+    try:
+        new_object = db.session.query(Result).filter(Result.file_uuid==file_uuid)[0]#.first()
+    except:
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+        return res
+
+    uploaded_file = request.files['fileupload']
+
+    if not os.path.isdir("uploads"):
+        os.mkdir("uploads")
+    uploaded_file.save('uploads/{}'.format(str(uuid.uuid4()) +uploaded_file.filename ))
+
+    res = Response(response="Item updated", status=201, mimetype="text/html")
+    return res
 
 
 @app.route('/collectioninstrument', methods=['POST'])
