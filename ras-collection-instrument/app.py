@@ -8,7 +8,6 @@ import os
 import sys
 import hashlib
 
-
 # Enable cross-origin requests
 app = Flask(__name__)
 CORS(app)
@@ -37,24 +36,45 @@ if 'APP_SETTINGS' in os.environ:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-ONSpath = 'urn:ons.gov.uk'
-
 
 # Utility class for parsing URL/URI this checks we conform to ONS URI
-def validateURI(uri):
-
+def validateURI(uri, idType):
     print "Validating our URI: {}".format(uri)
-    if uri[0:14] == ONSpath:
-        print "URI is good: {}".format(uri[0:14])
-        return True
-    else:
-        print "URI is bad: {}. It should be: {}".format(uri[0:14], ONSpath)
+
+    urnPrefix = 'urn'
+    urnONSpath = 'ons.gov.uk'
+    urnIdStr = 'id'
+    urnOverallDigitLen = 13
+    urnFirstDigitLen = 3
+    urnSecondDigitLen = 3
+    urnThirdDigitLen = 5
+
+    try:
+
+        arr = uri.split(':')
+        sub_arr = arr[4].split('.')
+
+        if arr[0] == urnPrefix \
+                and arr[1] == urnONSpath \
+                and arr[2] == urnIdStr \
+                and arr[3] == idType \
+                and len(arr[4]) == urnOverallDigitLen \
+                and sub_arr[0].isdigit and len(sub_arr[0]) == urnFirstDigitLen \
+                and sub_arr[1].isdigit and len(sub_arr[1]) == urnSecondDigitLen \
+                and sub_arr[2].isdigit and len(sub_arr[2]) == urnThirdDigitLen:
+            print "URI is well formed': {}".format(uri[0:14])
+            return True
+        else:
+            print "URI is malformed: {}. It should be: {}".format(uri[0:14], urnONSpath)
+            return False
+
+    except:
+        print "URI is malformed: {}. It should be: {}".format(uri[0:14], urnONSpath)
         return False
 
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
-
     print "help"
     a = Result.query.all()
     result = []
@@ -73,7 +93,7 @@ def create():
         response = make_response("")
 
         collection_instruments.append(request.json)
-        json["id"] = len(collection_instruments)
+        #json["id"] = len(collection_instruments)
         response.headers["location"] = "/collectioninstrument/" + str(json["id"])
 
         try:
@@ -85,21 +105,21 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        if not validateURI(json["id"]):
+        if not validateURI(json["id"],'ci'):
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        new_object= Result(content=json, file_uuid=None)
+        new_object = Result(content=json, file_uuid=None)
         db.session.add(new_object)
         db.session.commit()
 
-        collection_path = response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+        collection_path = response.headers["location"] = "/collectioninstrument/" + str(new_object.id)
 
         etag = hashlib.sha1(collection_path).hexdigest()
 
         response.set_etag(etag)
 
-        response.headers["location"] = "/collectioninstrument/" + str( new_object.id)
+        response.headers["location"] = "/collectioninstrument/" + str(new_object.id)
         return response, 201
     return jsonify({"message": "Please provide a valid Json object.",
                     "hint": "you may need to pass a content-type: application/json header"}), 400
@@ -121,9 +141,9 @@ def get_id(_id):
 
     # object = Result.query.get_or_404(_id)
 
-    if not validateURI(_id):
-            res = Response(response="Invalide URI", status=404, mimetype="text/html")
-            return res
+    if not validateURI(_id, 'ci'):
+        res = Response(response="Invalide URI", status=404, mimetype="text/html")
+        return res
 
     try:
         print "Making query to DB"
@@ -144,7 +164,7 @@ def get_id(_id):
 
     for key in object_list:
         print "The id is: {}".format(key['id'])
-        if not validateURI(key['id']):
+        if not validateURI(key['id'], 'ci'):
             res = Response(response="Invalide URI", status=404, mimetype="text/html")
             return res
 
@@ -168,7 +188,7 @@ def get_ref(file_uuid):
     # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
     # if it's JSON we should provide ON-LINE collection instrument
     # content-type-requested = request.headers['content-type']
-    print "This request is asking for content type of: {}".format(content-type-requested)
+    print "This request is asking for content type of: {}".format(content - type - requested)
     # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
     object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
@@ -182,11 +202,38 @@ def get_ref(file_uuid):
     return res
 
 
-if __name__ == '__main__':
+@app.route('/collectioninstrument/surveyid/<string:surveyId>', methods=['GET'])
+def get_surveyId(surveyId):
+    """
+    Locate a collection instrument by survey urn.
+    """
 
+    if not validateURI(surveyId, 'survey'):
+        res = Response(response="Invalide URI", status=404, mimetype="text/html")
+        return res
+
+    try:
+        print "Querying DB..."
+        object_list = [x.content for x in Result.query.all() if x.content['surveyId'] == surveyId]
+
+    except exc.OperationalError:
+        print "There has been an error in the Collection Instrument DB. Excption is: {}".format(sys.exc_info()[0])
+        res = Response(response="Error in the Collection Instrument DB", status=500, mimetype="text/html")
+        return res
+
+    if not object_list:
+        print "Object is empty"
+        res = Response(response="Collection instrument(s) not found", status=404, mimetype="text/html")
+        return res
+
+    res = Response(response=str(object_list), status=200, mimetype="collection+json")
+
+    return res
+
+
+if __name__ == '__main__':
     # Initialise SqlAlchemy configuration here to avoid circular dependency
     db.init_app(app)
 
     # Run
     app.run(port=5052)
-
