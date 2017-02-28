@@ -101,8 +101,11 @@ def add_binary(file_uuid):
     db.session.add(new_object)
     db.session.commit()
 
-    res = Response(response="Item updated", status=201, mimetype="text/html")
-    return res
+    response = make_response("")
+    etag = hashlib.sha1('/collectioninstrument/id/'+ str(file_uuid)).hexdigest()
+    response.set_etag(etag)
+
+    return response, 201
 
 
 @app.route('/collectioninstrument', methods=['POST'])
