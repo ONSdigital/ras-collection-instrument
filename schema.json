@@ -5,7 +5,7 @@
     "reference": {
       "type": "string"
     },
-    "urn": {
+    "id": {
       "type": "string"
     },
     "ciType": {
@@ -23,5 +23,5 @@
       }
     }
   },
-  "required": ["reference", "urn", "itType", "surveyId", "classifiers"]
+  "required": ["reference", "urn", "ctType", "surveyId", "classifiers"]
 }
