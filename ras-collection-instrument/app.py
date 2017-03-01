@@ -10,6 +10,9 @@ import ast
 import psycopg2
 from uuid import UUID
 
+import uuid
+
+
 # Enable cross-origin requests
 app = Flask(__name__)
 CORS(app)
@@ -97,7 +100,7 @@ def collection():
     return resp
 
 
-@app.route('/collectioninstrument/', methods=['GET'])
+@app.route('/collectioninstrument/classifier/', methods=['GET'])
 def classifier():
     print "We are in classifier"
     queryClassifer = request.args.get('classifier')                                 # get the query string from the URL.
@@ -166,6 +169,7 @@ def classifier():
 @app.route('/collectioninstrument/id/<string:file_uuid>', methods=['PUT'])
 def add_binary(file_uuid):
 
+    print 'We are in Add binary'
     try:
         new_object = db.session.query(Result).filter(Result.file_uuid==file_uuid)[0]#.first()
     except:
@@ -250,7 +254,7 @@ def get_id(_id):
     # object = Result.query.get_or_404(_id)
 
     if not validateURI(_id, 'ci'):
-        res = Response(response="Invalide ID supplied", status=400, mimetype="text/html")
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
         return res
 
     try:
@@ -274,7 +278,7 @@ def get_id(_id):
         print "The id is: {}".format(key['id'])
 
         if not validateURI(key['id'], 'ci'):
-            res = Response(response="Invalide URI", status=400, mimetype="text/html")
+            res = Response(response="Invalid URI", status=400, mimetype="text/html")
             return res
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
@@ -322,7 +326,7 @@ def get_surveyId(surveyId):
     """
 
     if not validateURI(surveyId, 'survey'):
-        res = Response(response="Invalide URI", status=404, mimetype="text/html")
+        res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
 
     try:
