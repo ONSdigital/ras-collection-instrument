@@ -85,7 +85,7 @@ def collection():
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     result = []
@@ -96,7 +96,7 @@ def collection():
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
 
-
+#curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
 @app.route('/collectioninstrument/', methods=['GET'])
 def classifier():
     print "We are in classifier"
@@ -121,7 +121,7 @@ def classifier():
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     # We are looking for matches for 'classifier' types which look like: {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
@@ -259,7 +259,7 @@ def get_id(_id):
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. "
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently, or the DB is not available. "
                                 "Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
@@ -303,7 +303,7 @@ def get_ref(file_uuid):
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -331,7 +331,7 @@ def get_surveyId(surveyId):
 
     except exc.OperationalError:
         print "There has been an error in the Collection Instrument DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     if not object_list:
