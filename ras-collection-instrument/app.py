@@ -17,8 +17,6 @@ import uuid
 app = Flask(__name__)
 CORS(app)
 
-collection_instruments = []
-
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
 #
@@ -199,6 +197,7 @@ def add_binary(file_uuid):
 @app.route('/collectioninstrument', methods=['POST'])
 def create():
     print "We are in create"
+    collection_instruments = []
     json = request.json
     if json:
         response = make_response("")
