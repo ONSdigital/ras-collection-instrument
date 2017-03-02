@@ -97,6 +97,22 @@ def collection():
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
 
+
+@app.route('/collectioninstrument/file/<string:file_uuid>', methods=['GET'])
+def get_binary(file_uuid):
+    try:
+        new_object = db.session.query(Result).filter(Result.file_uuid==file_uuid)[0]#.first()
+    except:
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+        return res
+
+    if new_object.file_path is None:
+        res = Response(response="No file present", status=404, mimetype="text/html")
+        return res
+
+    return send_from_directory('uploads', new_object.file_path)
+
+
 #curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
 @app.route('/collectioninstrument/', methods=['GET'])
 def classifier():
