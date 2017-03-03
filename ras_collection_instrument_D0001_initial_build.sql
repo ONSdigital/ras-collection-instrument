@@ -46,6 +46,27 @@ VALUES
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B"}
    }'::JSONB
    ,NULL)
+,('{"reference":"rsi-fuel",
+    "id":"urn:ons.gov.uk:id:ci:001.001.00010",
+    "surveyId":"urn:ons.gov.uk:id:survey:001.001.00001",
+    "ciType":"ONLINE",
+    "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"X"}
+   }'::JSONB
+   ,NULL)
+,('{"reference":"rsi-fuel",
+    "id":"urn:ons.gov.uk:id:ci:001.001.00011",
+    "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
+    "ciType":"ONLINE",
+    "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"Y","PHYSICS":"A","CIVIL":"Y"}
+   }'::JSONB
+   ,NULL)
+,('{"reference":"rsi-fuel",
+    "id":"urn:ons.gov.uk:id:ci:001.001.00014",
+    "surveyId":"urn:ons.gov.uk:id:survey:001.001.00014",
+    "ciType":"ONLINE",
+    "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"Y","PHYSICS":"A","MILITARY":"Y","R&D":"Y","EUROPEAN":"N"}
+   }'::JSONB
+   ,NULL)
 ,('{"reference":"rsi-nonfuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00002",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
