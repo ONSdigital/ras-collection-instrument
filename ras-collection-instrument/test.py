@@ -7,7 +7,6 @@ unauthorized = 401
 
 
 class ComponentTestCase(unittest.TestCase):
-
     def setUp(self):
         self.app = app.test_client()
 
@@ -15,7 +14,6 @@ class ComponentTestCase(unittest.TestCase):
         pass
 
     def test_something(self):
-
         # Given
         # Some preconditions
 

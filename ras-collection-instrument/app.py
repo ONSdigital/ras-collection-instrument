@@ -121,7 +121,6 @@ def collection():
 
 @app.route('/collectioninstrument/file/<string:_id>', methods=['GET'])
 def get_binary(_id):
-
     print "We are in get_binary"
 
     if not validate_uri(_id, 'ci'):
@@ -155,7 +154,7 @@ def classifier():
 
     print "We are in classifier"
 
-    query_classifier = request.args.get('classifier')       # get the query string from the URL.
+    query_classifier = request.args.get('classifier')  # get the query string from the URL.
     if query_classifier:
         try:
             query_dict = ast.literal_eval(query_classifier)  # convert our string into a dictionary
@@ -164,7 +163,7 @@ def classifier():
             # Keep calm and carry on. Let the user know what they have to type to get this to work
             res = Response(response="""Bad input parameter.\n To search for a classifier your query string should
                                     look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} """,
-                                    status=400, mimetype="text/html")
+                           status=400, mimetype="text/html")
             return res
     else:
         # We had no query string with 'classifier', let the user know what they should type.
@@ -189,7 +188,7 @@ def classifier():
     # {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
     # So we need to loop through our query string and our DB to do our matching
     # TODO Use sqlalchemy 'filter' to do all this. We should not be manually searching our DB
-    matched_classifiers = []                                         # This will hold a list of our classifier objects
+    matched_classifiers = []  # This will hold a list of our classifier objects
 
     # Loop through all objects and search for matches of classifiers
     for collection_instrument_object in collection_instruments:
@@ -228,7 +227,6 @@ def classifier():
 
 @app.route('/collectioninstrument/id/<string:_id>', methods=['PUT'])
 def add_binary(_id):
-
     """
     Get an existing collection instrument by Collection Instrument ID/URN.
     Modify the record, adding file path/UUID, then merge record back to the database.
@@ -412,7 +410,7 @@ def get_ref(ci_ref):
         res = Response(response="""Error in the Collection Instrument DB, it looks like there is no data
                                 presently or the DB is not available.
                                 Please contact a member of ONS staff.""",
-                                status=500, mimetype="text/html")
+                       status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -441,7 +439,8 @@ def get_survey_id(survey_id):
     try:
         print "Querying DB"
         # now filters on the indexed database column "survey_urn"
-        object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
+        object_list = [rec.content for rec in
+                       CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
 
     except exc.OperationalError:
         print "There has been an error in the Collection Instrument DB. Exception is: {}".format(sys.exc_info()[0])
