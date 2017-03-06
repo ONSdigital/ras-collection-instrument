@@ -8,7 +8,6 @@ import sys
 import hashlib
 import ast
 import psycopg2
-from uuid import UUID
 
 from models import *
 
