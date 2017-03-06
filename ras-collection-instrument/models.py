@@ -1,3 +1,7 @@
+"""
+This module contains the data model for the collection instrument
+"""
+
 import datetime
 
 from sqlalchemy import DateTime
@@ -7,6 +11,9 @@ from app import db
 
 
 class CollectionInstrument(db.Model):
+    """
+    The collection instrument model
+    """
     __tablename__ = 'ras_collection_instruments'
     id = db.Column(db.Integer, primary_key=True)
     urn = db.Column(TEXT)
