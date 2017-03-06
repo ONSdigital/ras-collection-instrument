@@ -92,6 +92,12 @@ def validate_uri(uri, id_type):
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
+    """
+    This endpoint returns a filtered list of all the content fields for each collection
+    instrument in the database.
+
+    :return: Json Http Response
+    """
 
     print "We are in collections"
 
@@ -142,6 +148,12 @@ def get_binary(_id):
 # curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
 @app.route('/collectioninstrument/', methods=['GET'])
 def classifier():
+    """
+    This method performs a query on the content fields for each record,
+    based on the value for the 'classifier' key in the json
+
+    :return: Http Response
+    """
 
     print "We are in classifier"
 
@@ -272,9 +284,10 @@ def add_binary(_id):
 
 @app.route('/collectioninstrument/', methods=['POST'])
 def create():
-
     """
-    Create initial collection instrument.
+    This endpoint creates a collection instrument record, from the POST data
+
+    :return: Http response
     """
 
     print "We are in create"
@@ -336,11 +349,13 @@ def create():
 
 @app.route('/collectioninstrument/id/<string:_id>', methods=['GET'])
 def get_id(_id):
-
     """
     Locate a collection instrument by Collection Instrument ID/URN.
     This method is intended for locating collection instruments by a non-human-readable 'id'
     as opposed to by human-readable reference.
+
+    :param _id: String
+    :return: Http response
     """
 
     print "We are in get_id"
@@ -379,11 +394,13 @@ def get_id(_id):
 
 @app.route('/collectioninstrument/reference/<string:ci_ref>', methods=['GET'])
 def get_ref(ci_ref):
-
     """
     Locate a collection instrument by reference.
     This method is intended for locating collection instruments by a human-readable 'reference'
     as opposed to by database Id.
+
+    :param ci_ref: String
+    :return: Http Response
     """
 
     print "We are in get_ref"
@@ -411,9 +428,10 @@ def get_ref(ci_ref):
 
 @app.route('/collectioninstrument/surveyid/<string:survey_id>', methods=['GET'])
 def get_survey_id(survey_id):
-
     """
     Locate a collection instrument by survey id/urn.
+    :param survey_id: String
+    :return: Http Response
     """
 
     print "We are in get_survey_id"
