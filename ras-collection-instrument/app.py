@@ -1,12 +1,15 @@
+"""
+The main module which starts the server
+"""
+
 import ast
 import hashlib
 import os
 import sys
-import psycopg2
 import uuid
 
 
-from flask import request, Response, send_from_directory, make_response, jsonify, Flask, request
+from flask import request, Response, send_from_directory, make_response, jsonify, Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
