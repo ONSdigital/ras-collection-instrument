@@ -17,8 +17,6 @@ import uuid
 app = Flask(__name__)
 CORS(app)
 
-collection_instruments = []
-
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
 #
@@ -94,7 +92,7 @@ def collection():
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     result = []
@@ -130,7 +128,8 @@ def get_binary(_id):
     return send_from_directory('uploads', new_object.file_path)
 
 
-@app.route('/collectioninstrument/classifier/', methods=['GET'])
+#curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
+@app.route('/collectioninstrument/', methods=['GET'])
 def classifier():
 
     print "We are in classifier"
@@ -156,7 +155,7 @@ def classifier():
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     # We are looking for matches for 'classifier' types which look like:
@@ -259,6 +258,8 @@ def create():
 
     print "We are in create"
 
+    collection_instruments = []
+
     json = request.json
     if json:
         response = make_response("")
@@ -334,7 +335,7 @@ def get_id(_id):
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB. "
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently, or the DB is not available. "
                                 "Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
@@ -371,7 +372,7 @@ def get_ref(ci_ref):
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -403,7 +404,7 @@ def get_survey_id(survey_id):
 
     except exc.OperationalError:
         print "There has been an error in the Collection Instrument DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
     if not object_list:
