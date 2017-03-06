@@ -21,14 +21,18 @@ CREATE USER ras_collection_instrument WITH PASSWORD 'password'
 --
 DROP TABLE IF EXISTS ras_collection_instrument.ras_collection_instruments;
 
-CREATE TABLE ras_collection_instrument.ras_collection_instruments
+CREATE TABLE ras_collection_instruments
 (id            BIGSERIAL                NOT NULL
+,urn           CHARACTER VARYING (50)   NOT NULL
+,survey_urn    CHARACTER VARYING (50)   NOT NULL
 ,content       JSONB
 ,file_uuid     UUID
+,file_path     TEXT
 ,created_on    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-,file_path   TEXT 
 ,CONSTRAINT ras_coi_pk
   PRIMARY KEY (id)
+,CONSTRAINT ras_coi_uk
+  UNIQUE (urn)
 );
 
 --
@@ -37,37 +41,47 @@ CREATE TABLE ras_collection_instrument.ras_collection_instruments
 CREATE INDEX ras_coi_content_idx ON ras_collection_instrument.ras_collection_instruments USING gin(content);
 
 INSERT INTO ras_collection_instrument.ras_collection_instruments
- (content,file_uuid)
+ (urn,survey_urn,content,file_uuid)
 VALUES
- ('{"reference":"rsi-fuel",
+ ( 'urn:ons.gov.uk:id:ci:001.001.00001'
+  ,'urn:ons.gov.uk:id:survey:001.001.00001'
+  ,'{"reference":"rsi-fuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00001",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00001",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B"}
    }'::JSONB
    ,NULL)
-,('{"reference":"rsi-fuel",
+,( 'urn:ons.gov.uk:id:ci:001.001.00010'
+  ,'urn:ons.gov.uk:id:survey:001.001.00001'
+  ,'{"reference":"rsi-fuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00010",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00001",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"X"}
    }'::JSONB
    ,NULL)
-,('{"reference":"rsi-fuel",
+,( 'urn:ons.gov.uk:id:ci:001.001.00011'
+  ,'urn:ons.gov.uk:id:survey:001.001.00002'
+  ,'{"reference":"rsi-fuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00011",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"Y","PHYSICS":"A","CIVIL":"Y"}
    }'::JSONB
    ,NULL)
-,('{"reference":"rsi-fuel",
+,( 'urn:ons.gov.uk:id:ci:001.001.00014'
+  ,'urn:ons.gov.uk:id:survey:001.001.00014'
+  ,'{"reference":"rsi-fuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00014",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00014",
     "ciType":"ONLINE",
     "classifiers": {"LEGAL_STATUS":"A","INDUSTRY":"B","GEOGRAPHY":"Y","PHYSICS":"A","MILITARY":"Y","R&D":"Y","EUROPEAN":"N"}
    }'::JSONB
    ,NULL)
-,('{"reference":"rsi-nonfuel",
+,( 'urn:ons.gov.uk:id:ci:001.001.00002'
+  ,'urn:ons.gov.uk:id:survey:001.001.00002'
+  ,'{"reference":"rsi-nonfuel",
     "id":"urn:ons.gov.uk:id:ci:001.001.00002",
     "surveyId":"urn:ons.gov.uk:id:survey:001.001.00002",
     "ciType":"OFFLINE",
