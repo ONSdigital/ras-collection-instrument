@@ -14,7 +14,7 @@ class CollectionInstrument(db.Model):
     file_path = db.Column(TEXT)
     created_on = db.Column(DateTime, default=datetime.datetime.utcnow)
 
-    def __init__(self, urn, survey_urn, content, id = None, file_uuid = None, file_path = None):
+    def __init__(self, urn, survey_urn, content, id=None, file_uuid=None, file_path=None):
         self.id = id
         self.urn = urn
         self.survey_urn = survey_urn
