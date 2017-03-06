@@ -43,48 +43,54 @@ db = SQLAlchemy(app)
 
 from models import *
 
+
 # Utility class for parsing URL/URI this checks we conform to ONS URI
-def validateURI(uri, idType):
+def validate_uri(uri, id_type):
+
+    print "We are in validate_uri"
+
     print "Validating our URI: {}".format(uri)
 
-    urnPrefix = 'urn'
-    urnONSpath = 'ons.gov.uk'
-    urnIdStr = 'id'
-    urnOverallDigitLen = 13
-    urnFirstDigitLen = 3
-    urnSecondDigitLen = 3
-    urnThirdDigitLen = 5
+    urn_prefix = 'urn'
+    urn_ons_path = 'ons.gov.uk'
+    urn_id_str = 'id'
+    urn_overall_digit_len = 13
+    urn_first_digit_len = 3
+    urn_second_digit_len = 3
+    urn_third_digit_len = 5
 
     try:
 
         arr = uri.split(':')
         sub_arr = arr[4].split('.')
 
-        if arr[0] == urnPrefix \
-                and arr[1] == urnONSpath \
-                and arr[2] == urnIdStr \
-                and arr[3] == idType \
-                and len(arr[4]) == urnOverallDigitLen \
-                and sub_arr[0].isdigit and len(sub_arr[0]) == urnFirstDigitLen \
-                and sub_arr[1].isdigit and len(sub_arr[1]) == urnSecondDigitLen \
-                and sub_arr[2].isdigit and len(sub_arr[2]) == urnThirdDigitLen:
+        if arr[0] == urn_prefix \
+                and arr[1] == urn_ons_path \
+                and arr[2] == urn_id_str \
+                and arr[3] == id_type \
+                and len(arr[4]) == urn_overall_digit_len \
+                and sub_arr[0].isdigit and len(sub_arr[0]) == urn_first_digit_len \
+                and sub_arr[1].isdigit and len(sub_arr[1]) == urn_second_digit_len \
+                and sub_arr[2].isdigit and len(sub_arr[2]) == urn_third_digit_len:
             print "URI is well formed': {}".format(uri[0:14])
             return True
         else:
-            print "URI is malformed: {}. It should be: {}".format(uri[0:14], urnONSpath)
+            print "URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path)
             return False
 
     except:
-        print "URI is malformed: {}. It should be: {}".format(uri[0:14], urnONSpath)
+        print "URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path)
         return False
 
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
+
     print "We are in collections"
+
     try:
         print "Making query to DB"
-        a = Result.query.all()
+        a = CollectionInstrument.query.all()
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
@@ -100,15 +106,42 @@ def collection():
     return resp
 
 
+@app.route('/collectioninstrument/file/<string:_id>', methods=['GET'])
+def get_binary(_id):
+
+    print "We are in get_binary"
+
+    if not validate_uri(_id, 'ci'):
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+        return res
+
+    try:
+        # now filters on the unique indexed database column "urn"
+        # should now only ever get 0 or 1 record here
+        new_object = db.session.query(CollectionInstrument).filter(CollectionInstrument.urn == _id)[0]
+    except:
+        res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+        return res
+
+    if new_object.file_path is None:
+        res = Response(response="No file present", status=404, mimetype="text/html")
+        return res
+
+    return send_from_directory('uploads', new_object.file_path)
+
+
 @app.route('/collectioninstrument/classifier/', methods=['GET'])
 def classifier():
+
     print "We are in classifier"
-    queryClassifer = request.args.get('classifier')                                 # get the query string from the URL.
+
+    queryClassifer = request.args.get('classifier')       # get the query string from the URL.
     if queryClassifer:
         try:
-            queryDict = ast.literal_eval(queryClassifer)                            # convert our string into a dictionary
+            queryDict = ast.literal_eval(queryClassifer)  # convert our string into a dictionary
         except ValueError:
-            # Something went wrong with our conversion, maybe they did not give us a valid dictionary? Keep calm and carry on. Let the user know what they have to type to get this to work
+            # Something went wrong with our conversion, maybe they did not give us a valid dictionary?
+            # Keep calm and carry on. Let the user know what they have to type to get this to work
             res = Response(response='Bad input parameter.\n To search for a classifier your querry string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} ', status=400, mimetype="text/html")
             return res
     else:
@@ -119,19 +152,19 @@ def classifier():
     # Get a query set of all objects to search
     try:
         print "Making query to DB"
-        collection_instruments = Result.query.all()
-        #collection_instruments = [x.content for x in Result.query.all() if x.content['classifier']]
+        collection_instruments = CollectionInstrument.query.all()
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
         res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
 
-    # We are looking for matches for 'classifier' types which look like: {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
+    # We are looking for matches for 'classifier' types which look like:
+    # {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
     # So we need to loop through our query string and our DB to do our matching
     # TODO Use sqlalcemy 'filter' to do all this. We should not be manually searching our DB
-    matchedclasifiers =[]                                                       # This will hold a list of our classifier objects
-    for collection_instrument_object in collection_instruments:                 # Loop through all objects and search for matches of classifiers
+    matchedclasifiers =[]                                         # This will hold a list of our classifier objects
+    for collection_instrument_object in collection_instruments:   # Loop through all objects and search for matches of classifiers
         dictClasifier = collection_instrument_object.content['classifiers']
         match = False # Make sure we set our match flag to false for each new object we check
 
@@ -144,12 +177,12 @@ def classifier():
                 else:
                     # The dictionary item name does exist but it's value is different.
                     match = False
-                    #print "*** NO MATCH FOR: ", queryDict[queryVal], " and ", dictClasifier[queryVal], "***"
+                    # print "*** NO MATCH FOR: ", queryDict[queryVal], " and ", dictClasifier[queryVal], "***"
                     break
             except KeyError:
                 # The dictionary item does not exist in our dict so this is not a match either
                 match = False
-                #print "We don't have a key for: ", queryDict[queryVal]
+                # print "We don't have a key for: ", queryDict[queryVal]
                 break
 
         if match:
@@ -165,46 +198,72 @@ def classifier():
     return resp
 
 
-#curl -X PUT --form "fileupload=@requirements.txt"  http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
-@app.route('/collectioninstrument/id/<string:file_uuid>', methods=['PUT'])
-def add_binary(file_uuid):
+# curl -X PUT --form "fileupload=@requirements.txt"  http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+@app.route('/collectioninstrument/id/<string:_id>', methods=['PUT'])
+def add_binary(_id):
 
-    print 'We are in Add binary'
-    try:
-        new_object = db.session.query(Result).filter(Result.file_uuid==file_uuid)[0]#.first()
-    except:
+    """
+    Get an existing collection instrument by Collection Instrument ID/URN.
+    Modify the record, adding file path/UUID, then merge record back to the database.
+    Plus, process the actual file to the file store.
+    """
+
+    print"We are in add_binary"
+
+    if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
         return res
+
+    # now filters on the unique indexed database column "urn"
+    # should now only ever get 0 or 1 record here
+    existing_object = [[rec.id,
+                        rec.urn,
+                        rec.survey_urn,
+                        rec.content,
+                        rec.file_uuid,
+                        rec.file_path]
+                       for rec in CollectionInstrument.query.filter(CollectionInstrument.urn==_id)]
 
     uploaded_file = request.files['fileupload']
 
     if not os.path.isdir("uploads"):
         os.mkdir("uploads")
 
-    newpath = str(uuid.uuid4()) +uploaded_file.filename
-    uploaded_file.save('uploads/{}'.format(newpath ))
+    new_uuid = str(uuid.uuid4())
+    new_path = new_uuid + '_' + uploaded_file.filename
+    uploaded_file.save('uploads/{}'.format(new_path ))
 
-    new_object.file_path = newpath
+    new_object = CollectionInstrument(id=existing_object[0][0],
+                                      urn=existing_object[0][1],
+                                      survey_urn=existing_object[0][2],
+                                      content=existing_object[0][3],
+                                      file_uuid=new_uuid,
+                                      file_path=new_path)
 
-    db.session.add(new_object)
+    db.session.merge(new_object)
     db.session.commit()
 
     response = make_response("")
-    etag = hashlib.sha1('/collectioninstrument/id/'+ str(file_uuid)).hexdigest()
+    etag = hashlib.sha1('/collectioninstrument/id/'+ str(new_uuid)).hexdigest()
     response.set_etag(etag)
 
     return response, 201
 
 
-@app.route('/collectioninstrument', methods=['POST'])
+@app.route('/collectioninstrument/', methods=['POST'])
 def create():
+
+    """
+    Create initial collection instrument.
+    """
+
     print "We are in create"
+
     json = request.json
     if json:
         response = make_response("")
 
         collection_instruments.append(request.json)
-        #json["id"] = len(collection_instruments)
         response.headers["location"] = "/collectioninstrument/" + str(json["id"])
 
         try:
@@ -216,11 +275,26 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        if not validateURI(json["id"],'ci'):
+        if not validate_uri(json["id"],'ci'):
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        new_object = Result(content=json, file_uuid=None)
+        urn = json["id"]
+        survey_urn = json["surveyId"]
+
+        if not validate_uri(urn, 'ci'):
+            res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
+            return res
+
+        if not validate_uri(survey_urn, 'survey'):
+            res = Response(response="Invalid Survey ID supplied", status=400, mimetype="text/html")
+            return res
+
+        new_object = CollectionInstrument(urn = urn,
+                                          survey_urn = survey_urn,
+                                          content = json,
+                                          file_uuid = None,
+                                          file_path = None)
 
         db.session.add(new_object)
         db.session.commit()
@@ -233,41 +307,36 @@ def create():
 
         response.headers["location"] = "/collectioninstrument/" + str(new_object.id)
         return response, 201
+
     return jsonify({"message": "Please provide a valid Json object.",
                     "hint": "you may need to pass a content-type: application/json header"}), 400
 
 
 @app.route('/collectioninstrument/id/<string:_id>', methods=['GET'])
 def get_id(_id):
-    """ Locate a collection instrument by row ID.
 
+    """
+    Locate a collection instrument by Collection Instrument ID/URN.
     This method is intended for locating collection instruments by a non-human-readable 'id'
     as opposed to by human-readable reference.
     """
-    # We need to determine the application type from the header. Business logic dictates that we provide the correct
-    # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
-    # if it's JSON we should provide ON-LINE collection instrument
-    # content-type-requested = request.headers['content-type']
-    # print "This request is asking for content type of: {}".format(content-type-requested)
-    # TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
 
-    # object = Result.query.get_or_404(_id)
+    print "We are in get_id"
 
-    if not validateURI(_id, 'ci'):
+    if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
         return res
 
     try:
-        print "Making query to DB"
-        object_list = [x.content for x in Result.query.all() if x.content['id'] == _id]
+        print "Querying DB"
+        # now filters on the unique indexed database column "urn"
+        object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. "
+        res = Response(response="Error in the Collection Instrument DB. "
                                 "Please contact a member of ONS staff.", status=500, mimetype="text/html")
         return res
-
-    # print "The URI is: {}".format(object_list)
 
     if not object_list:
         print "object is empty"
@@ -277,7 +346,7 @@ def get_id(_id):
     for key in object_list:
         print "The id is: {}".format(key['id'])
 
-        if not validateURI(key['id'], 'ci'):
+        if not validate_uri(key['id'], 'ci'):
             res = Response(response="Invalid URI", status=400, mimetype="text/html")
             return res
 
@@ -285,29 +354,24 @@ def get_id(_id):
     return res
 
 
-@app.route('/collectioninstrument/<string:file_uuid>', methods=['GET'])
-def get_ref(file_uuid):
-    print "we are in get_ref"
-    """ Locate a collection instrument by reference.
+@app.route('/collectioninstrument/reference/<string:ci_ref>', methods=['GET'])
+def get_ref(ci_ref):
 
+    """
+    Locate a collection instrument by reference.
     This method is intended for locating collection instruments by a human-readable 'reference'
     as opposed to by database Id.
     """
-    # We need to determine the application type from the header. Business logic dictates that we provide the correct
-    # response by what type is set (i.e if the application type is a spread sheet we should only provide OFF LINE,
-    # if it's JSON we should provide ON-LINE collection instrument
 
-    #content-type-requested = request.headers['content-type']
-    #print "This request is asking for content type of: {}".format(content-type-requested)
-    #TODO Use this variable 'content-type-requested' to ensure we use the correct collection instrument
+    print "We are in get_ref"
 
     try:
-        print "Making query to DB"
-        object_list = [x.content for x in Result.query.all() if x.content['reference'] == file_uuid]
+        print "Querying DB"
+        object_list = [rec.content for rec in CollectionInstrument.query.all() if rec.content['reference'] == ci_ref]
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks there is no data presently. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="Error in the Collection Instrument DB.", status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -319,19 +383,23 @@ def get_ref(file_uuid):
     return res
 
 
-@app.route('/collectioninstrument/surveyid/<string:surveyId>', methods=['GET'])
-def get_surveyId(surveyId):
+@app.route('/collectioninstrument/surveyid/<string:survey_id>', methods=['GET'])
+def get_survey_id(survey_id):
+
     """
-    Locate a collection instrument by survey urn.
+    Locate a collection instrument by survey id/urn.
     """
 
-    if not validateURI(surveyId, 'survey'):
+    print "We are in get_survey_id"
+
+    if not validate_uri(survey_id, 'survey'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
 
     try:
-        print "Querying DB..."
-        object_list = [x.content for x in Result.query.all() if x.content['surveyId'] == surveyId]
+        print "Querying DB"
+        # now filters on the indexed database column "survey_urn"
+        object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
 
     except exc.OperationalError:
         print "There has been an error in the Collection Instrument DB. Excption is: {}".format(sys.exc_info()[0])
