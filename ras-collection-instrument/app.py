@@ -2,13 +2,15 @@ from flask import *
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
-from flask import request
+from flask import request, Response
 import os
 import sys
 import hashlib
 import ast
 import psycopg2
 from uuid import UUID
+
+from models import *
 
 import uuid
 
@@ -28,7 +30,8 @@ CORS(app)
 """
 [{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00001',
 u'urn': u'urn:ons.gov.uk:id:ci:001.001.00001', u'reference': u'rsi-nonfuel', u'ciType': u'ONLINE',
-u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00002', u'urn': u'urn:ons.gov.uk:id:ci:001.001.00002',
+u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},
+{u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00002', u'urn': u'urn:ons.gov.uk:id:ci:001.001.00002',
 u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF': u'01234567890'}}]
 """
 
@@ -39,11 +42,17 @@ if 'APP_SETTINGS' in os.environ:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-from models import *
 
-
-# Utility class for parsing URL/URI this checks we conform to ONS URI
 def validate_uri(uri, id_type):
+    """
+    This function verifies if a resource uri string is in the correct
+    format. it returns True or False. This function does not check
+    if the uri is present in the database or not.
+
+    :param uri: String
+    :param id_type: String
+    :return: Boolean
+    """
 
     print "We are in validate_uri"
 
@@ -92,7 +101,9 @@ def collection():
 
     except exc.OperationalError:
         print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        res = Response(response="""Error in the Collection Instrument DB, it looks like there
+                       is no data presently or the DB is not available.
+                       Please contact a member of ONS staff.""", status=500, mimetype="text/html")
         return res
 
     result = []
@@ -128,24 +139,28 @@ def get_binary(_id):
     return send_from_directory('uploads', new_object.file_path)
 
 
-#curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
+# curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
 @app.route('/collectioninstrument/', methods=['GET'])
 def classifier():
 
     print "We are in classifier"
 
-    queryClassifer = request.args.get('classifier')       # get the query string from the URL.
-    if queryClassifer:
+    query_classifier = request.args.get('classifier')       # get the query string from the URL.
+    if query_classifier:
         try:
-            queryDict = ast.literal_eval(queryClassifer)  # convert our string into a dictionary
+            query_dict = ast.literal_eval(query_classifier)  # convert our string into a dictionary
         except ValueError:
             # Something went wrong with our conversion, maybe they did not give us a valid dictionary?
             # Keep calm and carry on. Let the user know what they have to type to get this to work
-            res = Response(response='Bad input parameter.\n To search for a classifier your querry string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} ', status=400, mimetype="text/html")
+            res = Response(response="""Bad input parameter.\n To search for a classifier your query string should
+                                    look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} """,
+                                    status=400, mimetype="text/html")
             return res
     else:
         # We had no query string with 'classifier', let the user know what they should type.
-        res = Response(response='Bad input parameter.\n To search for a classifier your querry string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"} ', status=400, mimetype="text/html")
+        res = Response(response="""Bad input parameter.\n To search for a classifier your
+                       query string should look like: ?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
+                       """, status=400, mimetype="text/html")
         return res
 
     # Get a query set of all objects to search
@@ -154,24 +169,28 @@ def classifier():
         collection_instruments = CollectionInstrument.query.all()
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        res = Response(response="""Error in the Collection Instrument DB, it looks like
+                       there is no data presently or the DB is not available.
+                       Please contact a member of ONS staff.""", status=500, mimetype="text/html")
         return res
 
     # We are looking for matches for 'classifier' types which look like:
     # {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
     # So we need to loop through our query string and our DB to do our matching
-    # TODO Use sqlalcemy 'filter' to do all this. We should not be manually searching our DB
-    matchedclasifiers =[]                                         # This will hold a list of our classifier objects
-    for collection_instrument_object in collection_instruments:   # Loop through all objects and search for matches of classifiers
-        dictClasifier = collection_instrument_object.content['classifiers']
-        match = False # Make sure we set our match flag to false for each new object we check
+    # TODO Use sqlalchemy 'filter' to do all this. We should not be manually searching our DB
+    matched_classifiers = []                                         # This will hold a list of our classifier objects
+
+    # Loop through all objects and search for matches of classifiers
+    for collection_instrument_object in collection_instruments:
+        dict_classifier = collection_instrument_object.content['classifiers']
+        match = False  # Make sure we set our match flag to false for each new object we check
 
         # Lets take a classifier dictionary e.g. {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
         # And make sure all our query string classifiers are a match if we don't have them all then it's not a match.
-        for queryVal in queryDict:
+        for queryVal in query_dict:
             try:
-                if queryDict[queryVal] == dictClasifier[queryVal]:
+                if query_dict[queryVal] == dict_classifier[queryVal]:
                     match = True
                 else:
                     # The dictionary item name does exist but it's value is different.
@@ -186,18 +205,17 @@ def classifier():
 
         if match:
             print " ***** Success We have a match for this object ****"
-            matchedclasifiers.append(collection_instrument_object.content)
-    if matchedclasifiers:
+            matched_classifiers.append(collection_instrument_object.content)
+    if matched_classifiers:
         print "We have some matches"
-        for key in matchedclasifiers:
+        for key in matched_classifiers:
             print key
 
-    res_string = str(matchedclasifiers)
+    res_string = str(matched_classifiers)
     resp = Response(response=res_string, status=200, mimetype="collection+json")
     return resp
 
 
-# curl -X PUT --form "fileupload=@requirements.txt"  http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
 @app.route('/collectioninstrument/id/<string:_id>', methods=['PUT'])
 def add_binary(_id):
 
@@ -205,6 +223,9 @@ def add_binary(_id):
     Get an existing collection instrument by Collection Instrument ID/URN.
     Modify the record, adding file path/UUID, then merge record back to the database.
     Plus, process the actual file to the file store.
+
+    curl -X PUT --form "fileupload=@requirements.txt"  [URL]
+    where [URL] == http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
     """
 
     print"We are in add_binary"
@@ -221,7 +242,7 @@ def add_binary(_id):
                         rec.content,
                         rec.file_uuid,
                         rec.file_path]
-                       for rec in CollectionInstrument.query.filter(CollectionInstrument.urn==_id)]
+                       for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     uploaded_file = request.files['fileupload']
 
@@ -230,7 +251,7 @@ def add_binary(_id):
 
     new_uuid = str(uuid.uuid4())
     new_path = new_uuid + '_' + uploaded_file.filename
-    uploaded_file.save('uploads/{}'.format(new_path ))
+    uploaded_file.save('uploads/{}'.format(new_path))
 
     new_object = CollectionInstrument(id=existing_object[0][0],
                                       urn=existing_object[0][1],
@@ -243,7 +264,7 @@ def add_binary(_id):
     db.session.commit()
 
     response = make_response("")
-    etag = hashlib.sha1('/collectioninstrument/id/'+ str(new_uuid)).hexdigest()
+    etag = hashlib.sha1('/collectioninstrument/id/' + str(new_uuid)).hexdigest()
     response.set_etag(etag)
 
     return response, 201
@@ -276,7 +297,7 @@ def create():
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
-        if not validate_uri(json["id"],'ci'):
+        if not validate_uri(json["id"], 'ci'):
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
@@ -291,11 +312,11 @@ def create():
             res = Response(response="Invalid Survey ID supplied", status=400, mimetype="text/html")
             return res
 
-        new_object = CollectionInstrument(urn = urn,
-                                          survey_urn = survey_urn,
-                                          content = json,
-                                          file_uuid = None,
-                                          file_path = None)
+        new_object = CollectionInstrument(urn=urn,
+                                          survey_urn=survey_urn,
+                                          content=json,
+                                          file_uuid=None,
+                                          file_path=None)
 
         db.session.add(new_object)
         db.session.commit()
@@ -334,9 +355,10 @@ def get_id(_id):
         object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently, or the DB is not available. "
-                                "Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        res = Response(response="""Error in the Collection Instrument DB, it looks like there is no data presently,
+                                   or the DB is not available. Please contact a member of ONS staff.""",
+                       status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -371,8 +393,11 @@ def get_ref(ci_ref):
         object_list = [rec.content for rec in CollectionInstrument.query.all() if rec.content['reference'] == ci_ref]
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        res = Response(response="""Error in the Collection Instrument DB, it looks like there is no data
+                                presently or the DB is not available.
+                                Please contact a member of ONS staff.""",
+                                status=500, mimetype="text/html")
         return res
 
     if not object_list:
@@ -403,8 +428,11 @@ def get_survey_id(survey_id):
         object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
 
     except exc.OperationalError:
-        print "There has been an error in the Collection Instrument DB. Excption is: {}".format(sys.exc_info()[0])
-        res = Response(response="Error in the Collection Instrument DB, it looks like there is no data presently or the DB is not available. Please contact a member of ONS staff.", status=500, mimetype="text/html")
+        print "There has been an error in the Collection Instrument DB. Exception is: {}".format(sys.exc_info()[0])
+        res = Response(response="""Error in the Collection Instrument DB,
+                                   it looks like there is no data presently or the DB is not available.
+                                   Please contact a member of ONS staff.""",
+                       status=500, mimetype="text/html")
         return res
 
     if not object_list:
