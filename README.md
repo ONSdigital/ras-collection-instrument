@@ -30,11 +30,18 @@ Application and springboot logs in container at:
 
 ## Key Libraries
 
-  * Spring Core: 4.3.5
-  * Spring Boot: 1.4.3
-  * Spring Cloud: 1.1
-  * Logging: log4j2 2.6.2 (over slf4j)
-  * Monitoring: Springboot Actuator
-  * Persistence: Hibernate 5.0.11
-  * JSON databind: jackson 2.8.5
+
+
+## Running Pylint Checker
+
+The pylint checker is used to statistically analyse code for a number of common coding errors and against pep8 standards.
+This means that we can have a more automated way of measuring code quality. To run this from the project directory we need
+to specify our config file needed to analyse our code. We have modified our checker to not check things like 'line length'
+since this is pointless with modern screens being so big.
+
+Running pylint from the command line is done with:
+
+  /> pylint --rcfile=.pylint ras-collection-instrument/app.py
+
+
  
