@@ -1,6 +1,6 @@
 import unittest
-from app import app
 
+from app import app
 
 ok = 200
 unauthorized = 401

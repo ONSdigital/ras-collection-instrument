@@ -1,18 +1,17 @@
+import ast
+import hashlib
+import os
+import sys
+import psycopg2
+import uuid
+
 from flask import *
+from flask import request, Response
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
-from flask import request, Response
-import os
-import sys
-import hashlib
-import ast
-import psycopg2
 
 from models import *
-
-import uuid
-
 
 # Enable cross-origin requests
 app = Flask(__name__)

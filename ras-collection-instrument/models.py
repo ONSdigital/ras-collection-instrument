@@ -1,7 +1,9 @@
-from app import db
-from sqlalchemy.dialects.postgresql import *
 import datetime
+
 from sqlalchemy import *
+from sqlalchemy.dialects.postgresql import *
+
+from app import db
 
 
 class CollectionInstrument(db.Model):
