@@ -1,7 +1,7 @@
 import datetime
 
-from sqlalchemy import *
-from sqlalchemy.dialects.postgresql import *
+from sqlalchemy import DateTime
+from sqlalchemy.dialects.postgresql import TEXT, JSON, UUID
 
 from app import db
 
