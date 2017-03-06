@@ -7,6 +7,8 @@ import hashlib
 import os
 import sys
 import uuid
+import logging
+from logging.handlers import RotatingFileHandler
 
 
 from flask import request, Response, send_from_directory, make_response, jsonify, Flask
@@ -357,6 +359,11 @@ def get_id(_id):
     """
 
     print "We are in get_id"
+    app.logger.info('INFO: We are in get_id')
+    app.logger.warning('WARNING: we are in get_id')
+    app.logger.warning('A warning occurred (%d apples)', 42)
+    app.logger.error('An error occurred')
+    app.logger.info('Info')
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
@@ -463,8 +470,11 @@ def get_survey_id(survey_id):
 
 
 if __name__ == '__main__':
+    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    handler.setLevel(logging.INFO)
+    app.logger.addHandler(handler)
     # Initialise SqlAlchemy configuration here to avoid circular dependency
     db.init_app(app)
 
     # Run
-    app.run(port=5052)
+    app.run(port=5052, debug=False)
