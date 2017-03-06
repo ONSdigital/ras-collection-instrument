@@ -190,7 +190,6 @@ def classifier():
     # We are looking for matches for 'classifier' types which look like:
     # {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B', u'GEOGRAPHY': u'x'}
     # So we need to loop through our query string and our DB to do our matching
-    # TODO Use sqlalchemy 'filter' to do all this. We should not be manually searching our DB
     matched_classifiers = []  # This will hold a list of our classifier objects
 
     # Loop through all objects and search for matches of classifiers
