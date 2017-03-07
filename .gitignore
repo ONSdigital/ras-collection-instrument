@@ -16,4 +16,5 @@ ras-collection-instrument/uploads
 ras-collection-instrument/uploads
 *.pyc
 ras-collection-instrument/uploads
+*.log
 

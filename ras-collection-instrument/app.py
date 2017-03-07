@@ -8,6 +8,7 @@ import os
 import sys
 import uuid
 import logging
+from logging import Formatter
 from logging.handlers import RotatingFileHandler
 
 
@@ -57,9 +58,8 @@ def validate_uri(uri, id_type):
     :return: Boolean
     """
 
-    print "We are in validate_uri"
-
-    print "Validating our URI: {}".format(uri)
+    app.logger.info("validate_uri uri: {}, id_type: {}".format(uri, id_type))
+    app.logger.debug("Validating our URI: {}".format(uri))
 
     urn_prefix = 'urn'
     urn_ons_path = 'ons.gov.uk'
@@ -82,14 +82,14 @@ def validate_uri(uri, id_type):
                 and sub_arr[0].isdigit and len(sub_arr[0]) == urn_first_digit_len \
                 and sub_arr[1].isdigit and len(sub_arr[1]) == urn_second_digit_len \
                 and sub_arr[2].isdigit and len(sub_arr[2]) == urn_third_digit_len:
-            print "URI is well formed': {}".format(uri[0:14])
+            app.logger.debug("URI is well formed': {}".format(uri[0:14]))
             return True
         else:
-            print "URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path)
+            app.logger.warning("URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path))
             return False
 
     except:
-        print "URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path)
+        app.logger.warning("URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path))
         return False
 
 
@@ -102,14 +102,14 @@ def collection():
     :return: Json Http Response
     """
 
-    print "We are in collections"
+    app.logger.info("collectioninstrument hit")
 
     try:
-        print "Making query to DB"
+        app.logger.debug("Making query to DB")
         a = CollectionInstrument.query.all()
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0])
+        app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB, it looks like there
                        is no data presently or the DB is not available.
                        Please contact a member of ONS staff.""", status=500, mimetype="text/html")
@@ -126,7 +126,7 @@ def collection():
 
 @app.route('/collectioninstrument/file/<string:_id>', methods=['GET'])
 def get_binary(_id):
-    print "We are in get_binary"
+    app.logger.info("collectioninstrument/file file name is: {}".format(_id))
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
@@ -137,6 +137,7 @@ def get_binary(_id):
         # should now only ever get 0 or 1 record here
         new_object = db.session.query(CollectionInstrument).filter(CollectionInstrument.urn == _id)[0]
     except:
+        app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
         return res
 
@@ -152,12 +153,13 @@ def get_binary(_id):
 def classifier():
     """
     This method performs a query on the content fields for each record,
-    based on the value for the 'classifier' key in the json
+    based on the value for the 'classifier' key in the json returned from the database.
+    The method takes a query string in the GET HTTP request which it uses for it's query.
 
     :return: Http Response
     """
 
-    print "We are in classifier"
+    app.logger.info("collectioninstrument/ endpoint")
 
     query_classifier = request.args.get('classifier')  # get the query string from the URL.
     if query_classifier:
@@ -179,11 +181,11 @@ def classifier():
 
     # Get a query set of all objects to search
     try:
-        print "Making query to DB"
+        app.logger.debug("Making query to DB")
         collection_instruments = CollectionInstrument.query.all()
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB, it looks like
                        there is no data presently or the DB is not available.
                        Please contact a member of ONS staff.""", status=500, mimetype="text/html")
@@ -217,10 +219,10 @@ def classifier():
                 break
 
         if match:
-            print " ***** Success We have a match for this object ****"
+            app.logger.debug(" ***** Success We have a match for this object ****")
             matched_classifiers.append(collection_instrument_object.content)
     if matched_classifiers:
-        print "We have some matches"
+        app.logger.debug("We have some matches")
         for key in matched_classifiers:
             print key
 
@@ -240,7 +242,7 @@ def add_binary(_id):
     where [URL] == http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
     """
 
-    print"We are in add_binary"
+    app.logger.info("add_binary id value is: {}".format(_id))
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
@@ -290,7 +292,7 @@ def create():
     :return: Http response
     """
 
-    print "We are in create"
+    app.logger.info("collectioninstrument/ create")
 
     collection_instruments = []
 
@@ -307,10 +309,12 @@ def create():
             json["ciType"]
             print json["id"]
         except KeyError:
+            app.logger.warning("Collection Instrument POST did not contain correct mandatory parameters in it's JSON payload: {}".format(str(json)))
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
         if not validate_uri(json["id"], 'ci'):
+            app.logger.warning("Collection Instrument POST did not contain a valid URI in the ID field. We receieved: {}".format(json['id']))
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
@@ -358,36 +362,31 @@ def get_id(_id):
     :return: Http response
     """
 
-    print "We are in get_id"
-    app.logger.info('INFO: We are in get_id')
-    app.logger.warning('WARNING: we are in get_id')
-    app.logger.warning('A warning occurred (%d apples)', 42)
-    app.logger.error('An error occurred')
-    app.logger.info('Info')
+    app.logger.info('get_id with value: {} '.format(_id))
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
         return res
 
     try:
-        print "Querying DB"
+        app.logger.debug('Querying DB')
         # now filters on the unique indexed database column "urn"
         object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB, it looks like there is no data presently,
                                    or the DB is not available. Please contact a member of ONS staff.""",
                        status=500, mimetype="text/html")
         return res
 
     if not object_list:
-        print "object is empty"
+        app.logger.debug("object is empty")
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
 
     for key in object_list:
-        print "The id is: {}".format(key['id'])
+        app.logger.debug("The id is: {}".format(key['id']))
 
         if not validate_uri(key['id'], 'ci'):
             res = Response(response="Invalid URI", status=400, mimetype="text/html")
@@ -408,14 +407,14 @@ def get_ref(ci_ref):
     :return: Http Response
     """
 
-    print "We are in get_ref"
+    app.logger.info("get_ref with ci_ref: {}".format(ci_ref))
 
     try:
-        print "Querying DB"
+        app.logger.debug("Querying DB")
         object_list = [rec.content for rec in CollectionInstrument.query.all() if rec.content['reference'] == ci_ref]
 
     except exc.OperationalError:
-        print "There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0])
+        app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB, it looks like there is no data
                                 presently or the DB is not available.
                                 Please contact a member of ONS staff.""",
@@ -423,7 +422,7 @@ def get_ref(ci_ref):
         return res
 
     if not object_list:
-        print "object is empty"
+        app.logger.debug("object is empty in function get_ref")
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
 
@@ -439,20 +438,20 @@ def get_survey_id(survey_id):
     :return: Http Response
     """
 
-    print "We are in get_survey_id"
+    app.logger.info("get_survey_id with survey_id: {}".format(survey_id))
 
     if not validate_uri(survey_id, 'survey'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
 
     try:
-        print "Querying DB"
+        app.logger.debug("Querying DB in get_survey_id")
         # now filters on the indexed database column "survey_urn"
         object_list = [rec.content for rec in
                        CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
 
     except exc.OperationalError:
-        print "There has been an error in the Collection Instrument DB. Exception is: {}".format(sys.exc_info()[0])
+        app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB,
                                    it looks like there is no data presently or the DB is not available.
                                    Please contact a member of ONS staff.""",
@@ -460,7 +459,7 @@ def get_survey_id(survey_id):
         return res
 
     if not object_list:
-        print "Object is empty"
+        app.logger.info("Object list is empty for get_survey_id")
         res = Response(response="Collection instrument(s) not found", status=404, mimetype="text/html")
         return res
 
@@ -470,9 +469,11 @@ def get_survey_id(survey_id):
 
 
 if __name__ == '__main__':
-    handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+    # Create a file handler to handle our logging
+    handler = RotatingFileHandler('application.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
+    handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
     # Initialise SqlAlchemy configuration here to avoid circular dependency
     db.init_app(app)
 
