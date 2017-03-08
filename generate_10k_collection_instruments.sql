@@ -17,9 +17,9 @@ BEGIN
 
   FOR i IN 1..10000 LOOP
 
-    -- spread the CIs over 10 surveys
+    -- spread the CIs over 100 surveys
     l_ci_urn     := 'urn:ons.gov.uk:id:ci:001.001.'||LPAD(i::TEXT,5,'0');
-    l_survey_urn := 'urn:ons.gov.uk:id:survey:001.001.'||LPAD(MOD(i,10)::TEXT,5,'0');
+    l_survey_urn := 'urn:ons.gov.uk:id:survey:001.001.'||LPAD(MOD(i,100)::TEXT,5,'0');
 
     -- make every 10th survey an OFFLINE survey
     IF MOD(i,10) = 0 THEN

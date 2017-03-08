@@ -21,7 +21,7 @@ CREATE USER ras_collection_instrument WITH PASSWORD 'password'
 --
 DROP TABLE IF EXISTS ras_collection_instrument.ras_collection_instruments;
 
-CREATE TABLE ras_collection_instruments
+CREATE TABLE ras_collection_instrument.ras_collection_instruments
 (id            BIGSERIAL                NOT NULL
 ,urn           CHARACTER VARYING (50)   NOT NULL
 ,survey_urn    CHARACTER VARYING (50)   NOT NULL
