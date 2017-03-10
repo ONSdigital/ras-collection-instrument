@@ -16,8 +16,9 @@ from flask import request, Response, send_from_directory, make_response, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
+from utils import get_jwt_from_header
 
-from models import *
+#from models import *
 
 # Enable cross-origin requests
 app = Flask(__name__)
