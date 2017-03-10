@@ -149,8 +149,8 @@ def get_binary(_id):
 
 
 # curl -X GET  http://localhost:5052/collectioninstrument/?classifier={"LEGAL_STATUS":"A","INDUSTRY":"B"}
-@app.route('/collectioninstrument/', methods=['GET'])
-def classifier():
+@app.route('/collectioninstrument/<string:survey_id>', methods=['GET'])
+def classifier(survey_id):
     """
     This method performs a query on the content fields for each record,
     based on the value for the 'classifier' key in the json returned from the database.
@@ -160,6 +160,10 @@ def classifier():
     """
 
     app.logger.info("collectioninstrument/ endpoint")
+
+    if not validate_uri(survey_id, 'survey'):
+        res = Response(response="Invalid URI", status=404, mimetype="text/html")
+        return res
 
     query_classifier = request.args.get('classifier')  # get the query string from the URL.
     if query_classifier:
@@ -182,7 +186,7 @@ def classifier():
     # Get a query set of all objects to search
     try:
         app.logger.debug("Making query to DB")
-        collection_instruments = CollectionInstrument.query.all()
+        collection_instruments = CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)
 
     except exc.OperationalError:
         app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
@@ -371,7 +375,8 @@ def get_id(_id):
     try:
         app.logger.debug('Querying DB')
         # now filters on the unique indexed database column "urn"
-        object_list = [rec.content for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
+        object_list = [rec.content
+                       for rec in CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     except exc.OperationalError:
         app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
@@ -427,6 +432,51 @@ def get_ref(ci_ref):
         return res
 
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
+    return res
+
+
+@app.route('/collectioninstrument/options/<string:_id>', methods=['OPTIONS'])
+def get_options(_id):
+    """
+    Locate a collection instrument by id/urn, returning the represenatation options available.
+    :param _id: String
+    :return: Http Response
+    """
+    app.logger.info("get_options with _id: {}".format(_id))
+
+    if not validate_uri(_id, 'ci'):
+        res = Response(response="Invalid URI", status=404, mimetype="text/html")
+        return res
+
+    try:
+        app.logger.debug("Querying DB in get_options")
+        # now filters on the indexed database column "urn"
+        object_list = [[rec.content, rec.file_path] for rec in
+                       CollectionInstrument.query.filter(CollectionInstrument.urn == _id)][0]
+
+    except exc.OperationalError:
+        app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
+        res = Response(response="""Error in the Collection Instrument DB,
+                                   it looks like there is no data presently or the DB is not available.
+                                   Please contact a member of ONS staff.""",
+                       status=500, mimetype="text/html")
+        return res
+
+    if not object_list:
+        app.logger.info("Object list is empty for get_options")
+        res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
+        return res
+
+    # create JSON object of representation options available for this collection instrument
+
+    app.logger.debug("Setting available representation options")
+    if object_list[1] is None:
+        representation_options = '{"representation options":["json"]}'
+    else:
+        representation_options = '{"representation options":["json","binary"]}'
+        
+    res = Response(response=str(representation_options), status=200, mimetype="collection+json")
+
     return res
 
 
