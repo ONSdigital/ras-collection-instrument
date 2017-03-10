@@ -21,7 +21,7 @@ CREATE USER ras_collection_instrument WITH PASSWORD 'password'
 --
 DROP TABLE IF EXISTS ras_collection_instrument.ras_collection_instruments;
 
-CREATE TABLE ras_collection_instruments
+CREATE TABLE ras_collection_instrument.ras_collection_instruments
 (id            BIGSERIAL                NOT NULL
 ,urn           CHARACTER VARYING (50)   NOT NULL
 ,survey_urn    CHARACTER VARYING (50)   NOT NULL
@@ -36,9 +36,15 @@ CREATE TABLE ras_collection_instruments
 );
 
 --
--- Index: ras_coi_content_idx - to support searhces in the JSON data
+-- Index: ras_coi_survey_urn_idx - to support searches in the survey_urn
+--
+CREATE INDEX ras_coi_survey_urn_idx ON ras_collection_instrument.ras_collection_instruments (survey_urn);
+
+--
+-- Index: ras_coi_content_idx - to support searches in the JSON data
 --
 CREATE INDEX ras_coi_content_idx ON ras_collection_instrument.ras_collection_instruments USING gin(content);
+
 
 INSERT INTO ras_collection_instrument.ras_collection_instruments
  (urn,survey_urn,content,file_uuid)
