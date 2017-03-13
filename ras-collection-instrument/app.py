@@ -16,6 +16,7 @@ from flask import request, Response, send_from_directory, make_response, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
+from jose import JWTError
 
 from models import *
 
@@ -184,7 +185,7 @@ def classifier():
         app.logger.debug("Making query to DB")
         collection_instruments = CollectionInstrument.query.all()
 
-    except exc.OperationalError:
+    except:
         app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
         res = Response(response="""Error in the Collection Instrument DB, it looks like
                        there is no data presently or the DB is not available.
@@ -363,6 +364,40 @@ def get_id(_id):
     """
 
     app.logger.info('get_id with value: {} '.format(_id))
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    # TODO - Move all this checking of JWT token into a utility function, so the try - except and logging is else where
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+
+        # Make sure we can decrypt the token and it makes sense
+        try:
+            # If this works we can continue with our 'search' and 'response' all is good with the world
+            # TODO check with architecture/tech lead that we don't do more checking on this token rather than decode
+            decrypted_jwt_token = decode(jwt_token)
+
+            he_has_scope = False
+            if decrypted_jwt_token['user_scope']:
+                for user_scope_list in decrypted_jwt_token['user_scopes']:              # TODO Change this into list comprehension for loop
+                    if user_scope_list == "ci.read":                                    # TODO Read this hard coded variable from the config file
+                        he_has_scope = True
+
+                if he_has_scope:                                                        # TODO Change this into a 1 line statement as the happy path does nothing we are just catching errors here
+                    app.logger.debug('The message has the correct scope and it can be decrypted properly. JWT value is: {}, and Scope is: {}'.format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                else:
+                    app.logger.warning('The message does not have the correct scope but it can be decrypted properly. JWT value is: {}, and Scope is: {}'.format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                    res = Response(response="Invalid scope or role supplied to access this Microservice Resource", status=400, mimetype="text/html")
+                    return res
+        except JWTError:
+            app.logger.warning('The message does not have a JWT that I can decrypt. Is the JWT Algorithm and Secret setup correctly?')
+            res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        app.logger.warning('The message does not have any JWT needed for Authorisation. The only headers I have are: {}').format(request.headers)
+        res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
+
+
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
