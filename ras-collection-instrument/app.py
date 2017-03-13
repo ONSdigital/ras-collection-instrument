@@ -17,6 +17,7 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from jose import JWTError
+from jwt import decode
 
 from models import *
 
