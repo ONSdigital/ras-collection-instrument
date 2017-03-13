@@ -311,12 +311,14 @@ def create():
             json["ciType"]
             print json["id"]
         except KeyError:
-            app.logger.warning("Collection Instrument POST did not contain correct mandatory parameters in it's JSON payload: {}".format(str(json)))
+            app.logger.warning("""Collection Instrument POST did not contain correct mandatory
+                               parameters in it's JSON payload: {}""".format(str(json)))
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
         if not validate_uri(json["id"], 'ci'):
-            app.logger.warning("Collection Instrument POST did not contain a valid URI in the ID field. We receieved: {}".format(json['id']))
+            app.logger.warning("""Collection Instrument POST did not contain a valid URI
+                               in the ID field. We receieved: {}""".format(json['id']))
             res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
             return res
 
@@ -379,14 +381,16 @@ def get_id(_id):
 
             he_has_scope = False
             if decrypted_jwt_token['user_scope']:
-                for user_scope_list in decrypted_jwt_token['user_scopes']:              # TODO Change this into list comprehension for loop
-                    if user_scope_list == "ci.read":                                    # TODO Read this hard coded variable from the config file
+                for user_scope_list in decrypted_jwt_token['user_scopes']:  # TODO Change this into list comprehension for loop
+                    if user_scope_list == "ci.read":  # TODO Read this hard coded variable from the config file
                         he_has_scope = True
 
-                if he_has_scope:                                                        # TODO Change this into a 1 line statement as the happy path does nothing we are just catching errors here
-                    app.logger.debug('The message has the correct scope and it can be decrypted properly. JWT value is: {}, and Scope is: {}'.format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                if he_has_scope:  # TODO Change this into a 1 line statement as the happy path does nothing we are just catching errors here
+                    app.logger.debug("""The message has the correct scope and it can be decrypted properly.
+                                     JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
                 else:
-                    app.logger.warning('The message does not have the correct scope but it can be decrypted properly. JWT value is: {}, and Scope is: {}'.format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                    app.logger.warning("""The message does not have the correct scope but it can be decrypted properly.
+                                       JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
                     res = Response(response="Invalid scope or role supplied to access this Microservice Resource", status=400, mimetype="text/html")
                     return res
         except JWTError:
@@ -394,7 +398,8 @@ def get_id(_id):
             res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
             return res
     else:
-        app.logger.warning('The message does not have any JWT needed for Authorisation. The only headers I have are: {}').format(request.headers)
+        app.logger.warning("""The message does not have any JWT needed for Authorisation.
+            The only headers I have are: {}""").format(request.headers)
         res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
         return res
 
