@@ -470,12 +470,17 @@ def get_ref(ci_ref):
     res = Response(response=str(object_list), status=200, mimetype="collection+json")
     return res
 
+# example command to search on just a survey urn:
+# curl -X GET http://localhost:5052/collectioninstrument/surveyid/urn:ons.gov.uk:id:survey:001.001.00001
+
+# command to search on a survey urn and a classifier:
+# curl -X GET http://localhost:5052/collectioninstrument/surveyid/urn:ons.gov.uk:id:survey:001.001.00001?classifier={"classifiers": {"INDUSTRY": "R", "LEGAL_STATUS": "F", "GEOGRAPHY": "B"}}
 
 @app.route('/collectioninstrument/surveyid/<string:survey_id>', methods=['GET'])
 def get_survey_id(survey_id):
     """
-    Locate a collection instrument by survey id/urn.
-    :param survey_id: String
+    Locate a collection instrument by survey id/urn and optionally a classifier.
+    :param survey_id: String, classifier: String
     :return: Http Response
     """
 
@@ -487,9 +492,22 @@ def get_survey_id(survey_id):
 
     try:
         app.logger.debug("Querying DB in get_survey_id")
-        # now filters on the indexed database column "survey_urn"
-        object_list = [rec.content for rec in
-                       CollectionInstrument.query.filter(CollectionInstrument.survey_urn == survey_id)]
+
+        search_string = request.args.get('classifier')
+
+        if search_string is not None:
+            # search with the survey urn and the search string
+            app.logger.debug("Querying DB with survey urn and search string: {} {}".format(survey_id, search_string))
+            object_list = [rec.content for rec in
+                           CollectionInstrument.query
+                           .filter(CollectionInstrument.survey_urn == survey_id)
+                           .filter(CollectionInstrument.content.op('@>')(search_string)).all()]
+        else:
+            # search with just the survey urn
+            app.logger.debug("Querying DB with survey urn:{}".format(survey_id))
+            object_list = [rec.content for rec in
+                           CollectionInstrument.query
+                           .filter(CollectionInstrument.survey_urn == survey_id)]
 
     except exc.OperationalError:
         app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
