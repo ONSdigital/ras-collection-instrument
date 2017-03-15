@@ -19,8 +19,6 @@ from sqlalchemy import exc
 from jose import JWTError
 from jwt import decode
 
-from models import *
-
 # Enable cross-origin requests
 app = Flask(__name__)
 CORS(app)
@@ -47,6 +45,8 @@ if 'APP_SETTINGS' in os.environ:
 # app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
+from models import *
 
 
 def validate_uri(uri, id_type):
