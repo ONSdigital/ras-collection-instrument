@@ -46,6 +46,8 @@ if 'APP_SETTINGS' in os.environ:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# NB this cirtular import needs resolving.
+# There are ways of doing this, so we'll need to arrive at a decent solution.
 from models import *
 
 
