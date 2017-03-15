@@ -6,4 +6,3 @@ python-jose==1.2.0
 requests==2.11.1
 psycopg2==2.6.1
 python-jose==1.2.0
-python-jose==1.2.0
