@@ -235,6 +235,48 @@ def classifier():
     return resp
 
 
+@app.route('/collectioninstrument/id/<string:_id>', methods=['OPTIONS'])
+def get_options(_id):
+    """
+    Locate a collection instrument by id/urn, returning the represenatation options available.
+    :param _id: String
+    :return: Http Response
+    """
+    app.logger.info("get_options with _id: {}".format(_id))
+
+    if not validate_uri(_id, 'ci'):
+        res = Response(response="Invalid URI", status=404, mimetype="text/html")
+        return res
+
+    try:
+        app.logger.debug("Querying DB in get_options")
+        object_list = [[rec.content, rec.file_path] for rec in
+                       CollectionInstrument.query.filter(CollectionInstrument.urn == _id)][0]
+
+    except exc.OperationalError:
+        app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
+        res = Response(response="""Error in the Collection Instrument DB,
+                                   it looks like there is no data presently or the DB is not available.
+                                   Please contact a member of ONS staff.""",
+                       status=500, mimetype="text/html")
+        return res
+
+    if not object_list:
+        app.logger.info("Object list is empty for get_options")
+        res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
+        return res
+
+    app.logger.debug("Setting available representation options")
+    if object_list[1] is None:
+        representation_options = '{"representation options":{"json"}}'
+    else:
+        representation_options = '{"representation options":{"json","binary"}}'
+
+    res = Response(response=str(representation_options), status=200, mimetype="collection+json")
+
+    return res
+
+
 @app.route('/collectioninstrument/id/<string:_id>', methods=['PUT'])
 def add_binary(_id):
     """
