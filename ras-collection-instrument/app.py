@@ -424,17 +424,17 @@ def get_id(_id):
             decrypted_jwt_token = decode(jwt_token)
 
             he_has_scope = False
-            if decrypted_jwt_token['user_scope']:
+            if decrypted_jwt_token['user_scopes']:
                 for user_scope_list in decrypted_jwt_token['user_scopes']:  # TODO Change this into list comprehension for loop
                     if user_scope_list == "ci.read":  # TODO Read this hard coded variable from the config file
                         he_has_scope = True
 
                 if he_has_scope:  # TODO Change this into a 1 line statement as the happy path does nothing we are just catching errors here
                     app.logger.debug("""The message has the correct scope and it can be decrypted properly.
-                                     JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                                     JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scopes']))
                 else:
                     app.logger.warning("""The message does not have the correct scope but it can be decrypted properly.
-                                       JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scope']))
+                                       JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scopes']))
                     res = Response(response="Invalid scope or role supplied to access this Microservice Resource", status=400, mimetype="text/html")
                     return res
         except JWTError:
@@ -446,8 +446,6 @@ def get_id(_id):
             The only headers I have are: {}""").format(request.headers)
         res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
         return res
-
-
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
