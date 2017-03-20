@@ -18,10 +18,12 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exc
 from jose import JWTError
 from jwt import decode
+from json import JSONEncoder
 
 # Enable cross-origin requests
 app = Flask(__name__)
 CORS(app)
+
 
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
@@ -442,8 +444,7 @@ def get_id(_id):
             res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
             return res
     else:
-        app.logger.warning("""The message does not have any JWT needed for Authorisation.
-            The only headers I have are: {}""").format(request.headers)
+        app.logger.warning("The message does not have any JWT needed for Authorisation.")
         res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
         return res
 
@@ -475,7 +476,8 @@ def get_id(_id):
             res = Response(response="Invalid URI", status=400, mimetype="text/html")
             return res
 
-    res = Response(response=str(object_list), status=200, mimetype="collection+json")
+    jobject_list = JSONEncoder().encode(object_list)
+    res = Response(response=jobject_list, status=200, mimetype="collection+json")
     return res
 
 
