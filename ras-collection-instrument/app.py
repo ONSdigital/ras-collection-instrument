@@ -112,7 +112,7 @@ def collection():
 
     try:
         app.logger.debug("Making query to DB")
-        a = CollectionInstrument.query.all()
+        object_list = [rec.content for rec in CollectionInstrument.query.all()]
 
     except exc.OperationalError:
         app.logger.error("There has been an error in our DB. Excption is: {}".format(sys.exc_info()[0]))
@@ -121,13 +121,14 @@ def collection():
                        Please contact a member of ONS staff.""", status=500, mimetype="text/html")
         return res
 
-    result = []
-    for key in a:
-        result.append(key.content)
+    if not object_list:
+        app.logger.debug("object is empty")
+        res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
+        return res
 
-    res_string = str(result)
-    resp = Response(response=res_string, status=200, mimetype="collection+json")
-    return resp
+    jobject_list = JSONEncoder().encode(object_list)
+    res = Response(response=jobject_list, status=200, mimetype="collection+json")
+    return res
 
 
 @app.route('/collectioninstrument/file/<string:_id>', methods=['GET'])
@@ -511,8 +512,10 @@ def get_ref(ci_ref):
         res = Response(response="Collection instrument not found", status=404, mimetype="text/html")
         return res
 
-    res = Response(response=str(object_list), status=200, mimetype="collection+json")
+    jobject_list = JSONEncoder().encode(object_list)
+    res = Response(response=jobject_list, status=200, mimetype="collection+json")
     return res
+
 
 # example command to search on just a survey urn:
 # curl -X GET http://localhost:5052/collectioninstrument/surveyid/urn:ons.gov.uk:id:survey:001.001.00001
@@ -566,8 +569,8 @@ def get_survey_id(survey_id):
         res = Response(response="Collection instrument(s) not found", status=404, mimetype="text/html")
         return res
 
-    res = Response(response=str(object_list), status=200, mimetype="collection+json")
-
+    jobject_list = JSONEncoder().encode(object_list)
+    res = Response(response=jobject_list, status=200, mimetype="collection+json")
     return res
 
 
