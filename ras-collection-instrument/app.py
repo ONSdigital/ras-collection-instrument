@@ -98,6 +98,37 @@ def validate_uri(uri, id_type):
         app.logger.warning("URI is malformed: {}. It should be: {}".format(uri[0:14], urn_ons_path))
         return False
 
+def validate_scope(jwt_token, scope_type):
+    """
+    This function checks a jwt tokem for a required scope type.
+
+    :param jwt_token: String
+    :param scope_type: String
+    :return: Boolean
+    """
+
+    app.logger.info("validate_scope jwt_token: {}, scope_type: {}".format(jwt_token, scope_type))
+
+    # Make sure we can decrypt the token and it makes sense
+    try:
+        decrypted_jwt_token = decode(jwt_token)
+        if decrypted_jwt_token['user_scopes']:
+            for user_scope_list in decrypted_jwt_token['user_scopes']:
+                if user_scope_list == scope_type:
+                    app.logger.debug('Valid JWT scope.')
+                    return True
+
+        app.logger.warning('Invalid JWT scope.')
+        return False
+
+    except JWTError:
+        app.logger.warning('JWT scope could not be validated.')
+        return False
+
+    except KeyError:
+        app.logger.warning('JWT scope could not be validated.')
+        return False
+
 
 @app.route('/collectioninstrument', methods=['GET'])
 def collection():
@@ -109,6 +140,16 @@ def collection():
     """
 
     app.logger.info("collectioninstrument hit")
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
 
     try:
         app.logger.debug("Making query to DB")
@@ -133,7 +174,18 @@ def collection():
 
 @app.route('/collectioninstrument/file/<string:_id>', methods=['GET'])
 def get_binary(_id):
+
     app.logger.info("collectioninstrument/file file name is: {}".format(_id))
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
@@ -167,6 +219,16 @@ def classifier():
     """
 
     app.logger.info("collectioninstrument/ endpoint")
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
 
     query_classifier = request.args.get('classifier')  # get the query string from the URL.
     if query_classifier:
@@ -247,6 +309,16 @@ def get_options(_id):
     """
     app.logger.info("get_options with _id: {}".format(_id))
 
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
+
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
@@ -292,6 +364,16 @@ def add_binary(_id):
     """
 
     app.logger.info("add_binary id value is: {}".format(_id))
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.write'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid ID supplied", status=400, mimetype="text/html")
@@ -342,6 +424,16 @@ def create():
     """
 
     app.logger.info("collectioninstrument/ create")
+
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.write'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
 
     collection_instruments = []
 
@@ -416,37 +508,13 @@ def get_id(_id):
     app.logger.info('get_id with value: {} '.format(_id))
 
     # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
-    # TODO - Move all this checking of JWT token into a utility function, so the try - except and logging is else where
     if request.headers.get('authorization'):
         jwt_token = request.headers.get('authorization')
-
-        # Make sure we can decrypt the token and it makes sense
-        try:
-            # If this works we can continue with our 'search' and 'response' all is good with the world
-            # TODO check with architecture/tech lead that we don't do more checking on this token rather than decode
-            decrypted_jwt_token = decode(jwt_token)
-
-            he_has_scope = False
-            if decrypted_jwt_token['user_scopes']:
-                for user_scope_list in decrypted_jwt_token['user_scopes']:  # TODO Change this into list comprehension for loop
-                    if user_scope_list == "ci.read":  # TODO Read this hard coded variable from the config file
-                        he_has_scope = True
-
-                if he_has_scope:  # TODO Change this into a 1 line statement as the happy path does nothing we are just catching errors here
-                    app.logger.debug("""The message has the correct scope and it can be decrypted properly.
-                                     JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scopes']))
-                else:
-                    app.logger.warning("""The message does not have the correct scope but it can be decrypted properly.
-                                       JWT value is: {}, and Scope is: {}""".format(decrypted_jwt_token, decrypted_jwt_token['user_scopes']))
-                    res = Response(response="Invalid scope or role supplied to access this Microservice Resource", status=400, mimetype="text/html")
-                    return res
-        except JWTError:
-            app.logger.warning('The message does not have a JWT that I can decrypt. Is the JWT Algorithm and Secret setup correctly?')
-            res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
             return res
     else:
-        app.logger.warning("The message does not have any JWT needed for Authorisation.")
-        res = Response(response="Invalid token to access this Microservice Resource", status=400, mimetype="text/html")
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
         return res
 
     if not validate_uri(_id, 'ci'):
@@ -495,6 +563,16 @@ def get_ref(ci_ref):
 
     app.logger.info("get_ref with ci_ref: {}".format(ci_ref))
 
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
+
     try:
         app.logger.debug("Querying DB")
         object_list = [rec.content for rec in CollectionInstrument.query.all() if rec.content['reference'] == ci_ref]
@@ -533,6 +611,15 @@ def get_survey_id(survey_id):
 
     app.logger.info("get_survey_id with survey_id: {}".format(survey_id))
 
+    # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
+    if request.headers.get('authorization'):
+        jwt_token = request.headers.get('authorization')
+        if not validate_scope(jwt_token, 'ci.read'):
+            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            return res
+    else:
+        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        return res
     if not validate_uri(survey_id, 'survey'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
