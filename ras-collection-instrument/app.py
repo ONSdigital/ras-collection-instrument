@@ -310,14 +310,14 @@ def get_options(_id):
     app.logger.info("get_options with _id: {}".format(_id))
 
     # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
-    if request.headers.get('authorization'):
-        jwt_token = request.headers.get('authorization')
-        if not validate_scope(jwt_token, 'ci.read'):
-            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
-            return res
-    else:
-        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
-        return res
+    # if request.headers.get('authorization'):
+    #     jwt_token = request.headers.get('authorization')
+    #     if not validate_scope(jwt_token, 'ci.read'):
+    #         res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+    #         return res
+    # else:
+    #     res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+    #     return res
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
@@ -326,7 +326,7 @@ def get_options(_id):
     try:
         app.logger.debug("Querying DB in get_options")
         object_list = [[rec.content, rec.file_path] for rec in
-                       CollectionInstrument.query.filter(CollectionInstrument.urn == _id)][0]
+                       CollectionInstrument.query.filter(CollectionInstrument.urn == _id)]
 
     except exc.OperationalError:
         app.logger.error("There has been an error in our DB. Exception is: {}".format(sys.exc_info()[0]))
@@ -342,10 +342,10 @@ def get_options(_id):
         return res
 
     app.logger.debug("Setting available representation options")
-    if object_list[1] is None:
-        representation_options = '{"representation options":{"json"}}'
+    if object_list[0][1] is None:
+        representation_options = '{"representation options":["json"]}'
     else:
-        representation_options = '{"representation options":{"json","binary"}}'
+        representation_options = '{"representation options":["json","binary"]}'
 
     res = Response(response=str(representation_options), status=200, mimetype="collection+json")
 
@@ -545,7 +545,7 @@ def get_id(_id):
             res = Response(response="Invalid URI", status=400, mimetype="text/html")
             return res
 
-    jobject_list = JSONEncoder().encode(object_list)
+    jobject_list = JSONEncoder().encode(object_list[0])
     res = Response(response=jobject_list, status=200, mimetype="collection+json")
     return res
 
