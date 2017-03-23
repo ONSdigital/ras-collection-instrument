@@ -2,6 +2,7 @@
 The main module which starts the server
 """
 
+from pprint import pprint
 import ast
 import hashlib
 import os
@@ -310,14 +311,14 @@ def get_options(_id):
     app.logger.info("get_options with _id: {}".format(_id))
 
     # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
-    if request.headers.get('authorization'):
-        jwt_token = request.headers.get('authorization')
-        if not validate_scope(jwt_token, 'ci.read'):
-            res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
-            return res
-    else:
-        res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
-        return res
+    #if request.headers.get('authorization'):
+        #jwt_token = request.headers.get('authorization')
+        #if not validate_scope(jwt_token, 'ci.read'):
+            #res = Response(response="Invalid token/scope to access this Microservice Resource", status=400, mimetype="text/html")
+            #return res
+    #else:
+        #res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
+        #return res
 
     if not validate_uri(_id, 'ci'):
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
@@ -343,9 +344,9 @@ def get_options(_id):
 
     app.logger.debug("Setting available representation options")
     if object_list[1] is None:
-        representation_options = '{"representation options":{"json"}}'
+        representation_options = '{"representation options":["json"]}'
     else:
-        representation_options = '{"representation options":{"json","binary"}}'
+        representation_options = '{"representation options":["json","binary"]}'
 
     res = Response(response=str(representation_options), status=200, mimetype="collection+json")
 
@@ -360,7 +361,7 @@ def add_binary(_id):
     Plus, process the actual file to the file store.
 
     curl -X PUT --form "fileupload=@requirements.txt"  [URL]
-    where [URL] == http://localhost:5000/collectioninstrument/id/a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+    where [URL] == http://localhost:5000/collectioninstrument/id/urn:ons.gov.uk:id:ci:001.001.00002
     """
 
     app.logger.info("add_binary id value is: {}".format(_id))
@@ -494,6 +495,7 @@ def create():
                     "hint": "you may need to pass a content-type: application/json header"}), 400
 
 
+
 @app.route('/collectioninstrument/id/<string:_id>', methods=['GET'])
 def get_id(_id):
     """
@@ -545,7 +547,7 @@ def get_id(_id):
             res = Response(response="Invalid URI", status=400, mimetype="text/html")
             return res
 
-    jobject_list = JSONEncoder().encode(object_list)
+    jobject_list = JSONEncoder().encode(object_list[0])
     res = Response(response=jobject_list, status=200, mimetype="collection+json")
     return res
 
