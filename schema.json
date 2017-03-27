@@ -17,11 +17,11 @@
     "classifiers": {
       "type": "object",
       "properties": {
-        "LEGAL_STATUS": { "type": "number" },
-        "INDUSTRY": { "type": "number" },
-        "RU_REF": { "type": "number" }
+        "LEGAL_STATUS": { "type": "string" },
+        "INDUSTRY": { "type": "string" },
+        "RU_REF": { "type": "string" }
       }
     }
   },
-  "required": ["reference", "urn", "ctType", "surveyId", "classifiers"]
+  "required": ["reference", "id", "ciType", "surveyId", "classifiers"]
 }

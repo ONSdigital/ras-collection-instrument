@@ -20,6 +20,10 @@ from jose import JWTError
 from jwt import decode
 from json import JSONEncoder
 
+import json
+import jsonschema
+from jsonschema import validate
+
 # Enable cross-origin requests
 app = Flask(__name__)
 CORS(app)
@@ -127,6 +131,22 @@ def validate_scope(jwt_token, scope_type):
 
     except KeyError:
         app.logger.warning('JWT scope could not be validated.')
+        return False
+
+
+def validate_json(json_item):
+    """
+    This function checks JSON against a schema
+    :param json_item: JSON
+    :return: Boolean
+    """
+    app.logger.info("validate_json")
+    try:
+        valid_json_schema = json.loads(open('../schema.json').read())
+        validate(json_item, valid_json_schema)
+        return True
+    except jsonschema.exceptions.ValidationError as ve:
+        app.logger.warning('Cannot validate JSON.')
         return False
 
 
@@ -439,21 +459,15 @@ def create():
 
     json = request.json
     if json:
+
+        if not validate_json(json):
+            res = Response(response="Invalid JSON content for Collection Instrument", status=404, mimetype="text/html")
+            return res
+
         response = make_response("")
 
         collection_instruments.append(request.json)
         response.headers["location"] = "/collectioninstrument/" + str(json["id"])
-
-        try:
-            json["id"]
-            json["surveyId"]
-            json["ciType"]
-            print json["id"]
-        except KeyError:
-            app.logger.warning("""Collection Instrument POST did not contain correct mandatory
-                               parameters in it's JSON payload: {}""".format(str(json)))
-            res = Response(response="invalid input, object invalid", status=404, mimetype="text/html")
-            return res
 
         if not validate_uri(json["id"], 'ci'):
             app.logger.warning("""Collection Instrument POST did not contain a valid URI
