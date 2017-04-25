@@ -20,6 +20,8 @@ from jose import JWTError
 from jwt import decode
 from json import JSONEncoder
 
+import settings
+
 import json
 import jsonschema
 from jsonschema import validate
@@ -28,6 +30,7 @@ from jsonschema import validate
 app = Flask(__name__)
 CORS(app)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
 
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
@@ -44,9 +47,6 @@ u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},
 {u'surveyId': u'urn:ons.gov.uk:id:survey:001.001.00002', u'urn': u'urn:ons.gov.uk:id:ci:001.001.00002',
 u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF': u'01234567890'}}]
 """
-
-if 'APP_SETTINGS' in os.environ:
-    app.config.from_object(os.environ['APP_SETTINGS'])
 
 # app.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
