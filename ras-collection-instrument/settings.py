@@ -9,7 +9,8 @@ TESTING = False
 CSRF_ENABLED = True
 SECRET_KEY = 'this-really-needs-to-be-changed'
 dbname = "ras_collection_instrument"
-SQLALCHEMY_DATABASE_URI = "postgresql://" + dbname + ":password@localhost:5431/postgres"
+SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', "postgresql://" + dbname + ":password@localhost:5431/postgres")
+
 
 #OAuthConfig
     # """
