@@ -635,9 +635,6 @@ def get_survey_id(survey_id):
         res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
         return res
     if not validate_uri(survey_id, 'survey'):
-
-        print "Survey ID {}".format(survey_id)
-
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
 
