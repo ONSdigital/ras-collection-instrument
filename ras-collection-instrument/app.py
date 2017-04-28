@@ -624,7 +624,6 @@ def get_survey_id(survey_id):
     """
 
     app.logger.info("get_survey_id with survey_id: {}".format(survey_id))
-    print "*** Nick we are in get_survey_id ***"
 
     # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
     if request.headers.get('authorization'):
@@ -636,12 +635,14 @@ def get_survey_id(survey_id):
         res = Response(response="Valid token/scope is required to access this Microservice Resource", status=400, mimetype="text/html")
         return res
     if not validate_uri(survey_id, 'survey'):
+
+        print "Survey ID {}".format(survey_id)
+
         res = Response(response="Invalid URI", status=404, mimetype="text/html")
         return res
 
     try:
         app.logger.debug("Querying DB in get_survey_id")
-        print "querying DB in get_survey_id shit....."
 
         search_string = request.args.get('classifier')
 
