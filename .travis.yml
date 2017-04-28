@@ -1,7 +1,16 @@
 language: python
+
+env:
+- CODECOV_TOKEN="d58091c4-cca2-4533-b419-bac51ed1511f"
+
 python:
   - "2.7"
-# command to install dependencies
-install: "pip install -r requirements.txt"
-# command to run tests
-script: python ./ras-collection-instrument/test.py
+
+install:
+  - "pip install -r requirements.txt"
+
+script:
+  - python ./ras-collection-instrument/test.py
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
