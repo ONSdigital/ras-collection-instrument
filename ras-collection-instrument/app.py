@@ -624,6 +624,7 @@ def get_survey_id(survey_id):
     """
 
     app.logger.info("get_survey_id with survey_id: {}".format(survey_id))
+    print "*** Nick we are in get_survey_id ***"
 
     # First check that we have a valid JWT token if we don't send a 400 error with authorisation failure
     if request.headers.get('authorization'):
@@ -640,6 +641,7 @@ def get_survey_id(survey_id):
 
     try:
         app.logger.debug("Querying DB in get_survey_id")
+        print "querying DB in get_survey_id shit....."
 
         search_string = request.args.get('classifier')
 
