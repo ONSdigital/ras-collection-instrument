@@ -3,3 +3,9 @@
 *.pyc
 ras-collection-instrument/uploads
 *.log
+.coverage
+coverage.xml
+coverage/
+.tox
+htmlcov/
+.cache/
