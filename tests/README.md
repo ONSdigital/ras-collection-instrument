@@ -72,10 +72,13 @@ Running pylint from the command line is done with:
 
 This guide describes what to install and how to run the test cases for ONS RAS.
 
+NOTE: There is currently no startup/teardown for database setup. Therefore if you encounter any problems, initialise
+the database again manually with
+`psql -h localhost -p 5431 -U postgres -a -f ras_collection_instrument_D0001_initial_build.sql`
 
-To run all tests, go to the `/tests/behave-BDD-tests` directory and run the command:
+To run all tests, run the command:
 
-	/> behave
+	/> behave tests/behave-BDD-tests/features
 
 The system should output something like:
 
@@ -91,10 +94,6 @@ The system should output something like:
         And the response status code is 200                               # features/steps/steps.py:209 0.000s
 
     ...
-
-You can optionally run individual features by running:
-
-    /> behave <http_method_name>_collection_instrument.feature
 
 ### Creating BDD Tests
 
