@@ -32,16 +32,8 @@ Application and springboot logs in container at:
 
 
 
-## Running Pylint Checker
+## Testing And Running Tests
 
-The pylint checker is used to statistically analyse code for a number of common coding errors and against pep8 standards.
-This means that we can have a more automated way of measuring code quality. To run this from the project directory we need
-to specify our config file needed to analyse our code. We have modified our checker to not check things like 'line length'
-since this is pointless with modern screens being so big.
-
-Running pylint from the command line is done with:
-
-  /> pylint --rcfile=.pylint ras-collection-instrument/app.py
-
-
- 
+The application has tests written in BDD and Python Unit Testing. There is a sub folder called /tests which has all unit
+testing. This folder has a detailed README.md document containing details about running tests and, setting the evn up
+and how automatic test generation is done.
