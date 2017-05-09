@@ -31,7 +31,7 @@ app = Flask(__name__)
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
-
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
 #
@@ -142,7 +142,7 @@ def validate_json(json_item):
     """
     app.logger.info("validate_json")
     try:
-        valid_json_schema = json.loads(open('../schema.json').read())
+        valid_json_schema = json.loads(open(os.path.join(ROOT_DIR, 'schema.json')).read())
         validate(json_item, valid_json_schema)
         return True
     except jsonschema.exceptions.ValidationError as ve:
