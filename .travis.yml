@@ -8,9 +8,15 @@ python:
 
 install:
   - "pip install -r requirements.txt"
+  - "pip install -r requirements_for_test.txt"
 
 script:
   - ./scripts/run_tests.sh
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+dist: trusty
+
+addons:
+   postgresql: "9.6"
