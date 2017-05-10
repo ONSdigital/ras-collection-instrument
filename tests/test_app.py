@@ -1,10 +1,20 @@
 import unittest
+import json
 
 
 from application.app import validate_uri, validate_scope, validate_json
+from application.app import app
 
 
 class TestApplication(unittest.TestCase):
+
+    def setUp(self):
+        self.app = app.test_client()
+        self.app.testing = True
+        self.headers = {
+            "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmluZ3JhbUBub3d3aGVyZS5jb20iLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIiwiY2kud3JpdGUiXX0.se0BJtNksVtk14aqjp7SvnXzRbEKoqXb8Q5U9VVdy54"}
+
+
 
     def test_valid_uri(self):
         uri = "urn:ons.gov.uk:id:survey:001.001.00001"
@@ -71,3 +81,19 @@ class TestApplication(unittest.TestCase):
             }
         }
         self.assertEquals(validate_json(invalid_json), False)
+
+    def test_collectioninstrument_id(self):
+        response = self.app.get('/collectioninstrument/id/urn:ons.gov.uk:id:ci:001.001.00001', headers=self.headers)
+        expected_response = {
+                                "reference": "rsi-fuel",
+                                "surveyId": "urn:ons.gov.uk:id:survey:001.001.00001",
+                                "id": "urn:ons.gov.uk:id:ci:001.001.00001",
+                                "ciType": "ONLINE",
+                                "classifiers": {
+                                    "LEGAL_STATUS": "A",
+                                    "INDUSTRY": "B"
+                                }
+        }
+        self.assertEquals(expected_response, json.loads(response.data))
+
+

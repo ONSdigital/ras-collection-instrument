@@ -21,7 +21,7 @@ def before_feature(context, feature):
     # TODO: Need an environment var to hold parent directory name/location
     context.resources_location = 'tests/behave-BDD-tests/features/resources/'
 
-    with open('schema.json') as schema:
+    with open('application/schema.json') as schema:
         context.schema_definition = json.load(schema)
 
 
