@@ -1,9 +1,7 @@
-import unittest
 import json
+import unittest
 
-
-from application.app import validate_uri, validate_scope, validate_json
-from application.app import app
+from application.app import app, validate_uri, validate_scope, validate_json
 
 
 class TestApplication(unittest.TestCase):
@@ -12,9 +10,8 @@ class TestApplication(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
         self.headers = {
-            "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmluZ3JhbUBub3d3aGVyZS5jb20iLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIiwiY2kud3JpdGUiXX0.se0BJtNksVtk14aqjp7SvnXzRbEKoqXb8Q5U9VVdy54"}
-
-
+            "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmluZ3JhbUBub3d3aGVyZS5jb20iLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIiwiY2kud3JpdGUiXX0.se0BJtNksVtk14aqjp7SvnXzRbEKoqXb8Q5U9VVdy54"  # NOQA
+        }
 
     def test_valid_uri(self):
         uri = "urn:ons.gov.uk:id:survey:001.001.00001"
@@ -31,12 +28,12 @@ class TestApplication(unittest.TestCase):
         self.assertEquals(validate_uri(uri, "survey"), False)
 
     def test_valid_validate_scope(self):
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmFzLXRlc3QiLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIiwiY2kud3JpdGUiXX0.J5FjerGkmpSWAUKG7_PChUcf5slGON3FNWUkEgMSmRk" # NOQA
+        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmFzLXRlc3QiLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIiwiY2kud3JpdGUiXX0.J5FjerGkmpSWAUKG7_PChUcf5slGON3FNWUkEgMSmRk"  # NOQA
         self.assertEquals(validate_scope(token, "ci.write"), True)
 
     def test_invalid_validate_scope(self):
         # ci.write is not in the users scope list
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmFzLXRlc3QiLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIl19.tzoqbuT1SJBLLQUHsnG7wBIvpZbxbu9G6Z9M4B9VH4M" # NOQA
+        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicmFzLXRlc3QiLCJ1c2VyX3Njb3BlcyI6WyJjaS5yZWFkIl19.tzoqbuT1SJBLLQUHsnG7wBIvpZbxbu9G6Z9M4B9VH4M"  # NOQA
         self.assertEquals(validate_scope(token, "ci.write"), False)
 
     def test_jwt_error_validate_scope(self):
@@ -82,7 +79,7 @@ class TestApplication(unittest.TestCase):
         }
         self.assertEquals(validate_json(invalid_json), False)
 
-    def test_collectioninstrument_id(self):
+    def test_collection_instrument_id(self):
         response = self.app.get('/collectioninstrument/id/urn:ons.gov.uk:id:ci:001.001.00001', headers=self.headers)
         expected_response = {
                                 "reference": "rsi-fuel",
@@ -95,5 +92,3 @@ class TestApplication(unittest.TestCase):
                                 }
         }
         self.assertEquals(expected_response, json.loads(response.data))
-
-
