@@ -18,3 +18,4 @@ RAS_COLLECTION_INSTRUMENT_CLIENT_SECRET = os.environ.get('RAS_COLLECTION_INSTRUM
 ONS_AUTHORIZATION_ENDPOINT = os.environ.get('ONS_AUTHORIZATION_ENDPOINT', '/web/authorize/')
 ONS_TOKEN_ENDPOINT = os.environ.get('ONS_TOKEN_ENDPOINT', '/api/v1/tokens/')
 ONS_ADMIN_ENDPOINT = os.environ.get('ONS_ADMIN_ENDPOINT', '/api/account/create')
+
