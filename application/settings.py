@@ -7,11 +7,9 @@ import os
 DEBUG = False
 TESTING = False
 CSRF_ENABLED = True
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = 'this-really-needs-to-be-changed'
 dbname = "ras_collection_instrument"
 SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI', "postgresql://" + dbname + ":password@localhost:5431/postgres")
-SQL_INITIAL_BUILD = 'ras_collection_instrument_D0001_initial_build.sql'
 
 ONS_OAUTH_PROTOCOL = os.environ.get('ONS_OAUTH_PROTOCOL', 'http://')
 ONS_OAUTH_SERVER = os.environ.get('ONS_OAUTH_SERVER', 'localhost:8040')
