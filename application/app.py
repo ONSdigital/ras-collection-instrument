@@ -31,7 +31,7 @@ app = Flask(__name__)
 CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = settings.SQLALCHEMY_DATABASE_URI
-
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 #
 # http://docs.sqlalchemy.org/en/latest/core/type_basics.html
 #
@@ -48,7 +48,7 @@ u'classifiers': {u'LEGAL_STATUS': u'A', u'INDUSTRY': u'B'}},
 u'reference': u'rsi-nonfuel', u'ciType': u'OFFLINE', u'classifiers': {u'RU_REF': u'01234567890'}}]
 """
 
-# app.config.from_object("config.StagingConfig")
+# application.config.from_object("config.StagingConfig")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -142,7 +142,7 @@ def validate_json(json_item):
     """
     app.logger.info("validate_json")
     try:
-        valid_json_schema = json.loads(open('../schema.json').read())
+        valid_json_schema = json.loads(open(os.path.join(ROOT_DIR, 'schema.json')).read())
         validate(json_item, valid_json_schema)
         return True
     except jsonschema.exceptions.ValidationError as ve:
@@ -677,7 +677,7 @@ def get_survey_id(survey_id):
 
 if __name__ == '__main__':
     # Create a file handler to handle our logging
-    handler = RotatingFileHandler('application.log', maxBytes=10000, backupCount=1)
+    handler = RotatingFileHandler('logs.log', maxBytes=10000, backupCount=1)
     handler.setLevel(logging.INFO)
     app.logger.addHandler(handler)
     handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))

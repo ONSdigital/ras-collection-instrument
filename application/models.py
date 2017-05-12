@@ -15,6 +15,7 @@ class CollectionInstrument(db.Model):
     The collection instrument model
     """
     __tablename__ = 'ras_collection_instruments'
+    __table_args__ = {"schema": "ras_collection_instrument"}
     id = db.Column(db.Integer, primary_key=True)
     urn = db.Column(TEXT)
     survey_urn = db.Column(TEXT)
