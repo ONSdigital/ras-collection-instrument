@@ -675,7 +675,7 @@ def get_survey_id(survey_id):
 
 if __name__ == '__main__':
     # Create a file handler to handle our logging
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
     app.logger.addHandler(handler)
     logging.basicConfig(level=logging.INFO, handlers=[handler])
