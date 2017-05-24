@@ -9,8 +9,6 @@ import sys
 import uuid
 import logging
 from logging import Formatter
-from logging.handlers import RotatingFileHandler
-
 
 from flask import request, Response, send_from_directory, make_response, jsonify, Flask
 from flask_cors import CORS
@@ -677,10 +675,10 @@ def get_survey_id(survey_id):
 
 if __name__ == '__main__':
     # Create a file handler to handle our logging
-    handler = RotatingFileHandler('logs.log', maxBytes=10000, backupCount=1)
-    handler.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
+    handler = logging.StreamHandler()
     handler.setFormatter(Formatter('%(asctime)s %(levelname)s: %(message)s ' '[in %(pathname)s:%(lineno)d]'))
+    app.logger.addHandler(handler)
+    logging.basicConfig(level=logging.INFO, handlers=[handler])
     # Initialise SqlAlchemy configuration here to avoid circular dependency
     db.init_app(app)
 
