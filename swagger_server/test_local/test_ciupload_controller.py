@@ -44,14 +44,11 @@ class TestCiuploadController(BaseTestCase):
         """
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(str(uuid4()), fileobject, 'dummy.txt'))
             code, msg = self.collection_instrument.upload(str(uuid4()), fileobject, 'dummy.txt')
             self.assertTrue(code == 200, msg)
 
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #status = self.collection_instrument.upload(0, fileobject, 'dummy.txt')
-            #self.assertEqual(status, False, 'Upload should fail here')
             code, msg = self.collection_instrument.upload(0, fileobject, 'dummy.txt')
             self.assertTrue(code == 400, msg)
 
@@ -156,6 +153,13 @@ class TestCiuploadController(BaseTestCase):
             data=data,
             content_type='multipart/form-data')
         self.assertTrue(response.status_code == 200, "Response body is : " + response.data.decode('utf-8'))
+        data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
+        response = self.client.open(
+            '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref="1", file='fred.txt'),
+            method='POST',
+            data=data,
+            content_type='multipart/form-data')
+        self.assertTrue(response.status_code == 500, "Response body is : " + response.data.decode('utf-8'))
 
     def test_08_download(self):
         """

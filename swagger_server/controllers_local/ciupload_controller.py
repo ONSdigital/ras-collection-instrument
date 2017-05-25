@@ -78,8 +78,10 @@ def upload_id_file_post(id, file, files=None):
         code, msg = collection_instrument.upload(id, fileobject, file)
         if code == 200:
             count += 1
-    return jsonify({'count': count})
 
+    if count != len(uploaded_files):
+        return make_response('Uploaded {} of {}'.format(count, len(uploaded_files)), 500)
+    return make_response("OK", 200)
 
 #
 # /download_csv/{id}

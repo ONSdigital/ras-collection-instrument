@@ -26,6 +26,7 @@ count = int(argv[3])
 
 API_UPLOAD = getenv('API_UPLOAD', '{}/collection-instrument-api/1.0.2/upload/{}/upload.txt'.format(host, ref))
 
+actual = 0
 for i in range(0, count):
     files = {'files[]': ('upload.txt', open('upload.txt', 'rb'), 'text/html', {'Expires': 0})}
     r = requests.post(API_UPLOAD, files=files)
@@ -33,4 +34,4 @@ for i in range(0, count):
         print('%% upload error "{}" - "{}"'.format(r.status_code, r.text))
         exit(1)
 
-print('Completed upload of "{}" items'.format(count))
+print(r.text)

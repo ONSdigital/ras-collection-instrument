@@ -39,44 +39,48 @@ on **http://localhost:8080/collection-instrument-api/1.0.1/ui**.
 
 ### Uploading files from the command line
 
-From the **scripts** folder, you should be able to run;
+Note that starting with this release we have introduced a UUID type into
+the database which maps to the various parmameters that can be supplied
+to endpoints. These UUID types are **validated** which means you will need
+to supply valid UUID's when testing.
+
+For testing, you can upload from the **scripts** folder, you should be able to run;
 
 ```bash
-./upload.py local id_example 30
+ce=`python3 -c "from uuid import uuid4; print(uuid4())"`
+./upload.py local $ce 30
 ```
-To upload files to the current CF installation, use **live** instead of local. Note that you will need to 
-create a batch with Survey **BRES** and CE of **2017** using the UI link above, otherwise the upload will yield 
-a 'no such batch' error. (this will upload *30* dummy files)
+To upload files to the current CF installation, use **live** instead of local.
+A batch (collection exercise) will be created automatically based on the UUID you
+supply - if it doesn't already exist.
 
 #### Testing
 
 To run the unit tests and code coverage, run the test.sh script an you should get something like this;
 
 ```bash
-$ ./test.sh 
-======================================================= test session starts =======================================================
-platform linux -- Python 3.5.2+, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
-rootdir: /home/gareth/Code/ONS/ras-repos/ras-collection-instrument-demo, inifile:
+$ ./scripts/test.sh
+================================================================================================= test session starts =================================================================================================
+platform linux -- Python 3.5.3, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
+rootdir: /home/gareth/ONS/ras-repos/ras-collection-instrument, inifile:
 plugins: cov-2.5.1
-collected 23 items 
+collected 23 items
 
-swagger_server/test/test_cec_controller.py .....
 swagger_server/test/test_ciupload_controller.py .......
-swagger_server/test/test_respondent_controller.py ...
+swagger_server/test/test_respondent_controller.py ..
 swagger_server/test/test_static_controller.py .
-swagger_server/test_local/test_ciupload_controller.py .......
+swagger_server/test_local/test_ciupload_controller.py ..........
+swagger_server/test_local/test_encryption.py ...
 
------------ coverage: platform linux, python 3.5.2-final-0 -----------
+----------- coverage: platform linux, python 3.5.3-final-0 -----------
 Name                                                        Stmts   Miss  Cover   Missing
 -----------------------------------------------------------------------------------------
-swagger_server/controllers_local/ciupload_controller.py        38      6    84%   55, 91, 110-113
-swagger_server/controllers_local/lib.py                        52      0   100%
-swagger_server/controllers_local/respondent_controller.py       0      0   100%
+swagger_server/controllers_local/ciupload_controller.py        45      0   100%
+swagger_server/controllers_local/collectioninstrument.py      167      0   100%
+swagger_server/controllers_local/encryption.py                 23      0   100%
+swagger_server/controllers_local/respondent_controller.py      11      0   100%
 swagger_server/controllers_local/static_controller.py           6      0   100%
 -----------------------------------------------------------------------------------------
-TOTAL                                                          96      6    94%
-
-
-==================================================== 23 passed in 6.35 seconds ====================================================
+TOTAL                                                         252      0   100%
 ```
 
