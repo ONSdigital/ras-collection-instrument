@@ -1,0 +1,62 @@
+<!--<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>HTML5 / jQuery</title>
+        <link rel="stylesheet" href="static/css/styles.css" />
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+		<script type="text/javascript" src="static/js/jquery.filedrop.js"></script>
+        <script type="text/javascript" src="static/js/upload.js"></script>
+    </head>
+    <body>
+		<div id="dropbox">
+			<span class="message">Drop images here to upload.</span>
+		</div>
+    </body>
+</html>
+-->
+
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+ <meta charset="utf-8">
+ <title>ONS Collection Instruments</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="static/css/styles.css" />
+ <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="clearfix">
+        <div class="pull-left">
+            <h1>Collection Instruments Upload</h1>
+            <h2 class="lead">UI Demo</h2>
+        </div>
+    </div>
+    <br>
+    <form id="fileupload" action="/collection-instrument-api/1.0.1/upload" method="POST" enctype="multipart/form-data">
+        <div class="row fileupload-buttonbar">
+            <div class="col-lg-7">
+                <span class="btn btn-success fileinput-button">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>Add files...</span>
+                    <input type="file" name="files[]" multiple>
+                </span>
+                <button type="submit" class="btn btn-primary start">
+                    <i class="glyphicon glyphicon-upload"></i>
+                    <span>Start upload</span>
+                </button>
+                <span class="fileupload-process"></span>
+            </div>
+            <div class="col-lg-5 fileupload-progress fade">
+                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-success" style="width:0%;"></div>
+                </div>
+                <div class="progress-extended">&nbsp;</div>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
