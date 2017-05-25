@@ -1,9 +1,0 @@
-coverage:
-  status:
-    project:
-      default:
-        target: 75%
-        threshold: null
-        base: auto
-
-comment: false
