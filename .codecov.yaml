@@ -2,8 +2,9 @@ coverage:
   status:
     project:
       default:
-        target: 75%
+        target: 100%
         threshold: null
         base: auto
+        if_not_found: success
 
 comment: false
