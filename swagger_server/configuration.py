@@ -49,7 +49,7 @@ class ONSEnvironment(object):
         self._ons_cipher = None
         self._config = ConfigParser()
         self._config._interpolation = ExtendedInterpolation()
-        self._config.read('config.ini')
+        self._config.read(['local.ini', 'config.ini'])
         self._env = getenv('ONS_ENV', 'development')
         self._parse_manifest()
         self._session = scoped_session(sessionmaker())

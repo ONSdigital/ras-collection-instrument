@@ -21,9 +21,22 @@ Changes should only be made to code in the following folders;
 
 * swagger\_server/controller\_slocal
 * swagger\_server/tests\_local
+* swagger\_server/models\_local
 * README.md
+* local.ini
+
+You will find general configuration options in **config.ini**, these can
+be overridden on a stanza by stanza basis by putting project specific
+options in **local.ini**.
 
 Anything else is at risk of being overwritten.
+
+### Database Design
+
+Note, this is subject to change, but for now the Database model is based
+on this diagram;
+
+![ons_erm.png](ons_erm.png)
 
 ## Running Locally
 

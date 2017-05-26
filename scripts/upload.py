@@ -30,7 +30,6 @@ API_UPLOAD = getenv('API_UPLOAD', '{}/collection-instrument-api/1.0.2/upload/{}/
 
 actual = 0
 for i in range(0, count):
-    #files = {'files[]': ('upload.txt', open('django_demo.proj', 'rb'), 'text/html', {'Expires': 0})}
     files = {'files[]': ('upload.txt', open('upload.txt', 'rb'), 'text/html', {'Expires': 0})}
     r = requests.post(API_UPLOAD, files=files)
     if r.status_code != 200:
