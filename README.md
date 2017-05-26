@@ -9,7 +9,7 @@ to this repository.
 ## Overview
 
 This repository implements REST endpoints for the RAS Collection Instrument based on the Swagger API 
-definition [here](https://app.swaggerhub.com/apis/oddjobz/collection-instrument-api/1.0.1). 
+definition [here](https://app.swaggerhub.com/apis/oddjobz/collection-instrument-api/1.0.2).
 If you need to make a change to the REST interface, please start by changing the API spec, then regenerate 
 the code using the code generator in the repository described above.
 
