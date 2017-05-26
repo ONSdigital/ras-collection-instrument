@@ -12,22 +12,21 @@
 #                                                                            #
 ##############################################################################
 from configparser import ConfigParser, ExtendedInterpolation
-from yaml import load, dump
 from json import loads
 from os import getenv
 from pathlib import Path
-from sqlalchemy import create_engine, event, DDL
 
+from sqlalchemy import create_engine, event, DDL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy_utils import database_exists, create_database
+from yaml import load, dump
 
 from swagger_server import ons_logger
 from .controllers_local.encryption import ONSCryptographer
 
 
 class CfServices:
-
     def __init__(self, service_data):
         self._credentials_lookup = {v['name']: v['credentials']
                                     for service_config in service_data.values()
@@ -39,7 +38,6 @@ class CfServices:
 
 
 class ONSEnvironment(object):
-
     def __init__(self):
         """
         Nothing actually happens at this point, we're just setting up variables
@@ -69,6 +67,8 @@ class ONSEnvironment(object):
             )
         self._engine = None
         self.logger = ons_logger.create(self)
+        self.logger.info("Running with '{}' configuration".format(self._env))
+        print("Running with '{}' configuration".format(self._env))
 
     def _parse_manifest(self):
         """
@@ -100,15 +100,27 @@ class ONSEnvironment(object):
         """
         if self.get('db_name') is not None:
             self.logger.info("Connecting to '{}'".format(self.get('db_connection')))
+            print("Connecting to '{}'".format(self.get('db_connection')))
             self._engine = create_engine(self.get('db_connection'), convert_unicode=True)
             self._session.remove()
             self._session.configure(bind=self._engine, autoflush=False, autocommit=False, expire_on_commit=False)
-            if not database_exists(self._engine.url):
-                create_database(self._engine.url)
+            self._create_database()
             if self.if_drop_database:
                 self._base.metadata.drop_all(self._engine)
-            from .models_local import _models
             self._base.metadata.create_all(self._engine)
+
+    def _create_database(self):
+        do_create_database = self.get('create_database')
+
+        if not do_create_database.lower() in ['yes', 'true']:
+            self.logger.info('Database create not required.')
+            return
+        self.logger.info('Checking database exists.')
+        if database_exists(self.get('db_connection')):
+            self.logger.info('Database already exists.')
+        else:
+            create_database(self.get('db_connection'))
+            self.logger.info('Database did not exist. Created.')
 
     def _activate_cf(self):
         """
@@ -147,7 +159,7 @@ class ONSEnvironment(object):
         """
         Get a value from config.ini, the actual value recovered is dependent on the
         key, but also on the environment that has been set with ONS_ENV.
-        
+
         :param key: Item to recover from the .ini file 
         :param default: Value to return if key not found
         :return: Value recovered from the .ini file (or None)

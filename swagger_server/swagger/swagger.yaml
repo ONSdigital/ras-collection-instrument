@@ -164,19 +164,6 @@ paths:
       summary: Download CSV file
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
-  /static/{typ}/{uri}:
-    get:
-      description: Serve Style sheets from this point
-      operationId: static_typ_uri_get
-      parameters:
-      - {description: item type, in: path, name: typ, required: true, type: string}
-      - {description: path to serve, in: path, name: uri, required: true, type: string}
-      responses:
-        200: {description: OK}
-        404: {description: NOT FOUND}
-      summary: Style Sheets
-      tags: [static]
-      x-swagger-router-controller: swagger_server.controllers_local.static_controller
   /status/{id}:
     get:
       description: Return a count of items thus far and total in batch
@@ -212,17 +199,6 @@ paths:
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
 schemes: [https]
-security:
-- accessCode: [read]
-securityDefinitions:
-  accessCode:
-    authorizationUrl: http://localhost:8000/web/authorize
-    flow: accessCode
-    scopes: {read: allows reading resources, write: allows modifying resources}
-    tokenUrl: http://localhost:8000/api/v1/tokens/
-    type: oauth2
-    x-tokenInfoUrl: http://localhost:8000/api/v1/tokens/
-  jwt: {in: header, name: Authorization, type: apiKey, x-authentication-scheme: Bearer}
 swagger: '2.0'
 tags:
 - {description: Operations available to collection exercise coordinators, name: cec}

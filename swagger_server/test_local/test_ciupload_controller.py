@@ -72,7 +72,7 @@ class TestCiuploadController(BaseTestCase):
             code, msg = self.collection_instrument.csv(0)
         except Exception:
             pass
-        self.assertTrue(code == 500, "CSV download")
+        self.assertTrue(code == 400, "CSV download")
         try:
             code, msg = self.collection_instrument.csv('0')
         except Exception:
