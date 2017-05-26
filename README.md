@@ -48,7 +48,7 @@ To run locally from the root of your repository, run;
 
 On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
 subsequent runs this will be almost instantaneous. By default the service will be available 
-on **http://localhost:8080/collection-instrument-api/1.0.1/ui**.
+on **http://localhost:8080/collection-instrument-api/1.0.2/ui**.
 
 ### Uploading files from the command line
 
