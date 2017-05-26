@@ -34,7 +34,7 @@ Anything else is at risk of being overwritten.
 ### Database Design
 
 Note, this is subject to change, but for now the Database model is based
-on this diagram;
+on the following diagram;
 
 ![ons_erm.png](ons_erm.png)
 
