@@ -27,6 +27,7 @@ SQLAlchemy==1.1.10
 SQLAlchemy-Utils==0.32.14
 strict-rfc3339==0.7
 swagger-spec-validator==2.1.0
+tox==2.7.0
 Twisted==16.6.0
 Werkzeug==0.12.1
 zope.interface==4.4.0

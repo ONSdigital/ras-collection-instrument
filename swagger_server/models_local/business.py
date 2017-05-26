@@ -1,9 +1,8 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, Enum, String
+from sqlalchemy.types import Integer, String
 from ..configuration import ons_env
 from .associations import instrument_business_table
-from .guid import GUID
 
 
 class BusinessModel(ons_env.base):

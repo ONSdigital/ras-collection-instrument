@@ -4,5 +4,5 @@ if ! [ -a .build-test ] ; then
 	virtualenv .build-test -p python3
 fi
 source .build-test/bin/activate
-pip3 -q install -r requirements_for_test.txt
+pip3 -q install -r test-requirements.txt
 pytest --cov=swagger_server/controllers_local --cov-report term-missing

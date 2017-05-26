@@ -9,7 +9,7 @@
 ##############################################################################
 
 import os
-from flask import request, jsonify, make_response
+from flask import jsonify, make_response
 from .collectioninstrument import CollectionInstrument
 
 root_folder = os.getcwd()

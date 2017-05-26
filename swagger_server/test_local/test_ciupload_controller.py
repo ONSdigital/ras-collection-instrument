@@ -59,15 +59,12 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'dummy.txt'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'dummy.txt')
             self.assertTrue(code == 200, msg)
 
         code, msgs = self.collection_instrument.csv(batch)
         msg = msgs.split('\n')[1][:21]
-        print(">>", msg)
         wanted = '"1","dummy.txt","24",'
-        print(">>", wanted)
         self.assertTrue(msg == wanted, "CSV download")
         code, msg = self.collection_instrument.csv(str(uuid4()))
         self.assertTrue(code == 204, "CSV download")
@@ -75,12 +72,13 @@ class TestCiuploadController(BaseTestCase):
             code, msg = self.collection_instrument.csv(0)
         except Exception:
             pass
+        self.assertTrue(code == 500, "CSV download")
         try:
             code, msg = self.collection_instrument.csv('0')
         except Exception:
             pass
-
         self.assertTrue(code == 500, "CSV download")
+
 
 
     def test_05_status(self):
@@ -169,7 +167,6 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'my_RU_code'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
 
@@ -192,47 +189,37 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'my_RU_code'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
 
         code, msg = self.collection_instrument.instruments('{"ru_ref": "my_RU_code"}')
-        print("Code>>>>", code)
         self.assertTrue(code == 200, msg)
         instrument = msg[0]
         instrument_id = str(instrument['id'])
 
         code, msg = self.collection_instrument.instrument(str(uuid4()))
-        print(">>>>>>>CODE IS", code)
         self.assertTrue(code == 404, msg)
 
-        print("Instrument>", instrument_id)
-
         code, msg = self.collection_instrument.instrument(instrument_id)
-        print("ICode>", code)
         self.assertTrue(code == 200, 'Instrument fetch by id')
 
         try:
             code, msg = self.collection_instrument.instrument('abc')
         except Exception:
             pass
-        print("Code=", code)
         self.assertTrue(code == 500, msg)
 
         try:
             code, msg = self.collection_instrument.instrument(0)
         except Exception:
             pass
-        print("Code=", code)
         self.assertTrue(code == 400, 'Failed to lookup instrument with integer id')
 
         try:
             code, msg = self.collection_instrument.instrument()
         except Exception:
             pass
-        print("Code=", code)
         self.assertTrue(code == 500, msg)
-
 
         try:
             code, msg = self.collection_instrument.instruments('{"NO CODE": "NO VALUE"}')
@@ -254,7 +241,6 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'my_RU_code'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
 
@@ -264,7 +250,6 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(code == 204, msg)
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'my_RU_code'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
         code, msg = self.collection_instrument.clear(batch)
@@ -279,22 +264,18 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'file1'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'file1')
             self.assertTrue(code == 200, msg)
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'file2'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'file2')
             self.assertTrue(code == 200, msg)
         with open('scripts/upload.txt', 'rb') as io:
             fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
-            #self.assertTrue(self.collection_instrument.upload(batch, fileobject, 'file3'))
             code, msg = self.collection_instrument.upload(batch, fileobject, 'file3')
             self.assertTrue(code == 200, msg)
 
         code, msg = self.collection_instrument.instruments('')
-        print("MSG>", msg)
         self.assertTrue(code == 200, msg)
 
         code, msg = self.collection_instrument.instruments('{"ru_ref": "file3"}')

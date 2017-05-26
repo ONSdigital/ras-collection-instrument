@@ -17,10 +17,26 @@ from json import loads
 from os import getenv
 from pathlib import Path
 from sqlalchemy import create_engine, event, DDL
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy_utils import database_exists, create_database
+
+from swagger_server import ons_logger
 from .controllers_local.encryption import ONSCryptographer
+
+
+class CfServices:
+
+    def __init__(self, service_data):
+        self._credentials_lookup = {v['name']: v['credentials']
+                                    for service_config in service_data.values()
+                                    for v in service_config}
+
+    def get(self, svc_name):
+        result = self._credentials_lookup[svc_name]
+        return result
+
 
 class ONSEnvironment(object):
 
@@ -37,6 +53,7 @@ class ONSEnvironment(object):
         self._config._interpolation = ExtendedInterpolation()
         self._config.read('config.ini')
         self._env = getenv('ONS_ENV', 'development')
+        self._parse_manifest()
         self._session = scoped_session(sessionmaker())
         self._base = declarative_base()
         #
@@ -50,14 +67,30 @@ class ONSEnvironment(object):
                 "before_create",
                 DDL('CREATE SCHEMA IF NOT EXISTS {}'.format(schema)).execute_if(dialect='postgresql')
             )
-        self._engine = create_engine(self.get('db_connection'), convert_unicode=True)
+        self._engine = None
+        self.logger = ons_logger.create(self)
+
+    def _parse_manifest(self):
+        """
+        Attempt to read the CloudFoundry manifest. If present, assume the manifest defines just one application,
+        which is this service, and return that section as the service metadata.
+
+        :return: a dictionary containing the manifest application section if found, else an empty dictionary
+        """
+        try:
+            with open('manifest.yml') as stream:
+                manifest = load(stream)
+                this_app = manifest['applications'][0]
+                self.set('name', this_app['name'])
+        except FileNotFoundError:
+            return {}
 
     def activate(self):
         """
         Activate the database, then set up the Cloud Foundry environment if there is one ...
         """
-        self._activate_database()
         self._activate_cf()
+        self._activate_database()
         self._ons_cipher = ONSCryptographer(self._crypto_key)
 
     def _activate_database(self):
@@ -65,14 +98,17 @@ class ONSEnvironment(object):
         Connect to the database (create it if it's missing) and set up tables as per our models.
         If we're in a 'test' environment, drop all the tables first ...
         """
-        self._session.remove()
-        self._session.configure(bind=self._engine, autoflush=False, autocommit=False, expire_on_commit=False)
-        if not database_exists(self._engine.url):
-            create_database(self._engine.url)
-        if self.if_drop_database:
-            self._base.metadata.drop_all(self._engine)
-        from .models_local import _models
-        self._base.metadata.create_all(self._engine)
+        if self.get('db_name') is not None:
+            self.logger.info("Connecting to '{}'".format(self.get('db_connection')))
+            self._engine = create_engine(self.get('db_connection'), convert_unicode=True)
+            self._session.remove()
+            self._session.configure(bind=self._engine, autoflush=False, autocommit=False, expire_on_commit=False)
+            if not database_exists(self._engine.url):
+                create_database(self._engine.url)
+            if self.if_drop_database:
+                self._base.metadata.drop_all(self._engine)
+            from .models_local import _models
+            self._base.metadata.create_all(self._engine)
 
     def _activate_cf(self):
         """
@@ -98,21 +134,30 @@ class ONSEnvironment(object):
             with open(config, 'w') as io:
                 io.write(dump(code))
 
+        cf_app_services = getenv('VCAP_SERVICES')
+        if cf_app_services is not None:
+            db_name = self.get('db_name')
+            db_config = CfServices(loads(cf_app_services)).get(db_name)
+            # override the configured db_connection with the CloudFoundry value:
+            self.set('db_connection', db_config['uri'])
+
         self._port = getenv('PORT', self._port)
 
-    def get(self, key):
+    def get(self, key, default=None):
         """
         Get a value from config.ini, the actual value recovered is dependent on the
         key, but also on the environment that has been set with ONS_ENV.
         
         :param key: Item to recover from the .ini file 
+        :param default: Value to return if key not found
         :return: Value recovered from the .ini file (or None)
         """
         if self._env not in self._config:
-            return None
-        if key not in self._config[self._env]:
-            return None
-        return self._config[self._env][key]
+            return default
+        return self._config[self._env].get(key, default)
+
+    def set(self, key, value):
+        self._config[self._env][key] = value
 
     @property
     def if_drop_database(self):
@@ -139,3 +184,4 @@ class ONSEnvironment(object):
 
 
 ons_env = ONSEnvironment()
+logger = ons_env.logger

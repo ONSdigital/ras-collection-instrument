@@ -216,11 +216,13 @@ security:
 - accessCode: [read]
 securityDefinitions:
   accessCode:
-    authorizationUrl: http://uaa.ons.gov.uk/oauth/auth
+    authorizationUrl: http://localhost:8000/web/authorize
     flow: accessCode
     scopes: {read: allows reading resources, write: allows modifying resources}
-    tokenUrl: http://uaa.ons.gov.uk/oauth/token
+    tokenUrl: http://localhost:8000/api/v1/tokens/
     type: oauth2
+    x-tokenInfoUrl: http://localhost:8000/api/v1/tokens/
+  jwt: {in: header, name: Authorization, type: apiKey, x-authentication-scheme: Bearer}
 swagger: '2.0'
 tags:
 - {description: Operations available to collection exercise coordinators, name: cec}

@@ -1,6 +1,6 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import Integer, Enum, String
+from sqlalchemy.types import Integer, Enum
 from ..configuration import ons_env
 from .associations import instrument_exercise_table
 from .guid import GUID
