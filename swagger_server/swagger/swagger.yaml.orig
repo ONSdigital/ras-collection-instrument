@@ -18,52 +18,6 @@ tags:
 schemes:
 - "https"
 paths:
-  /download/{id}:
-    get:
-      tags:
-      - "ciupload"
-      summary: "Download a file based on the id (RU_REF)"
-      description: "Download a file (test routine)"
-      operationId: "download_id_get"
-      consumes:
-      - "multipart/form-data"
-      produces:
-      - "application/vnd.collection+json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Respondent /Business identifier"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "File was completed successfully"
-        404:
-          description: "RU_REF does not exist"
-        500:
-          description: "Server was unable to complete the operation"
-      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
-  /download_csv/{id}:
-    get:
-      tags:
-      - "ciupload"
-      summary: "Download CSV file"
-      description: "Download a list of live spreadsheets"
-      operationId: "download_csv_id_get"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Collection exercise identifier"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "File was downloaded successfully"
-          schema:
-            type: "file"
-        500:
-          description: "Server was unable to complete the operation"
-      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
   /status/{id}:
     get:
       tags:
@@ -86,29 +40,6 @@ paths:
           description: "No content available, no batch reference"
         500:
           description: "Server was unable to complete the operation"
-      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
-  /activate/{id}:
-    put:
-      tags:
-      - "ciupload"
-      summary: "Activate batch"
-      description: "Mark all items in the batch as available"
-      operationId: "activate_id_put"
-      produces:
-      - "application/vnd.collection+json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Collection exercise identifier"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Batch was activated successfully"
-        500:
-          description: "Server was unable to complete the operation"
-        501:
-          description: "Batch is not in UPLOADING mode"
       x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
   /upload/{id}/{file}:
     post:
@@ -144,6 +75,156 @@ paths:
           description: "Server was unable to complete the operation"
         501:
           description: "Batch does not exist"
+      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
+  /activate/{id}:
+    put:
+      tags:
+      - "ciupload"
+      summary: "Activate batch"
+      description: "Mark all items in the batch as available"
+      operationId: "activate_id_put"
+      produces:
+      - "application/vnd.collection+json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Collection exercise identifier"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Batch was activated successfully"
+        500:
+          description: "Server was unable to complete the operation"
+        501:
+          description: "Batch is not in UPLOADING mode"
+      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
+  /download/{id}:
+    get:
+      tags:
+      - "ciupload"
+      summary: "Download a file based on the id (RU_REF)"
+      description: "Download a file (test routine)"
+      operationId: "download_id_get"
+      consumes:
+      - "multipart/form-data"
+      produces:
+      - "application/vnd.collection+json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Respondent /Business identifier"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "File was completed successfully"
+        404:
+          description: "RU_REF does not exist"
+        500:
+          description: "Server was unable to complete the operation"
+      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
+  /collectioninstrument/id/{id}:
+    get:
+      tags:
+      - "respondent"
+      summary: "Get a collection instrument by ID"
+      description: "Returns a single collection instrument"
+      operationId: "get_collection_instrument_by_id"
+      produces:
+      - "application/vnd.ons.collectioninstrument+json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "ID of collection instrument to return"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Collection instrument representation"
+          schema:
+            $ref: "#/definitions/collectioninstrument"
+          headers:
+            ETag:
+              type: "string"
+              description: "The current ETag for the collection instrument, e.g. \"\
+                5635635636356356\""
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Collection instrument not found"
+      x-swagger-router-controller: "swagger_server.controllers.respondent_controller"
+  /clear_batch/{id}:
+    delete:
+      tags:
+      - "ciupload"
+      summary: "Clear a batch"
+      description: "Clear down a batch definition, useful for testing"
+      operationId: "clear_batch_id_delete"
+      produces:
+      - "application/vnd.collection+json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Collection exercise identifier"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "File was completed successfully"
+        500:
+          description: "Server was unable to complete the operation"
+        501:
+          description: "Batch does not exist"
+        502:
+          description: "Generic error message"
+      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
+  /define_batch/{id}/{count}:
+    post:
+      tags:
+      - "ciupload"
+      summary: "Specify the size of a batch"
+      description: "Associate a service and ce with an item count"
+      operationId: "define_batch_id_count_post"
+      produces:
+      - "application/vnd.collection+json"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Collection exercise identifier"
+        required: true
+        type: "string"
+      - name: "count"
+        in: "path"
+        description: "Number of items in batch"
+        required: true
+        type: "integer"
+      responses:
+        200:
+          description: "File was completed successfully"
+        500:
+          description: "Server was unable to complete the operation"
+      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
+  /download_csv/{id}:
+    get:
+      tags:
+      - "ciupload"
+      summary: "Download CSV file"
+      description: "Download a list of live spreadsheets"
+      operationId: "download_csv_id_get"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "Collection exercise identifier"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "File was downloaded successfully"
+          schema:
+            type: "file"
+        500:
+          description: "Server was unable to complete the operation"
       x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
   /collectioninstrument:
     get:
@@ -183,123 +264,16 @@ paths:
         400:
           description: "bad input parameter"
       x-swagger-router-controller: "swagger_server.controllers.respondent_controller"
-  /collectioninstrument/id/{id}:
-    get:
-      tags:
-      - "respondent"
-      summary: "Get a collection instrument by ID"
-      description: "Returns a single collection instrument"
-      operationId: "get_collection_instrument_by_id"
-      produces:
-      - "application/vnd.ons.collectioninstrument+json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "ID of collection instrument to return"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "Collection instrument representation"
-          schema:
-            $ref: "#/definitions/collectioninstrument"
-          headers:
-            ETag:
-              type: "string"
-              description: "The current ETag for the collection instrument, e.g. \"\
-                5635635636356356\""
-        400:
-          description: "Invalid ID supplied"
-        404:
-          description: "Collection instrument not found"
-      x-swagger-router-controller: "swagger_server.controllers.respondent_controller"
-  /define_batch/{id}/{count}:
-    post:
-      tags:
-      - "ciupload"
-      summary: "Specify the size of a batch"
-      description: "Associate a service and ce with an item count"
-      operationId: "define_batch_id_count_post"
-      produces:
-      - "application/vnd.collection+json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Collection exercise identifier"
-        required: true
-        type: "string"
-      - name: "count"
-        in: "path"
-        description: "Number of items in batch"
-        required: true
-        type: "integer"
-      responses:
-        200:
-          description: "File was completed successfully"
-        500:
-          description: "Server was unable to complete the operation"
-      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
-  /clear_batch/{id}:
-    delete:
-      tags:
-      - "ciupload"
-      summary: "Clear a batch"
-      description: "Clear down a batch definition, useful for testing"
-      operationId: "clear_batch_id_delete"
-      produces:
-      - "application/vnd.collection+json"
-      parameters:
-      - name: "id"
-        in: "path"
-        description: "Collection exercise identifier"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "File was completed successfully"
-        500:
-          description: "Server was unable to complete the operation"
-        501:
-          description: "Batch does not exist"
-        502:
-          description: "Generic error message"
-      x-swagger-router-controller: "swagger_server.controllers.ciupload_controller"
 definitions:
-  collectioninstrument:
-    type: "object"
-    required:
-    - "ciType"
-    - "id"
-    - "surveyId"
-    properties:
-      surveyId:
-        type: "string"
-        format: "urn"
-        example: "urn:ons.gov.uk:id:survey:001.234.56789"
-        default: "urn:ons.gov.uk:id:survey:001.234.56789"
-      ciType:
-        type: "string"
-        example: "OFFLINE"
-        enum:
-        - "ONLINE"
-        - "OFFLINE"
-        default: "OFFLINE"
-      classifiers:
-        $ref: "#/definitions/classifiers"
-      id:
-        type: "string"
-        format: "urn"
-        example: "urn:ons.gov.uk:id:ci:001.234.56789"
-        default: "urn:ons.gov.uk:id:ci:001.234.56789"
   vnd.collection+json:
     type: "object"
     properties:
-      href:
-        type: "string"
-        example: "/collectioninstrument/id/12345678"
       version:
         type: "string"
         example: "1.0"
+      href:
+        type: "string"
+        example: "/collectioninstrument/id/12345678"
       links:
         type: "array"
         items:
@@ -320,14 +294,40 @@ definitions:
         - "RU_REF"
         - "INDUSTRY"
         - "LEGAL_STATUS"
+  collectioninstrument:
+    type: "object"
+    required:
+    - "ciType"
+    - "id"
+    - "surveyId"
+    properties:
+      ciType:
+        type: "string"
+        example: "OFFLINE"
+        enum:
+        - "ONLINE"
+        - "OFFLINE"
+        default: "OFFLINE"
+      surveyId:
+        type: "string"
+        format: "urn"
+        example: "urn:ons.gov.uk:id:survey:001.234.56789"
+        default: "urn:ons.gov.uk:id:survey:001.234.56789"
+      classifiers:
+        $ref: "#/definitions/classifiers"
+      id:
+        type: "string"
+        format: "urn"
+        example: "urn:ons.gov.uk:id:ci:001.234.56789"
+        default: "urn:ons.gov.uk:id:ci:001.234.56789"
   vnd.collectionjson_links:
     properties:
-      rel:
-        type: "string"
-        example: "self"
-      type:
-        type: "string"
-        example: "application/vnd.ons.collectioninstrument+json"
       href:
         type: "string"
         example: "/collectioninstrument/id/12345678"
+      type:
+        type: "string"
+        example: "application/vnd.ons.collectioninstrument+json"
+      rel:
+        type: "string"
+        example: "self"
