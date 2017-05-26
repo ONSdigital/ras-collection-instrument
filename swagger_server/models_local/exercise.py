@@ -24,6 +24,7 @@ class ExerciseModel(ons_env.base):
         self.items = items
         self.status = status
 
+    @property
     def json(self):
         """Return a JSON representation of this record"""
         return {
