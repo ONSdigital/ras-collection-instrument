@@ -1,1 +1,1 @@
-web: ONS_ENV=production python3 -m swagger_server
+web: python3 -m swagger_server

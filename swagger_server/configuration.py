@@ -107,6 +107,7 @@ class ONSEnvironment(object):
             self._create_database()
             if self.if_drop_database:
                 self._base.metadata.drop_all(self._engine)
+            from .models_local import _models
             self._base.metadata.create_all(self._engine)
 
     def _create_database(self):
@@ -114,17 +115,13 @@ class ONSEnvironment(object):
 
         if not do_create_database.lower() in ['yes', 'true']:
             self.logger.info('Database create not required.')
-            print('Database create not required.')
             return
         self.logger.info('Checking database exists.')
-        print('Checking database exists.')
         if database_exists(self.get('db_connection')):
             self.logger.info('Database already exists.')
-            print('Database already exists.')
         else:
             create_database(self.get('db_connection'))
             self.logger.info('Database did not exist. Created.')
-            print('Database did not exist. Created.')
 
     def _activate_cf(self):
         """
