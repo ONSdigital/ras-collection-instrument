@@ -57,7 +57,7 @@ class CollectionInstrument(object):
         The default entry here is used by the unit testing code, so although it looks
         redundant, please leave it in.
         """
-        self.jwt = None
+        pass
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
