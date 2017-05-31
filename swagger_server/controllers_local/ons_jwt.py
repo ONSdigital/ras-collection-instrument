@@ -1,32 +1,33 @@
 ##############################################################################
 #                                                                            #
 #   ONS Digital JWT token handling                                           #
-#   Date:    20 May 2017                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from .configuration import ons_env
+from ..configuration import ons_env
 from jose import jwt, JWTError
 from datetime import datetime
 from sys import _getframe
 from functools import wraps
 from logging import WARN, INFO, ERROR, DEBUG
-from flask import request
 
 
-def validate_jwt(scope):
+def validate_jwt(scope, request):
     """
     Validate the incoming JWT token, don't allow access to the endpoint unless we pass this test
     :param scope: A list of scope identifiers used to protect the endpoint
+    :param request: The incoming request object
     :return: Exit variables from the protected function
     """
     def authorization_required_decorator(original_function):
         @wraps(original_function)
         def authorization_required_wrapper(*args, **kwargs):
-            if my_token.validate(scope):
+            if not ons_env.is_secure:
                 return original_function(*args, **kwargs)
-            return 403, "Access forbidden"
+            if my_token.validate(scope, request.headers.get('authorization', '')):
+                return original_function(*args, **kwargs)
+            return "Access forbidden", 403
         return authorization_required_wrapper
     return authorization_required_decorator
 
@@ -66,27 +67,23 @@ class ONSToken(object):
         """
         return jwt.decode(token, self.secret, algorithms=[self.algorithm])
 
-    def validate(self, scope):
+    def validate(self, scope, jwt_token):
         """
         This function checks a jwt token for a required scope type.
         :param scope: The scopes to test against
+        :param jwt_token: The incoming request object
         :return: Token is value, True or False
         """
+        self.report(INFO, 'validating token "{}" for scope "{}"'.format(jwt_token, scope))
         try:
-            token = request.headers.get('authorization', '')
-        except RuntimeError:
-            return not self.report(DEBUG, 'unit tests ignoring JWT validation')
-
-        self.report(INFO, 'validating token "{}" for scope "{}"'.format(token,scope))
-        try:
-            self.token = self.decode(token)
+            token = self.decode(jwt_token)
         except JWTError:
-            return self.report(ERROR, 'unable to decode token "{}"'.format(token))
+            return self.report(ERROR, 'unable to decode token "{}"'.format(jwt_token))
         #
         #   Make sure the token hasn't expired on us ...
         #
-        now = datetime.now()
-        if token.get('expires_at', now) > now:
+        now = datetime.now().timestamp()
+        if now >= token.get('expires_at', now):
             return self.report(WARN, 'token has expired "{}"'.format(token))
         #
         #   See if there is an intersection between the scopes required for this endpoint

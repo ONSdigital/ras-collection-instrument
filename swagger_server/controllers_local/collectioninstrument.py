@@ -1,8 +1,6 @@
 ##############################################################################
 #                                                                            #
 #   Collection Instruments Upload                                            #
-#   Date:    11 May 2017                                                     #
-#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
@@ -17,7 +15,6 @@ from traceback import print_exc
 from sys import stdout
 from json import loads
 from uuid import UUID
-from ..ons_jwt import validate_jwt
 
 DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 
@@ -29,10 +26,9 @@ def protect(uuid=True):
     passed parameters are strings, maybe not needed but prevents something poking a dict or similar
     through by mistake. It then converts the first parameter to a UUID type if the 'uuid' flag is set.
     
-    :param uuid: Whether to convert first parameter to UUID() 
+    :param uuid: Whether to convert first parameter to UUID()
     :return: status code, return message
     """
-    @validate_jwt(['ci:read', 'ci:write'])
     def protect_wrapped(func):
         def func_wrapped(*args, **kwargs):
             try:
@@ -61,7 +57,7 @@ class CollectionInstrument(object):
         The default entry here is used by the unit testing code, so although it looks
         redundant, please leave it in.
         """
-        pass
+        self.jwt = None
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using

@@ -1,24 +1,21 @@
 ##############################################################################
 #                                                                            #
 #   Collection Instruments Upload                                            #
-#   Date:    11 May 2017                                                     #
-#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-
-import os
 from flask import request, jsonify, make_response
 from .collectioninstrument import CollectionInstrument
+from .ons_jwt import validate_jwt
 
-root_folder = os.getcwd()
 collection_instrument = CollectionInstrument()
 
 
 #
 # /status/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def status_id_get(id):
     """
     Get upload status
@@ -35,6 +32,7 @@ def status_id_get(id):
 #
 # /define_batch/{id}/{count}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def define_batch_id_count_post(id, count):
     """
     Specify the size of a batch
@@ -50,8 +48,10 @@ def define_batch_id_count_post(id, count):
     return make_response(jsonify(msg), code)
 
 
+#
 # /upload/{id}/{file}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def upload_id_file_post(id, file, files=None):
     """
     Upload collection instrument
@@ -83,9 +83,11 @@ def upload_id_file_post(id, file, files=None):
         return make_response('Uploaded {} of {}'.format(count, len(uploaded_files)), 500)
     return make_response("OK", 200)
 
+
 #
 # /download_csv/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def download_csv_id_get(id):
     """
     Download CSV file
@@ -105,6 +107,7 @@ def download_csv_id_get(id):
 #
 # /activate/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def activate_id_put(id):
     """
     Activate batch
@@ -121,6 +124,7 @@ def activate_id_put(id):
 #
 # /clear_batch/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def clear_batch_id_delete(id):
     """
     Clear a batch
@@ -133,22 +137,11 @@ def clear_batch_id_delete(id):
     code, msg = collection_instrument.clear(id)
     return make_response(jsonify(msg), code)
 
-#
-# /download/{ru_ref}
-#
-def download_ru_ref_get(ru_ref):
-    """
-    Download a file based on the RU_REF
-    Download a file (test routine)
-    :param ru_ref: Respondent /Business identifier
-    :type ru_ref: str
-
-    :rtype: None
-    """
 
 #
 # /download/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def download_id_get(id):
     """
     Download a file based on the id (RU_REF)
