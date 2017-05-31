@@ -1,0 +1,8 @@
+---
+applications:
+- name: ras-collection-instrument-dev
+  memory: 512M
+  host: ras-collection-instrument-dev
+  services:
+    - cidsvc-pg-db
+
