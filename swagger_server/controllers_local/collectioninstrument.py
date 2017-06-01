@@ -1,8 +1,6 @@
 ##############################################################################
 #                                                                            #
 #   Collection Instruments Upload                                            #
-#   Date:    11 May 2017                                                     #
-#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
@@ -28,7 +26,7 @@ def protect(uuid=True):
     passed parameters are strings, maybe not needed but prevents something poking a dict or similar
     through by mistake. It then converts the first parameter to a UUID type if the 'uuid' flag is set.
     
-    :param uuid: Whether to convert first parameter to UUID() 
+    :param uuid: Whether to convert first parameter to UUID()
     :return: status code, return message
     """
     def protect_wrapped(func):
@@ -201,7 +199,6 @@ class CollectionInstrument(object):
     def csv(self, exercise_id):
         """
         Download all items in all batches as a list in CSV format.
-        TODO:: this should probably be parameterised with survey and ce as for the other routines
 
         :param: id
         :type: str

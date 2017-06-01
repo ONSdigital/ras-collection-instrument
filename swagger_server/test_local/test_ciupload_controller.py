@@ -26,7 +26,7 @@ class TestCiuploadController(BaseTestCase):
         super()
         self.collection_instrument = CollectionInstrument()
 
-    def test_01_define_batch(self):
+    def test_define_batch_for_testing_only_as_this_is_done_by_upload(self):
         """
         Make sure we can define a batch
         """
@@ -38,7 +38,7 @@ class TestCiuploadController(BaseTestCase):
         except:
             pass
 
-    def test_03_upload(self):
+    def test_upload_a_file_and_store_in_a_database_row(self):
         """
         Try a valid upload, and also an upload to an undefined batch
         """
@@ -52,7 +52,7 @@ class TestCiuploadController(BaseTestCase):
             code, msg = self.collection_instrument.upload(0, fileobject, 'dummy.txt')
             self.assertTrue(code == 400, msg)
 
-    def test_04_csv(self):
+    def test_download_a_list_of_files_in_csv_format(self):
         """
         Upload a file, then make sure we are able to download the result in CSV format
         """
@@ -68,20 +68,14 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(msg == wanted, "CSV download")
         code, msg = self.collection_instrument.csv(str(uuid4()))
         self.assertTrue(code == 204, "CSV download")
-        try:
-            code, msg = self.collection_instrument.csv(0)
-        except Exception:
-            pass
+        code, msg = self.collection_instrument.csv(0)
         self.assertTrue(code == 400, "CSV download")
-        try:
-            code, msg = self.collection_instrument.csv('0')
-        except Exception:
-            pass
+        code, msg = self.collection_instrument.csv('0')
         self.assertTrue(code == 500, "CSV download")
 
 
 
-    def test_05_status(self):
+    def test_call_the_status_endpoint_and_check_the_result_is_as_expected(self):
         """
         Make sure a /status works and that it see's an attempt to /status an undefined batch 
         """
@@ -104,7 +98,7 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(code == 400, msg)
 
 
-    def test_06_activate(self):
+    def test_call_the_activate_endpoint_and_check_the_result_is_as_expected(self):
         """        
         Check an activate works, make sure we spot an invalid state, and an undefined batch
         """
@@ -125,7 +119,7 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(code == 400, msg)
 
 
-    def test_07_upload(self):
+    def test_upload_a_file_to_the_actual_upload_endpoint_effecting_an_integration_test(self):
         """
         This is the really fun bit (!) we're need to contact the endpoint directly and make sure we can upload
         a file to at. We need to pick up on uploads with no file attached, and uploads to undefined batches.
@@ -156,10 +150,11 @@ class TestCiuploadController(BaseTestCase):
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref="1", file='fred.txt'),
             method='POST',
             data=data,
+            headers={'authorization': '123'},
             content_type='multipart/form-data')
         self.assertTrue(response.status_code == 500, "Response body is : " + response.data.decode('utf-8'))
 
-    def test_08_download(self):
+    def test_download_an_instrument_to_ensure_the_round_trip_encryption_decryption_is_working(self):
         """
         Upload a document, encrypt, store, then recover, decrypt and make sure it's what
         we started with ...
@@ -182,7 +177,7 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.download(0)
         self.assertTrue(code == 400, msg)
 
-    def test_09_misc(self):
+    def test_miscellaneous_tests_added_to_ensure_100_percent_coverage(self):
         """
         Test misc (not required?) routines
         """
@@ -234,7 +229,7 @@ class TestCiuploadController(BaseTestCase):
         except Exception:
             self.assertTrue(code == 500, 'Instrument with null')
 
-    def test_10_clear(self):
+    def test_call_the_clear_batch_endpoint_to_remove_all_files_in_a_specific_exercise(self):
         """
         Make sure we can clear a batch, and that we recognise a 'no such batch'
         """
@@ -257,7 +252,7 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.clear(0)
         self.assertTrue(code == 400, msg)
 
-    def test_11_instruments(self):
+    def test_instruments_try_some_random_instrument_searches_by_classifier(self):
         """
         Try out some of the query by classifier options
         """

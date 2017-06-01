@@ -1,23 +1,21 @@
 ##############################################################################
 #                                                                            #
 #   Collection Instruments Upload                                            #
-#   Date:    11 May 2017                                                     #
-#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-
-import os
-from flask import jsonify, make_response
+from flask import jsonify, make_response, request
 from .collectioninstrument import CollectionInstrument
+from .ons_jwt import validate_jwt
 
-root_folder = os.getcwd()
 collection_instrument = CollectionInstrument()
+
 
 #
 # /collectioninstrument
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def collectioninstrument_get(searchString=None, skip=None, limit=None):
     """
     searches collection instruments
@@ -34,9 +32,11 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
     code, msg = collection_instrument.instruments(searchString)
     return make_response(jsonify(msg), code)
 
+
 #
 # /collectioninstrument/id/{id}
 #
+@validate_jwt(['ci:read', 'ci:write'], request)
 def get_collection_instrument_by_id(id):
     """
     Get a collection instrument by ID
