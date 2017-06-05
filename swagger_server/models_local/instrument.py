@@ -6,11 +6,12 @@ from ..configuration import ons_env
 from .associations import instrument_exercise_table, instrument_business_table
 from .guid import GUID
 from uuid import uuid4
+from .base import Base
 
 prefix = ons_env.get('db_schema')+'.' if ons_env.get('db_schema') else ''
 
 
-class InstrumentModel(ons_env.base):
+class InstrumentModel(Base):
     """
     This models the 'instrument' table which keeps the stored collection instruments
     """
