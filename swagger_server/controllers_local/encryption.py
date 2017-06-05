@@ -1,8 +1,14 @@
 ##############################################################################
 #                                                                            #
 #   Simple AES256 Cryptographer routine to handle string encryption          #
+#   Date:    21 May 2017                                                     #
+#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
+#                                                                            #
+#   Initial peer review:                                                     #
+#                                                                            #
+#   Revision    Date    Reason                                               #
 #                                                                            #
 ##############################################################################
 from Crypto import Random

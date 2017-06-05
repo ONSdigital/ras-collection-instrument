@@ -1,14 +1,8 @@
 ##############################################################################
 #                                                                            #
 #   Generic Configuration tool for Micro-Service environment discovery       #
-#   Date:    20 May 2017                                                     #
-#   Author:  Gareth Bult                                                     #
 #   License: MIT                                                             #
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
-#                                                                            #
-#   Initial peer review:                                                     #
-#                                                                            #
-#   Revision    Date    Reason                                               #
 #                                                                            #
 ##############################################################################
 from configparser import ConfigParser, ExtendedInterpolation
@@ -17,12 +11,11 @@ from os import getenv
 from pathlib import Path
 
 from sqlalchemy import create_engine, event, DDL
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy_utils import database_exists, create_database
 from yaml import load, dump
 
 from swagger_server import ons_logger
+from swagger_server import database
 from .controllers_local.encryption import ONSCryptographer
 
 
@@ -53,18 +46,7 @@ class ONSEnvironment(object):
         self._env = getenv('ONS_ENV', 'development')
         self._parse_manifest()
         self._session = scoped_session(sessionmaker())
-        self._base = declarative_base()
-        #
-        #   If we're using postgres, make sure we create the appropriate Schema if it
-        #   doesn't already exist.
-        #
-        schema = self.get('db_schema')
-        if schema:
-            event.listen(
-                self._base.metadata,
-                "before_create",
-                DDL('CREATE SCHEMA IF NOT EXISTS {}'.format(schema)).execute_if(dialect='postgresql')
-            )
+
         self._engine = None
         self.logger = ons_logger.create(self)
         self.logger.info("Running with '{}' configuration".format(self._env))
@@ -100,28 +82,12 @@ class ONSEnvironment(object):
         """
         if self.get('db_name') is not None:
             self.logger.info("Connecting to '{}'".format(self.get('db_connection')))
-            print("Connecting to '{}'".format(self.get('db_connection')))
             self._engine = create_engine(self.get('db_connection'), convert_unicode=True)
             self._session.remove()
             self._session.configure(bind=self._engine, autoflush=False, autocommit=False, expire_on_commit=False)
-            self._create_database()
             if self.if_drop_database:
-                self._base.metadata.drop_all(self._engine)
-            from .models_local import _models
-            self._base.metadata.create_all(self._engine)
-
-    def _create_database(self):
-        do_create_database = self.get('create_database')
-
-        if not do_create_database.lower() in ['yes', 'true']:
-            self.logger.info('Database create not required.')
-            return
-        self.logger.info('Checking database exists.')
-        if database_exists(self.get('db_connection')):
-            self.logger.info('Database already exists.')
-        else:
-            create_database(self.get('db_connection'))
-            self.logger.info('Database did not exist. Created.')
+                database.drop(self, self._engine, self.logger)
+            database.create(self, self._engine, self.logger)
 
     def _activate_cf(self):
         """
@@ -149,7 +115,7 @@ class ONSEnvironment(object):
 
         cf_app_services = getenv('VCAP_SERVICES')
         if cf_app_services is not None:
-            db_name = self.get('db_name')
+            db_name = self.get('db_host')
             db_config = CfServices(loads(cf_app_services)).get(db_name)
             # override the configured db_connection with the CloudFoundry value:
             self.set('db_connection', db_config['uri'])
@@ -178,6 +144,13 @@ class ONSEnvironment(object):
         if not drop:
             return False
         return drop.lower() in ['yes', 'true']
+
+    @property
+    def do_create_database(self):
+        create = self.get('db_create')
+        if not create:
+            return False
+        return create.lower() in ['yes', 'true']
 
     @property
     def is_secure(self):

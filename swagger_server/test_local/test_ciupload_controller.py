@@ -124,17 +124,29 @@ class TestCiuploadController(BaseTestCase):
         This is the really fun bit (!) we're need to contact the endpoint directly and make sure we can upload
         a file to at. We need to pick up on uploads with no file attached, and uploads to undefined batches.
         """
+        from datetime import datetime, timedelta
+        from ..controllers_local.ons_jwt import ONSToken
+        ons_token = ONSToken()
+        now = datetime.now()
+        jwt = {
+            'expires_at': (now + timedelta(seconds=60)).timestamp(),
+            'scope': ['ci:read', 'ci:write']
+        }
+        token = ons_token.encode(jwt)
+
         batch = str(uuid4())
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
         response = self.client.open(
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
             method='POST',
+            headers={'authorization': token},
             data=data,
             content_type='multipart/form-data')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
         response = self.client.open(
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
             method='POST',
+            headers={'authorization': token},
             data='',
             content_type='multipart/form-data')
         self.assert500(response, "Response body is : " + response.data.decode('utf-8'))
@@ -143,6 +155,7 @@ class TestCiuploadController(BaseTestCase):
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=str(uuid4()), file='fred.txt'),
             method='POST',
             data=data,
+            headers={'authorization': token},
             content_type='multipart/form-data')
         self.assertTrue(response.status_code == 200, "Response body is : " + response.data.decode('utf-8'))
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))

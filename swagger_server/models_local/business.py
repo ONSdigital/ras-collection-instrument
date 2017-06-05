@@ -3,9 +3,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String
 from ..configuration import ons_env
 from .associations import instrument_business_table
+from .base import Base
 
 
-class BusinessModel(ons_env.base):
+class BusinessModel(Base):
     """
     This models the 'business' table which is a placeholder for thr RU code
     """

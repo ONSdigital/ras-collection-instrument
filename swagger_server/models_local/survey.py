@@ -3,8 +3,10 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer
 from ..configuration import ons_env
 from .guid import GUID
+from .base import Base
 
-class SurveyModel(ons_env.base):
+
+class SurveyModel(Base):
     """
     This models the 'business' table which is a placeholder for thr RU code
     """

@@ -4,8 +4,10 @@ from sqlalchemy.types import Integer, Enum
 from ..configuration import ons_env
 from .associations import instrument_exercise_table
 from .guid import GUID
+from .base import Base
 
-class ExerciseModel(ons_env.base):
+
+class ExerciseModel(Base):
     """
     This models the 'exercise' table which keeps the stored collection instruments
     """
