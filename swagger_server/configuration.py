@@ -115,7 +115,7 @@ class ONSEnvironment(object):
 
         cf_app_services = getenv('VCAP_SERVICES')
         if cf_app_services is not None:
-            db_name = self.get('db_host')
+            db_name = self.get('cf_db_service')
             db_config = CfServices(loads(cf_app_services)).get(db_name)
             # override the configured db_connection with the CloudFoundry value:
             self.set('db_connection', db_config['uri'])
@@ -155,10 +155,6 @@ class ONSEnvironment(object):
     @property
     def is_secure(self):
         return self.get('authentication', 'true').lower() in ['yes', 'true']
-
-    @property
-    def base(self):
-        return self._base
 
     @property
     def session(self):
