@@ -6,10 +6,13 @@
 #                                                                            #
 ##############################################################################
 from flask import jsonify, make_response, request
+from structlog import get_logger
 from .collectioninstrument import CollectionInstrument
 from .ons_jwt import validate_jwt
+from .controller_helper import ensure_log_on_error, bind_request_detail_to_log
 
 collection_instrument = CollectionInstrument()
+logger = get_logger()
 
 
 #
@@ -29,7 +32,9 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
 
     :rtype: None
     """
+    bind_request_detail_to_log(request)
     code, msg = collection_instrument.instruments(searchString)
+    ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -46,5 +51,7 @@ def get_collection_instrument_by_id(id):
 
     :rtype: Collectioninstrument
     """
+    bind_request_detail_to_log(request)
     code, msg = collection_instrument.instrument(id)
+    ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)

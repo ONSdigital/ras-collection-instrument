@@ -11,12 +11,12 @@ from ..models_local.exercise import ExerciseModel
 from ..models_local.business import BusinessModel
 from ..models_local.survey import SurveyModel
 from ..models_local.classification import ClassificationModel, classifications
-from traceback import print_exc
-from sys import stdout
 from json import loads
 from uuid import UUID
+from structlog import get_logger
 
 DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
+logger = get_logger()
 
 
 def protect(uuid=True):
@@ -42,9 +42,10 @@ def protect(uuid=True):
                     my_args[1] = UUID(my_id)
                 return func(*(my_args if uuid else args), **kwargs)
             except ValueError:
+                logger.exception("ValueError")
                 return 500, {'text': 'id is not a valid UUID ({})'.format(my_id)}
             except Exception:
-                print_exc(limit=5, file=stdout)
+                logger.exception("Server Error")
                 return 500, {'text': 'Server experienced an unexpected error'}
         return func_wrapped
     return protect_wrapped
@@ -293,5 +294,5 @@ class CollectionInstrument(object):
                 records.append(instrument.json)
             return 200, records
         except Exception:
-            print_exc(limit=5, file=stdout)
+            logger.exception("Server Error")
             return 500, {'text': 'Server error accessing database'}
