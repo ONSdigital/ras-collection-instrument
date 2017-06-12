@@ -5,11 +5,28 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
+from uuid import uuid4
 from flask import request, jsonify, make_response
+from structlog import get_logger
 from .collectioninstrument import CollectionInstrument
 from .ons_jwt import validate_jwt
 
 collection_instrument = CollectionInstrument()
+logger = get_logger()
+
+
+def _ensure_log_on_error(code, msg):
+    if code != 200:
+        logger.error("Bad request", error_data=msg)
+
+
+def _bind_request_detail_to_log():
+    logger.bind(
+        tx_id=str(uuid4()),
+        method=request.method,
+        path=request.full_path
+    )
+    logger.info("Start request")
 
 
 #
@@ -25,7 +42,9 @@ def status_id_get(id):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.status(id)
+    _ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -44,7 +63,9 @@ def define_batch_id_count_post(id, count):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.define_batch(id, count)
+    _ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -65,12 +86,14 @@ def upload_id_file_post(id, file, files=None):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     uploaded_files = None
     for index in ['files', 'files[]', 'upfile']:
         if index in request.files:
             uploaded_files = request.files.getlist(index)
 
     if not uploaded_files:
+        logger.error('No files supplied')
         return make_response('No files supplied', 500)
 
     count = 0
@@ -80,6 +103,7 @@ def upload_id_file_post(id, file, files=None):
             count += 1
 
     if count != len(uploaded_files):
+        logger.warning('Uploaded {} of {}'.format(count, len(uploaded_files)))
         return make_response('Uploaded {} of {}'.format(count, len(uploaded_files)), 500)
     return make_response("OK", 200)
 
@@ -97,7 +121,9 @@ def download_csv_id_get(id):
 
     :rtype: file
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.csv(id)
+    _ensure_log_on_error(code, msg)
     response = make_response(msg if type(msg) == str else msg['text'], code)
     response.headers["Content-Disposition"] = "attachment; filename=download.csv"
     response.headers["Content-type"] = "application/octet-stream"
@@ -117,7 +143,9 @@ def activate_id_put(id):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.activate(id)
+    _ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -134,7 +162,9 @@ def clear_batch_id_delete(id):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.clear(id)
+    _ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -151,7 +181,9 @@ def download_id_get(id):
 
     :rtype: None
     """
+    _bind_request_detail_to_log()
     code, msg = collection_instrument.download(id)
+    _ensure_log_on_error(code, msg)
     response = make_response(msg if type(msg) == str else msg['text'], code)
     response.headers["Content-Disposition"] = "attachment; filename=download.png"
     response.headers["Content-type"] = "application/octet-stream"
