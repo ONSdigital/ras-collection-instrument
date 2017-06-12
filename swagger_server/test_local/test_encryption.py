@@ -1,5 +1,5 @@
 import unittest
-from ..controllers_local.encryption import ONSCryptographer
+from swagger_server.controllers_local.encryption import ONSCryptographer
 
 class TestStringMethods(unittest.TestCase):
 

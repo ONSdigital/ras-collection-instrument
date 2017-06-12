@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
-from ..controllers_local.ons_jwt import ONSToken
+from swagger_server.controllers_local.ons_jwt import ONSToken
 
 
 class TestStringMethods(unittest.TestCase):

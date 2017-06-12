@@ -32,3 +32,29 @@ def get_collection_instrument_by_id(id):
     :rtype: Collectioninstrument
     """
     return 'do some magic!'
+
+
+def survey_responses_case_id_get(case_id):
+    """
+    Get a survey response by case ID
+    Returns a survey response
+    :param case_id: ID of case
+    :type case_id: str
+
+    :rtype: None
+    """
+    return 'do some magic!'
+
+
+def survey_responses_case_id_post(case_id, file=None):
+    """
+    Upload from the respondent
+    The survey response file with the case id as identifier
+    :param case_id: Case id identifier
+    :type case_id: str
+    :param file: The file to upload
+    :type file: werkzeug.datastructures.FileStorage
+
+    :rtype: None
+    """
+    return 'do some magic!'
