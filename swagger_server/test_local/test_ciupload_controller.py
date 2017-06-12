@@ -295,6 +295,21 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.instruments('{"SIZE": "1234"}')
         self.assertTrue(code == 200, msg)
 
+    def test_failed_respondents_collection_instrument(self):
+        from datetime import datetime, timedelta
+        from ..controllers_local.ons_jwt import ONSToken
+        ons_token = ONSToken()
+        now = datetime.now()
+        jwt = {
+            'expires_at': (now + timedelta(seconds=60)).timestamp(),
+            'scope': ['ci:read', 'ci:write']
+        }
+        token = ons_token.encode(jwt)
+        response = self.client.open(
+            '/collection-instrument-api/1.0.2/collectioninstrument/id/c68b1974-e0c0-4d3a-88ce-b308ae6e2b1a',
+            method='GET',
+            headers={'authorization': token})
+        self.assertTrue(response.status_code == 404, "Instrument not found")
 
 
 if __name__ == '__main__':

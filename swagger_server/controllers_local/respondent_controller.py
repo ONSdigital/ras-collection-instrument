@@ -5,31 +5,17 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from uuid import uuid4
 from flask import jsonify, make_response, request
 from structlog import get_logger
 from .collectioninstrument import CollectionInstrument
 from .ons_jwt import validate_jwt
-
+from .controller_helper import ensure_log_on_error, bind_request_detail_to_log
 
 collection_instrument = CollectionInstrument()
 logger = get_logger()
 
 
-def _ensure_log_on_error(code, msg):
-    if code != 200:
-        logger.info("Bad request", error_data=msg)
-
-
-def _bind_request_detail_to_log():
-    logger.bind(
-        tx_id=str(uuid4()),
-        method=request.method,
-        path=request.full_path
-    )
-    logger.info("Start request")
-
-
+#
 # /collectioninstrument
 #
 @validate_jwt(['ci:read', 'ci:write'], request)
@@ -46,9 +32,9 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
 
     :rtype: None
     """
-    _bind_request_detail_to_log()
+    bind_request_detail_to_log(request)
     code, msg = collection_instrument.instruments(searchString)
-    _ensure_log_on_error(code, msg)
+    ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
 
 
@@ -65,7 +51,7 @@ def get_collection_instrument_by_id(id):
 
     :rtype: Collectioninstrument
     """
-    _bind_request_detail_to_log()
+    bind_request_detail_to_log(request)
     code, msg = collection_instrument.instrument(id)
-    _ensure_log_on_error(code, msg)
+    ensure_log_on_error(code, msg)
     return make_response(jsonify(msg), code)
