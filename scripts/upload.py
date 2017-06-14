@@ -26,7 +26,7 @@ else:
 ref = argv[2]
 count = int(argv[3])
 
-API_UPLOAD = getenv('API_UPLOAD', '{}/collection-instrument-api/1.0.2/upload/{}/upload.txt'.format(host, ref))
+API_UPLOAD = getenv('API_UPLOAD', '{}/collection-instrument-api/1.0.3/upload/{}/upload.txt'.format(host, ref))
 
 actual = 0
 for i in range(0, count):
