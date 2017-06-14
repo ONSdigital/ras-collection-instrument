@@ -43,7 +43,7 @@ on the following diagram;
 To run locally from the root of your repository, run;
 
 ```bash
-./run.sh
+ONS_ENV=test ./scripts/run.sh
 ```
 
 On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
