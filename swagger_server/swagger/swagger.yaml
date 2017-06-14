@@ -43,7 +43,7 @@ info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
   title: Collection Instrument API
-  version: 1.0.2
+  version: 1.0.3
 paths:
   /activate/{id}:
     put:
@@ -179,6 +179,36 @@ paths:
       summary: Get upload status
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+  /survey_responses/{case_id}:
+    get:
+      description: Returns a survey response
+      operationId: survey_responses_case_id_get
+      parameters:
+      - {description: ID of case, in: path, name: case_id, required: true, type: string}
+      produces: [application/vnd.ons.collectioninstrument+json]
+      responses:
+        200: {description: Survey response representation}
+        404: {description: Survey response not found}
+        500: {description: Server was unable to complete the operation}
+      summary: Get a survey response by case ID
+      tags: [respondent]
+      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+    post:
+      consumes: [multipart/form-data]
+      description: The survey response file with the case id as identifier
+      operationId: survey_responses_case_id_post
+      parameters:
+      - {description: The file to upload, in: formData, name: file, required: false,
+        type: file}
+      - {description: Case id identifier, in: path, name: case_id, required: true,
+        type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: File was uploaded successfully}
+        500: {description: Server was unable to complete the operation}
+      summary: Upload from the respondent
+      tags: [respondent]
+      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
   /upload/{id}/{file}:
     post:
       consumes: [multipart/form-data]

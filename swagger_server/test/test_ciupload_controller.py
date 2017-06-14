@@ -16,7 +16,7 @@ class TestCiuploadController(BaseTestCase):
 
         Activate batch
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/activate/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/activate/{id}'.format(id='id_example'),
                                     method='PUT')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
@@ -26,7 +26,7 @@ class TestCiuploadController(BaseTestCase):
 
         Clear a batch
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/clear_batch/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/clear_batch/{id}'.format(id='id_example'),
                                     method='DELETE')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
@@ -36,7 +36,7 @@ class TestCiuploadController(BaseTestCase):
 
         Specify the size of a batch
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/define_batch/{id}/{count}'.format(id='id_example', count=56),
+        response = self.client.open('/collection-instrument-api/1.0.3/define_batch/{id}/{count}'.format(id='id_example', count=56),
                                     method='POST')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
@@ -46,7 +46,7 @@ class TestCiuploadController(BaseTestCase):
 
         Download CSV file
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/download_csv/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/download_csv/{id}'.format(id='id_example'),
                                     method='GET')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
@@ -56,7 +56,7 @@ class TestCiuploadController(BaseTestCase):
 
         Download a file based on the id (RU_REF)
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/download/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/download/{id}'.format(id='id_example'),
                                     method='GET',
                                     content_type='multipart/form-data')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
@@ -67,7 +67,7 @@ class TestCiuploadController(BaseTestCase):
 
         Get upload status
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/status/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/status/{id}'.format(id='id_example'),
                                     method='GET')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
@@ -78,7 +78,7 @@ class TestCiuploadController(BaseTestCase):
         Upload collection instrument
         """
         data = dict(files=(BytesIO(b'some file data'), 'file.txt'))
-        response = self.client.open('/collection-instrument-api/1.0.2/upload/{id}/{file}'.format(id='id_example', file='file_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/upload/{id}/{file}'.format(id='id_example', file='file_example'),
                                     method='POST',
                                     data=data,
                                     content_type='multipart/form-data')

@@ -12,6 +12,8 @@ from connexion import App
 from flask_cors import CORS
 from .encoder import JSONEncoder
 from .configuration import ons_env
+from swagger_server.controllers_local.exceptions import SessionScopeException
+from swagger_server.controllers_local.error_handlers import session_scope_handler
 
 if __name__ == '__main__':
     ons_env.activate()
@@ -19,6 +21,7 @@ if __name__ == '__main__':
     CORS(app.app)
     app.app.json_encoder = JSONEncoder
     app.add_api('swagger.yaml', arguments={'title': 'ONS Microservice'})
+    app.app.register_error_handler(SessionScopeException, session_scope_handler)
     app.run(host='0.0.0.0', port=ons_env.port)
 
     #from twisted.internet import reactor

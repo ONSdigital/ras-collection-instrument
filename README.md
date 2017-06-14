@@ -9,7 +9,7 @@ to this repository.
 ## Overview
 
 This repository implements REST endpoints for the RAS Collection Instrument based on the Swagger API 
-definition [here](https://app.swaggerhub.com/apis/oddjobz/collection-instrument-api/1.0.2).
+definition [here](https://app.swaggerhub.com/apis/oddjobz/collection-instrument-api/1.0.3).
 If you need to make a change to the REST interface, please start by changing the API spec, then regenerate 
 the code using the code generator in the repository described above.
 
@@ -43,12 +43,12 @@ on the following diagram;
 To run locally from the root of your repository, run;
 
 ```bash
-./run.sh
+ONS_ENV=test ./scripts/run.sh
 ```
 
 On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
 subsequent runs this will be almost instantaneous. By default the service will be available 
-on **http://localhost:8080/collection-instrument-api/1.0.2/ui**.
+on **http://localhost:8080/collection-instrument-api/1.0.3/ui**.
 
 ### Uploading files from the command line
 

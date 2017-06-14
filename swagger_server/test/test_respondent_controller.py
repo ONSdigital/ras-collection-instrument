@@ -20,7 +20,7 @@ class TestRespondentController(BaseTestCase):
         query_string = [('searchString', 'searchString_example'),
                         ('skip', 1),
                         ('limit', 50)]
-        response = self.client.open('/collection-instrument-api/1.0.2/collectioninstrument',
+        response = self.client.open('/collection-instrument-api/1.0.3/collectioninstrument',
                                     method='GET',
                                     query_string=query_string)
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
@@ -31,7 +31,7 @@ class TestRespondentController(BaseTestCase):
 
         Get a collection instrument by ID
         """
-        response = self.client.open('/collection-instrument-api/1.0.2/collectioninstrument/id/{id}'.format(id='id_example'),
+        response = self.client.open('/collection-instrument-api/1.0.3/collectioninstrument/id/{id}'.format(id='id_example'),
                                     method='GET')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 

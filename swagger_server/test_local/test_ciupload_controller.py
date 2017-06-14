@@ -7,10 +7,10 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from . import BaseTestCase
+from swagger_server.test_local import BaseTestCase
 from werkzeug.datastructures import FileStorage
 from six import BytesIO
-from ..controllers_local.collectioninstrument import CollectionInstrument
+from swagger_server.controllers_local.collectioninstrument import CollectionInstrument
 from uuid import uuid4
 
 DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
@@ -137,14 +137,14 @@ class TestCiuploadController(BaseTestCase):
         batch = str(uuid4())
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
         response = self.client.open(
-            '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
+            '/collection-instrument-api/1.0.3/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
             method='POST',
             headers={'authorization': token},
             data=data,
             content_type='multipart/form-data')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
         response = self.client.open(
-            '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
+            '/collection-instrument-api/1.0.3/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
             method='POST',
             headers={'authorization': token},
             data='',
@@ -152,7 +152,7 @@ class TestCiuploadController(BaseTestCase):
         self.assert500(response, "Response body is : " + response.data.decode('utf-8'))
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
         response = self.client.open(
-            '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=str(uuid4()), file='fred.txt'),
+            '/collection-instrument-api/1.0.3/upload/{ref}/{file}'.format(ref=str(uuid4()), file='fred.txt'),
             method='POST',
             data=data,
             headers={'authorization': token},
@@ -160,7 +160,7 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(response.status_code == 200, "Response body is : " + response.data.decode('utf-8'))
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
         response = self.client.open(
-            '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref="1", file='fred.txt'),
+            '/collection-instrument-api/1.0.3/upload/{ref}/{file}'.format(ref="1", file='fred.txt'),
             method='POST',
             data=data,
             headers={'authorization': '123'},
