@@ -91,14 +91,14 @@ class CollectionInstrument(object):
         query = ons_env.session.query(InstrumentModel)
         used = []
         for attr, value in classifiers.items():
-            if attr == 'ru_ref' and BusinessModel not in used:
+            if attr == 'RU_REF' and BusinessModel not in used:
                 query = query.join((BusinessModel, InstrumentModel.businesses))
                 used.append(BusinessModel)
-            elif attr == 'exercise' and ExerciseModel not in used:
+            elif attr == 'COLLECTION_EXERCISE' and ExerciseModel not in used:
                 query = query.join((ExerciseModel, InstrumentModel.exercises))
                 query = query.join((ExerciseModel, InstrumentModel.exercises))
                 used.append(ExerciseModel)
-            elif attr == 'survey' and SurveyModel not in used:
+            elif attr == 'SURVEY_ID' and SurveyModel not in used:
                 query = query.join(SurveyModel.instruments)
                 used.append(SurveyModel)
             elif attr in classifications and ClassificationModel not in used:
@@ -107,15 +107,15 @@ class CollectionInstrument(object):
             else:
                 return 'unable to handle query for ({}={})'.format(attr, value)
         for attr, value in classifiers.items():
-            if attr == 'ru_ref':
+            if attr == 'RU_REF':
                 query = query.filter(BusinessModel.ru_ref == value)
-            elif attr == 'exercise':
+            elif attr == 'COLLECTION_EXERCISE':
                 query = query.filter(ExerciseModel.exercise_id == UUID(value))
-            elif attr == 'survey':
+            elif attr == 'SURVEY_ID':
                 query = query.filter(SurveyModel.survey_id == UUID(value))
             else:
                 query = query.filter(ClassificationModel.kind == attr).filter(ClassificationModel.value == value)
-        return query.all()
+        return query.limit(10).all()
 
     @protect(uuid=True)
     def define_batch(self, exercise_id, count):
@@ -290,7 +290,17 @@ class CollectionInstrument(object):
             records = []
             for result in results:
                 instrument = ons_env.session.query(InstrumentModel).get(result.id)
-                records.append(instrument.json)
+                classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
+                for business in instrument.businesses:
+                    classifiers['RU_REF'].append(business.ru_ref)
+                for exercise in instrument.exercises:
+                    classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
+                result = {
+                    'id': instrument.instrument_id,
+                    'name': 'Instrument Name',
+                    'classifierTypes': classifiers
+                }
+                records.append(result)
             return 200, records
         except Exception:
             print_exc(limit=5, file=stdout)

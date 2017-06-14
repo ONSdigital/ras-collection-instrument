@@ -1,6 +1,7 @@
 from sqlalchemy import Table, Column, Integer, ForeignKey
-from ..configuration import ons_env
-from .base import Base
+from ons_ras_common import ons_env
+#from ..configuration import ons_env
+#from .base import Base
 
 prefix = ons_env.get('db_schema')+'.' if ons_env.get('db_schema') else ''
 schema = ons_env.get('db_schema') if ons_env.get('db_schema') else None
