@@ -217,15 +217,15 @@ class CollectionInstrument(object):
                 count += 1
         return 200, result
 
-    @protect(uuid=False)
-    def download(self, ru_code):
+    @protect(uuid=True)
+    def download(self, id):
         """
         Return a decrypted copy of a stored / encrypted insrument
 
-        :param ru_code: The instrument id to recover 
+        :param id: The instrument id to recover
         :return: The unencrypted file contents
         """
-        instrument = self._get_instrument_by_ru(ru_code)
+        instrument = self._get_instrument(id)
         if not instrument:
             return 404, 'Instrument not found'
         return 200, ons_env.cipher.decrypt(instrument.data)
@@ -291,11 +291,11 @@ class CollectionInstrument(object):
             records = []
             for result in results:
                 instrument = ons_env.db.session.query(InstrumentModel).get(result.id)
-                classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
+                classifiers = {'RU_REF': [], 'collectionExercise': []}
                 for business in instrument.businesses:
                     classifiers['RU_REF'].append(business.ru_ref)
                 for exercise in instrument.exercises:
-                    classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
+                    classifiers['collectionExercise'].append(exercise.exercise_id)
                 result = {
                     'id': instrument.instrument_id,
                     'name': 'Instrument Name',

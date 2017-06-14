@@ -12,6 +12,7 @@ from werkzeug.datastructures import FileStorage
 from six import BytesIO
 from ..controllers_local.collectioninstrument import CollectionInstrument
 from uuid import uuid4
+from ons_ras_common import ons_env
 
 DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 
@@ -125,14 +126,12 @@ class TestCiuploadController(BaseTestCase):
         a file to at. We need to pick up on uploads with no file attached, and uploads to undefined batches.
         """
         from datetime import datetime, timedelta
-        from ..controllers_local.ons_jwt import ONSToken
-        ons_token = ONSToken()
         now = datetime.now()
         jwt = {
             'expires_at': (now + timedelta(seconds=60)).timestamp(),
             'scope': ['ci:read', 'ci:write']
         }
-        token = ons_token.encode(jwt)
+        token = ons_env.jwt.encode(jwt)
 
         batch = str(uuid4())
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
@@ -165,7 +164,7 @@ class TestCiuploadController(BaseTestCase):
             data=data,
             headers={'authorization': '123'},
             content_type='multipart/form-data')
-        self.assertTrue(response.status_code == 500, "Response body is : " + response.data.decode('utf-8'))
+        self.assertTrue(response.status_code == 403, "Response body is : " + response.data.decode('utf-8'))
 
     def test_download_an_instrument_to_ensure_the_round_trip_encryption_decryption_is_working(self):
         """
@@ -178,14 +177,19 @@ class TestCiuploadController(BaseTestCase):
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
 
-        code, msg = self.collection_instrument.instruments('{"ru_ref": "my_RU_code"}')
+        code, msg = self.collection_instrument.instruments('{"RU_REF": "my_RU_code"}')
         self.assertTrue(code == 200, msg)
 
-        code, msg = self.collection_instrument.download("my_RU_code")
+        instrument = self.collection_instrument._get_instrument_by_ru("my_RU_code")
+        print("ID>", instrument.instrument_id)
+        code, msg = self.collection_instrument.download(str(instrument.instrument_id))
+
+        print("Code...>", code)
+        print("Msg....>", msg)
         with open('scripts/upload.txt', 'rb') as io:
             orig = io.read()
         self.assertEqual(msg, orig, 'Comparing processed with original')
-        code, msg = self.collection_instrument.download('does_not_exist')
+        code, msg = self.collection_instrument.download(str(uuid4()))
         self.assertTrue(code == 404, msg)
         code, msg = self.collection_instrument.download(0)
         self.assertTrue(code == 400, msg)
@@ -200,7 +204,7 @@ class TestCiuploadController(BaseTestCase):
             code, msg = self.collection_instrument.upload(batch, fileobject, 'my_RU_code')
             self.assertTrue(code == 200, msg)
 
-        code, msg = self.collection_instrument.instruments('{"ru_ref": "my_RU_code"}')
+        code, msg = self.collection_instrument.instruments('{"RU_REF": "my_RU_code"}')
         self.assertTrue(code == 200, msg)
         instrument = msg[0]
         instrument_id = str(instrument['id'])
@@ -286,11 +290,11 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.instruments('')
         self.assertTrue(code == 200, msg)
 
-        code, msg = self.collection_instrument.instruments('{"ru_ref": "file3"}')
+        code, msg = self.collection_instrument.instruments('{"RU_REF": "file3"}')
         self.assertTrue(code == 200, msg)
-        code, msg = self.collection_instrument.instruments('{"exercise": "'+batch+'"}')
+        code, msg = self.collection_instrument.instruments('{"COLLECTION_EXERCISE": "'+batch+'"}')
         self.assertTrue(code == 200, msg)
-        code, msg = self.collection_instrument.instruments('{"survey": "'+DEFAULT_SURVEY+'"}')
+        code, msg = self.collection_instrument.instruments('{"SURVEY_ID": "'+DEFAULT_SURVEY+'"}')
         self.assertTrue(code == 200, msg)
         code, msg = self.collection_instrument.instruments('{"SIZE": "1234"}')
         self.assertTrue(code == 200, msg)

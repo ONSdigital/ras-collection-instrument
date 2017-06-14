@@ -146,7 +146,7 @@ def download_id_get(id):
     """
     Download a file based on the id (RU_REF)
     Download a file (test routine)
-    :param id: Respondent /Business identifier
+    :param id: Collection instrument ID
     :type id: str
 
     :rtype: None

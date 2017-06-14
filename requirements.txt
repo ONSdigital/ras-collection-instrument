@@ -10,7 +10,6 @@ click==6.7
 clickclick==1.2.1
 connexion==1.1.10
 constantly==15.1.0
-coverage==4.4.1
 crochet==1.6.0
 cryptography==1.9
 ecdsa==0.13
@@ -56,3 +55,4 @@ virtualenv==15.1.0
 Werkzeug==0.12.2
 zope.interface==4.4.1
 ons-ras-common==0.1.8
+service-identity==17.0.0
