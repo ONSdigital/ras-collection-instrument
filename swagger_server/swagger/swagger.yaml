@@ -1,4 +1,4 @@
-basePath: /collection-instrument-api/1.0.3
+basePath: /collection-instrument-api/1.0.2
 definitions:
   classifiers:
     properties:
