@@ -1,14 +1,13 @@
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, Enum, String
-from ..configuration import ons_env
-from .base import Base
+from ons_ras_common import ons_env
 
 prefix = ons_env.get('db_schema')+'.' if ons_env.get('db_schema') else ''
 classifications = ('LEGAL_STATUS', 'INDUSTRY', 'SIZE', 'GEOGRAPHY', 'COLLECTION_EXERCISE', 'RU_REF')
 
 
-class ClassificationModel(Base):
+class ClassificationModel(ons_env.db.base):
     """
     This models the 'classifier' table which keeps tracks tags against an instrument
     """

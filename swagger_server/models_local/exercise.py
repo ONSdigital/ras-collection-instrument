@@ -1,13 +1,12 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, Enum
-from ..configuration import ons_env
 from .associations import instrument_exercise_table
 from .guid import GUID
-from .base import Base
+from ons_ras_common import ons_env
 
 
-class ExerciseModel(Base):
+class ExerciseModel(ons_env.db.base):
     """
     This models the 'exercise' table which keeps the stored collection instruments
     """

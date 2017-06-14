@@ -7,7 +7,7 @@
 ##############################################################################
 from flask import jsonify, make_response, request
 from .collectioninstrument import CollectionInstrument
-from .ons_jwt import validate_jwt
+from ons_ras_common.ons_decorators import validate_jwt
 
 collection_instrument = CollectionInstrument()
 

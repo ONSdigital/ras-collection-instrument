@@ -28,7 +28,6 @@ jsonschema==2.6.0
 logger==1.4
 MarkupSafe==1.0
 observable==0.3.2
-ons-ras-common==0.1.1
 packaging==16.8
 pluggy==0.4.0
 psycopg2==2.7.1
@@ -56,3 +55,4 @@ urllib3==1.21.1
 virtualenv==15.1.0
 Werkzeug==0.12.2
 zope.interface==4.4.1
+ons-ras-common==0.1.8

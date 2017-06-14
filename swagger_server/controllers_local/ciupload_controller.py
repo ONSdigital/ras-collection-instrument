@@ -7,7 +7,7 @@
 ##############################################################################
 from flask import request, jsonify, make_response
 from .collectioninstrument import CollectionInstrument
-from .ons_jwt import validate_jwt
+from ons_ras_common.ons_decorators import validate_jwt
 
 collection_instrument = CollectionInstrument()
 
@@ -152,7 +152,7 @@ def download_id_get(id):
     :rtype: None
     """
     code, msg = collection_instrument.download(id)
-    response = make_response(msg if type(msg) == str else msg['text'], code)
+    response = make_response(msg, code)
     response.headers["Content-Disposition"] = "attachment; filename=download.png"
     response.headers["Content-type"] = "application/octet-stream"
     return response

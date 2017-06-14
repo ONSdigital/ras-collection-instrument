@@ -5,7 +5,7 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from ..configuration import ons_env
+from ons_ras_common import ons_env
 from ..models_local.instrument import InstrumentModel
 from ..models_local.exercise import ExerciseModel
 from ..models_local.business import BusinessModel
@@ -64,22 +64,22 @@ class CollectionInstrument(object):
     some 'more' obvious shortcuts to functions, purely from a 'readability' perspective.
     """
     def _get_exercise(self, exercise_id):
-        return ons_env.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+        return ons_env.db.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
 
     def _get_business(self, ru_ref):
-        return ons_env.session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
+        return ons_env.db.session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
 
     def _get_survey(self, survey_id):
-        return ons_env.session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
+        return ons_env.db.session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
 
     def _get_instrument(self, instrument_id):
-        return ons_env.session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
+        return ons_env.db.session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
 
     def _get_instrument_by_ru(self, ru_ref):
-        return ons_env.session.query(InstrumentModel).filter(BusinessModel.ru_ref == ru_ref).first()
+        return ons_env.db.session.query(InstrumentModel).filter(BusinessModel.ru_ref == ru_ref).first()
 
     def _exercise_status_set(self, exercise_id, status):
-        ons_env.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).update({'status': status})
+        ons_env.db.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).update({'status': status})
 
     def _instruments_by_classifier(self, classifiers):
         """
@@ -88,8 +88,9 @@ class CollectionInstrument(object):
         :param classifiers: dict of (key, value) pairs to search on 
         :return: query results (matching records)
         """
-        query = ons_env.session.query(InstrumentModel)
+        query = ons_env.db.session.query(InstrumentModel)
         used = []
+
         for attr, value in classifiers.items():
             if attr == 'RU_REF' and BusinessModel not in used:
                 query = query.join((BusinessModel, InstrumentModel.businesses))
@@ -130,8 +131,8 @@ class CollectionInstrument(object):
         """
         exercise = self._get_exercise(exercise_id)
         if not exercise:
-            ons_env.session.add(ExerciseModel(exercise_id=exercise_id, items=count))
-            ons_env.session.commit()
+            ons_env.db.session.add(ExerciseModel(exercise_id=exercise_id, items=count))
+            ons_env.db.session.commit()
         return 200, {'text': 'OK'}
 
     @protect(uuid=True)
@@ -146,8 +147,8 @@ class CollectionInstrument(object):
         exercise = self._get_exercise(exercise_id)
         if not exercise:
             return 204, {'text': 'No such batch'}
-        ons_env.session.delete(exercise)
-        ons_env.session.commit()
+        ons_env.db.session.delete(exercise)
+        ons_env.db.session.commit()
         return 200, {'text': 'OK'}
 
     @protect(uuid=True)
@@ -192,7 +193,7 @@ class CollectionInstrument(object):
         if exercise.status != 'pending':
             return 500, {'text': 'Batch in wrong state'}
         exercise.status = 'active'
-        ons_env.session.commit()
+        ons_env.db.session.commit()
         return 200, exercise.json
 
     @protect(uuid=True)
@@ -258,14 +259,14 @@ class CollectionInstrument(object):
         instrument.exercises.append(exercise)
         instrument.businesses.append(business)
         instrument.classifications.append(classifier)
-        ons_env.session.add(instrument)
+        ons_env.db.session.add(instrument)
 
         survey = self._get_survey(survey_id)
         if not survey:
             survey = SurveyModel(survey_id=survey_id)
-            ons_env.session.add(survey)
+            ons_env.db.session.add(survey)
         survey.instruments.append(instrument)
-        ons_env.session.commit()
+        ons_env.db.session.commit()
         return 200, 'OK'
 
     def instruments(self, searchString):
@@ -289,7 +290,7 @@ class CollectionInstrument(object):
                 return 500, {'text': results}
             records = []
             for result in results:
-                instrument = ons_env.session.query(InstrumentModel).get(result.id)
+                instrument = ons_env.db.session.query(InstrumentModel).get(result.id)
                 classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
                 for business in instrument.businesses:
                     classifiers['RU_REF'].append(business.ru_ref)
