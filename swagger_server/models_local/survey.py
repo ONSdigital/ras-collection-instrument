@@ -1,12 +1,11 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer
-from ..configuration import ons_env
 from .guid import GUID
-from .base import Base
+from ons_ras_common import ons_env
 
 
-class SurveyModel(Base):
+class SurveyModel(ons_env.db.base):
     """
     This models the 'business' table which is a placeholder for thr RU code
     """

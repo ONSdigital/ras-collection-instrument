@@ -1,12 +1,11 @@
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Integer, String
-from ..configuration import ons_env
 from .associations import instrument_business_table
-from .base import Base
+from ons_ras_common import ons_env
 
 
-class BusinessModel(Base):
+class BusinessModel(ons_env.db.base):
     """
     This models the 'business' table which is a placeholder for thr RU code
     """

@@ -1,6 +1,7 @@
 import unittest
 from ..controllers_local.encryption import ONSCryptographer
 
+
 class TestStringMethods(unittest.TestCase):
 
     def setUp(self):
