@@ -298,8 +298,8 @@ class CollectionInstrument(object):
                     classifiers['collectionExercise'].append(exercise.exercise_id)
                 result = {
                     'id': instrument.instrument_id,
-                    'name': 'Instrument Name',
-                    'classifierTypes': classifiers
+                    'classifiers': classifiers,
+                    'surveyId': '(not available yet)'
                 }
                 records.append(result)
             return 200, records
