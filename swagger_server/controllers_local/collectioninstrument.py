@@ -246,6 +246,8 @@ class CollectionInstrument(object):
         blob = fileobject.read()
         size = len(blob)
         blob = ons_env.cipher.encrypt(blob)
+        if '.' in ru_ref:
+            ru_ref = ru_ref.split('.')[0]
 
         exercise = self._get_exercise(exercise_id)
         if not exercise:
