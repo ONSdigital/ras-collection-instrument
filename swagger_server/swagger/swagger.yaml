@@ -36,7 +36,7 @@ definitions:
       href: {example: /collectioninstrument/id/12345678, type: string}
       rel: {example: self, type: string}
       type: {example: application/vnd.ons.collectioninstrument+json, type: string}
-host: localhost:59597
+host: localhost:40027
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
