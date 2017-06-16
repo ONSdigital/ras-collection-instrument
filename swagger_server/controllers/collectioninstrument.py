@@ -151,6 +151,21 @@ class CollectionInstrument(object):
         ons_env.db.session.commit()
         return 200, {'text': 'OK'}
 
+    @protect(uuid=False)
+    def clear_by_ref(self, ru_ref):
+        """
+        Clear an instrument
+
+        :param ru_ref: An RU_REF
+        :return: Returns a 200 if the batch was removed, or 204 if not found
+        """
+        instrument = self._get_instrument_by_ru(ru_ref)
+        if not instrument:
+            return 404, {'text': 'no such instrument'}
+        ons_env.db.session.delete(instrument)
+        ons_env.db.session.commit()
+        return 200, {'text': 'instrument deleted'}
+
     @protect(uuid=True)
     def instrument(self, instrument_id):
         """
@@ -227,8 +242,9 @@ class CollectionInstrument(object):
         """
         instrument = self._get_instrument(id)
         if not instrument:
-            return 404, 'Instrument not found'
-        return 200, ons_env.cipher.decrypt(instrument.data)
+            return 404, 'Instrument not found', None
+        ru_ref = instrument.businesses[0].ru_ref
+        return 200, ons_env.cipher.decrypt(instrument.data), ru_ref
 
     @protect(uuid=True)
     def upload(self, exercise_id, fileobject, ru_ref=None, survey_id=DEFAULT_SURVEY):

@@ -180,15 +180,12 @@ class TestCiuploadController(BaseTestCase):
         self.assertTrue(code == 200, msg)
 
         instrument = self.collection_instrument._get_instrument_by_ru("my_RU_code")
-        print("ID>", instrument.instrument_id)
-        code, msg = self.collection_instrument.download(str(instrument.instrument_id))
+        code, msg, filename = self.collection_instrument.download(str(instrument.instrument_id))
 
-        print("Code...>", code)
-        print("Msg....>", msg)
         with open('scripts/upload.txt', 'rb') as io:
             orig = io.read()
         self.assertEqual(msg, orig, 'Comparing processed with original')
-        code, msg = self.collection_instrument.download(str(uuid4()))
+        code, msg, filename = self.collection_instrument.download(str(uuid4()))
         self.assertTrue(code == 404, msg)
         code, msg = self.collection_instrument.download(0)
         self.assertTrue(code == 400, msg)

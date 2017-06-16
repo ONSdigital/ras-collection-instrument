@@ -139,6 +139,21 @@ def clear_batch_id_delete(id):
 
 
 #
+# /clear_ruref/{re_ref}
+#
+@validate_jwt(['ci:read', 'ci:write'], request)
+def clear_ruref(ru_ref):
+    """
+    Clear an instrument by ru_ref, useful for testing
+    :param ru_ref: Collection exercise identifier
+    :type ru_ref: str
+
+    :rtype: None
+    """
+    code, msg = collection_instrument.clear_by_ref(ru_ref)
+    return make_response(jsonify(msg), code)
+
+#
 # /download/{id}
 #
 @validate_jwt(['ci:read', 'ci:write'], request)
@@ -151,8 +166,11 @@ def download_id_get(id):
 
     :rtype: None
     """
-    code, msg = collection_instrument.download(id)
+    args = collection_instrument.download(id)
+    code = args[0]
+    msg = args[1]
     response = make_response(msg, code)
-    response.headers["Content-Disposition"] = "attachment; filename=download.png"
-    response.headers["Content-type"] = "application/octet-stream"
+    if code == 200:
+        response.headers["Content-Disposition"] = "attachment; filename={}.xlsx".format(args[2])
+        response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response

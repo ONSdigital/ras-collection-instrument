@@ -23,20 +23,7 @@ definitions:
         format: urn, type: string}
     required: [ciType, id, surveyId]
     type: object
-  vnd.collection+json:
-    properties:
-      href: {example: /collectioninstrument/id/12345678, type: string}
-      links:
-        items: {$ref: '#/definitions/vnd.collectionjson_links'}
-        type: array
-      version: {example: '1.0', type: string}
-    type: object
-  vnd.collectionjson_links:
-    properties:
-      href: {example: /collectioninstrument/id/12345678, type: string}
-      rel: {example: self, type: string}
-      type: {example: application/vnd.ons.collectioninstrument+json, type: string}
-host: localhost:40027
+host: localhost:38219
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
@@ -72,6 +59,21 @@ paths:
         501: {description: Batch does not exist}
         502: {description: Generic error message}
       summary: Clear a batch
+      tags: [ciupload]
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+  /clear_ruref/{ru_ref}:
+    delete:
+      description: Clear instrument by RU_REF
+      operationId: clear_ruref
+      parameters:
+      - {description: RU REF, in: path, name: ru_ref, required: true, type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: File was completed successfully}
+        500: {description: Server was unable to complete the operation}
+        501: {description: Batch does not exist}
+        502: {description: Generic error message}
+      summary: Clear an instrument
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /collectioninstrument:
