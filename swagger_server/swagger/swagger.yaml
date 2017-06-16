@@ -36,7 +36,7 @@ definitions:
       href: {example: /collectioninstrument/id/12345678, type: string}
       rel: {example: self, type: string}
       type: {example: application/vnd.ons.collectioninstrument+json, type: string}
-host: localhost:44929
+host: localhost:59597
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
@@ -57,7 +57,7 @@ paths:
         501: {description: Batch is not in UPLOADING mode}
       summary: Activate batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /clear_batch/{id}:
     delete:
       description: Clear down a batch definition, useful for testing
@@ -73,7 +73,7 @@ paths:
         502: {description: Generic error message}
       summary: Clear a batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /collectioninstrument:
     get:
       description: 'By passing in the appropriate options, you can search for available
@@ -94,7 +94,7 @@ paths:
         400: {description: bad input parameter}
       summary: searches collection instruments
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /collectioninstrument/id/{id}:
     get:
       description: Returns a single collection instrument
@@ -114,7 +114,7 @@ paths:
         404: {description: Collection instrument not found}
       summary: Get a collection instrument by ID
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /define_batch/{id}/{count}:
     post:
       description: Associate a service and ce with an item count
@@ -130,7 +130,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Specify the size of a batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /download/{id}:
     get:
       consumes: [multipart/form-data]
@@ -146,7 +146,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Download a file based on the id (Instrument ID)
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /download_csv/{id}:
     get:
       description: Download a list of live spreadsheets
@@ -161,7 +161,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Download CSV file
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /status/{id}:
     get:
       description: Return a count of items thus far and total in batch
@@ -176,7 +176,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Get upload status
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /survey_responses/{case_id}:
     get:
       description: Returns a survey response
@@ -190,7 +190,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Get a survey response by case ID
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
     post:
       consumes: [multipart/form-data]
       description: The survey response file with the case id as identifier
@@ -206,7 +206,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Upload from the respondent
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /upload/{id}/{file}:
     post:
       consumes: [multipart/form-data]
@@ -225,7 +225,7 @@ paths:
         501: {description: Batch does not exist}
       summary: Upload collection instrument
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
 schemes: [https]
 swagger: '2.0'
 tags:

@@ -5,7 +5,7 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from ..models_local.survey_responses import SurveyResponseModel
+from ..models.survey_responses import SurveyResponseModel
 from .session_manager import session_scope
 from ons_ras_common import ons_env
 from .helper import is_valid_file_format, is_valid_file_name_length

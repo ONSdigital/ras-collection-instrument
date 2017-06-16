@@ -5,4 +5,4 @@ if ! [ -a .build-test ] ; then
 fi
 source .build-test/bin/activate
 pip -q install -r test-requirements.txt
-pytest --cov=swagger_server/controllers_local --cov-report term-missing
+pytest --cov=swagger_server/controllers --cov-report term-missing

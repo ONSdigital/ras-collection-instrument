@@ -1,11 +1,21 @@
-import connexion
-from swagger_server.models.collectioninstrument import Collectioninstrument
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
+##############################################################################
+#                                                                            #
+#   Collection Instruments Upload                                            #
+#   License: MIT                                                             #
+#   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
+#                                                                            #
+##############################################################################
+from flask import jsonify, make_response, request
+from .collectioninstrument import CollectionInstrument
+from ons_ras_common.ons_decorators import validate_jwt
+from .survey_response import SurveyResponse
 
+collection_instrument = CollectionInstrument()
 
+#
+# /collectioninstrument
+#
+@validate_jwt(['ci:read', 'ci:write'], request)
 def collectioninstrument_get(searchString=None, skip=None, limit=None):
     """
     searches collection instruments
@@ -19,9 +29,14 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
 
     :rtype: None
     """
-    return 'do some magic!'
+    code, msg = collection_instrument.instruments(searchString)
+    return make_response(jsonify(msg), code)
 
 
+#
+# /collectioninstrument/id/{id}
+#
+@validate_jwt(['ci:read', 'ci:write'], request)
 def get_collection_instrument_by_id(id):
     """
     Get a collection instrument by ID
@@ -31,9 +46,14 @@ def get_collection_instrument_by_id(id):
 
     :rtype: Collectioninstrument
     """
-    return 'do some magic!'
+    code, msg = collection_instrument.instrument(id)
+    return make_response(jsonify(msg), code)
 
 
+#
+# /survey_responses/{case_id}
+#
+@validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_get(case_id):
     """
     Get a survey response by case ID
@@ -43,9 +63,14 @@ def survey_responses_case_id_get(case_id):
 
     :rtype: None
     """
-    return 'do some magic!'
+    code, msg = SurveyResponse().get_survey_response(case_id)
+    return make_response(jsonify(msg), code)
 
 
+#
+# /survey_responses/{case_id}
+#
+@validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_post(case_id, file=None):
     """
     Upload from the respondent
@@ -57,4 +82,5 @@ def survey_responses_case_id_post(case_id, file=None):
 
     :rtype: None
     """
-    return 'do some magic!'
+    code, msg = SurveyResponse().add_survey_response(case_id, file)
+    return make_response(msg, code)

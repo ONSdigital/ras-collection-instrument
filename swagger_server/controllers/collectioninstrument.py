@@ -6,11 +6,11 @@
 #                                                                            #
 ##############################################################################
 from ons_ras_common import ons_env
-from ..models_local.instrument import InstrumentModel
-from ..models_local.exercise import ExerciseModel
-from ..models_local.business import BusinessModel
-from ..models_local.survey import SurveyModel
-from ..models_local.classification import ClassificationModel, classifications
+from ..models.instrument import InstrumentModel
+from ..models.exercise import ExerciseModel
+from ..models.business import BusinessModel
+from ..models.survey import SurveyModel
+from ..models.classification import ClassificationModel, classifications
 from traceback import print_exc
 from sys import stdout
 from json import loads
