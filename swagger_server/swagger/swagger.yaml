@@ -36,7 +36,7 @@ definitions:
       href: {example: /collectioninstrument/id/12345678, type: string}
       rel: {example: self, type: string}
       type: {example: application/vnd.ons.collectioninstrument+json, type: string}
-host: localhost:47035
+host: localhost:44929
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
@@ -142,9 +142,9 @@ paths:
       produces: [application/vnd.collection+json]
       responses:
         200: {description: File was completed successfully}
-        404: {description: RU_REF does not exist}
+        404: {description: Instrument ID does not exist}
         500: {description: Server was unable to complete the operation}
-      summary: Download a file based on the id (RU_REF)
+      summary: Download a file based on the id (Instrument ID)
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
   /download_csv/{id}:

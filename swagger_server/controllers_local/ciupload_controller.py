@@ -144,7 +144,7 @@ def clear_batch_id_delete(id):
 @validate_jwt(['ci:read', 'ci:write'], request)
 def download_id_get(id):
     """
-    Download a file based on the id (RU_REF)
+    Download a file based on the id (Instrument ID)
     Download a file (test routine)
     :param id: Collection instrument ID
     :type id: str
