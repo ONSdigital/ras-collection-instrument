@@ -17,5 +17,5 @@ class BaseTestCase(TestCase):
         logging.getLogger('connexion.operation').setLevel('ERROR')
         app = connexion.App(__name__, specification_dir='../swagger/')
         app.add_api('swagger.yaml')
-        #app.app.register_error_handler(SessionScopeException, session_scope_handler)
+        app.app.register_error_handler(SessionScopeException, session_scope_handler)
         return app.app
