@@ -23,6 +23,7 @@ definitions:
         format: urn, type: string}
     required: [ciType, id, surveyId]
     type: object
+host: localhost:8080
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
