@@ -1,6 +1,6 @@
 # Collection Instruments API Microservice
-[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument-demo.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument-demo) 
-[![codecov](https://codecov.io/gh/onsdigital/ras-collection-instrument-demo/branch/master/graph/badge.svg)](https://codecov.io/gh/onsdigital/ras-collection-instrument-demo)
+[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument-demo)
+[![codecov](https://codecov.io/gh/onsdigital/ras-collection-instrument/branch/master/graph/badge.svg)](https://codecov.io/gh/onsdigital/ras-collection-instrument-demo)
 
 This server contains auto-generated code, please refer to the 
 [ras-swagger-codegen](https://github.com/ONSdigital/ras-swagger-codegen) project, before making changes 
@@ -9,9 +9,9 @@ to this repository.
 ## Overview
 
 This repository implements REST endpoints for the RAS Collection Instrument based on the Swagger API 
-definition [here](https://app.swaggerhub.com/apis/oddjobz/collection-instrument-api/1.0.2).
-If you need to make a change to the REST interface, please start by changing the API spec, then regenerate 
-the code using the code generator in the repository described above.
+definition embedded within this repository. Please look in the swagger_server/swagger/swagger.yaml file for details.
+Please use a validating OpenAPI 2.0 editor when changing this file, currently we recommend the local
+Swagger editor.
 
 ![ons_startup.png](ons_startup.png)
 
@@ -19,17 +19,15 @@ the code using the code generator in the repository described above.
 
 Changes should only be made to code in the following folders;
 
-* swagger\_server/controller\_slocal
-* swagger\_server/tests\_local
-* swagger\_server/models\_local
+* swagger\_server/controllers
+* swagger\_server/test
+* swagger\_server/models
 * README.md
 * local.ini
 
 You will find general configuration options in **config.ini**, these can
 be overridden on a stanza by stanza basis by putting project specific
 options in **local.ini**.
-
-Anything else is at risk of being overwritten.
 
 ### Database Design
 
@@ -40,15 +38,15 @@ on the following diagram;
 
 ## Running Locally
 
-To run locally from the root of your repository, run;
+To run locally from the root of your repository (against the 'development' profile), run;
 
 ```bash
-./run.sh
+./scripts/run.sh
 ```
 
 On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
 subsequent runs this will be almost instantaneous. By default the service will be available 
-on **http://localhost:8080/collection-instrument-api/1.0.2/ui**.
+on **http://localhost:8080/collection-instrument-api/1.0.3/ui**.
 
 ### Uploading files from the command line
 
@@ -72,7 +70,7 @@ supply - if it doesn't already exist.
 To run the unit tests and code coverage, run the test.sh script an you should get something like this;
 
 ```bash
-$ ./scripts/test.sh
+$ ONS_ENV=test ./scripts/test.sh
 ================================================================================================= test session starts =================================================================================================
 platform linux -- Python 3.5.3, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
 rootdir: /home/gareth/ONS/ras-repos/ras-collection-instrument, inifile:

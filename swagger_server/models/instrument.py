@@ -1,17 +1,16 @@
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import TIMESTAMP, String, Integer, LargeBinary
+from sqlalchemy.types import TIMESTAMP, Integer, LargeBinary
 from datetime import datetime
-from ..configuration import ons_env
 from .associations import instrument_exercise_table, instrument_business_table
 from .guid import GUID
 from uuid import uuid4
-from .base import Base
+from ons_ras_common import ons_env
 
 prefix = ons_env.get('db_schema')+'.' if ons_env.get('db_schema') else ''
 
 
-class InstrumentModel(Base):
+class InstrumentModel(ons_env.db.base):
     """
     This models the 'instrument' table which keeps the stored collection instruments
     """
@@ -60,4 +59,4 @@ class InstrumentModel(Base):
 
     @property
     def classifiers(self):
-        return [{classifier.kind:classifier.value} for classifier in self.classifications]
+        return [{classifier.kind: classifier.value} for classifier in self.classifications]
