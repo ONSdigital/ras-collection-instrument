@@ -10,6 +10,7 @@ class BaseTestCase(TestCase):
 
     def create_app(self):
         ons_env.setup_ini()
+        ons_env.logger.activate()
         ons_env.db.activate()
         ons_env._jwt.activate()
         ons_env._cryptography.activate()

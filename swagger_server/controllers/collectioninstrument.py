@@ -6,6 +6,7 @@
 #                                                                            #
 ##############################################################################
 from ons_ras_common import ons_env
+from crochet import wait_for, no_setup
 from ..models.instrument import InstrumentModel
 from ..models.exercise import ExerciseModel
 from ..models.business import BusinessModel
@@ -15,8 +16,14 @@ from traceback import print_exc
 from sys import stdout
 from json import loads
 from uuid import UUID
+import treq
+from twisted.internet import reactor
+from twisted.internet.error import UserError
+no_setup()
 
-DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
+
+#DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
+DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 
 
 def protect(uuid=True):
@@ -57,7 +64,7 @@ class CollectionInstrument(object):
         The default entry here is used by the unit testing code, so although it looks
         redundant, please leave it in.
         """
-        pass
+        self._exercise_cache = {}
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
@@ -246,6 +253,38 @@ class CollectionInstrument(object):
         ru_ref = instrument.businesses[0].ru_ref
         return 200, ons_env.cipher.decrypt(instrument.data), ru_ref
 
+    @wait_for(timeout=5)
+    def _lookup_exercise(self, exercise_id):
+
+        if exercise_id in self._exercise_cache:
+            return self._exercise_cache[exercise_id]
+
+        def hit_route(params):
+            def status_check(response):
+                if response.code != 200:
+                    raise UserError
+                return response
+
+            def json(response):
+                exercise = loads(response.decode())
+                self._exercise_cache[exercise_id] = exercise
+                return exercise
+
+            deferred = treq.get('{protocol}://{host}:{port}{endpoint}'.format(**params))
+            return deferred.addCallback(status_check).addCallback(treq.content).addCallback(json)
+
+        params = {
+            'endpoint': '/collectionexercises/{}'.format(exercise_id),
+            'protocol': ons_env.api_protocol,
+            'host': ons_env.api_host,
+            'port': ons_env.api_port
+        }
+        try:
+            return hit_route(params)
+        except Exception as e:
+            print('Error:', str(e))
+            return False
+
     @protect(uuid=True)
     def upload(self, exercise_id, fileobject, ru_ref=None, survey_id=DEFAULT_SURVEY):
         """
@@ -257,8 +296,6 @@ class CollectionInstrument(object):
         :param: survey_id: The survey identifier (UUID)
         :return: Returns True if the upload completed
         """
-        survey_id = UUID(survey_id)
-
         blob = fileobject.read()
         size = len(blob)
         blob = ons_env.cipher.encrypt(blob)
@@ -281,6 +318,18 @@ class CollectionInstrument(object):
 
         survey = self._get_survey(survey_id)
         if not survey:
+            if reactor.running:
+                exercise = self._lookup_exercise(exercise_id)
+                survey_id = exercise.get('surveyId', None)
+            else:
+                try:
+                    survey_id = UUID(survey_id)
+                except Exception as e:
+                    ons_env.logger.error(e)
+                    return 500, 'invalid survey ID'
+            if not survey_id:
+                return "404", "unable to lookup exercise ID"
+
             survey = SurveyModel(survey_id=survey_id)
             ons_env.db.session.add(survey)
         survey.instruments.append(instrument)
@@ -317,7 +366,7 @@ class CollectionInstrument(object):
                 result = {
                     'id': instrument.instrument_id,
                     'classifiers': classifiers,
-                    'surveyId': '(not available yet)'
+                    'surveyId': instrument.survey.survey_id
                 }
                 records.append(result)
             return 200, records
