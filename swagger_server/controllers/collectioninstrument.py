@@ -262,7 +262,7 @@ class CollectionInstrument(object):
         def hit_route(params):
             def status_check(response):
                 if response.code != 200:
-                    raise UserError
+                    raise UserError(url)
                 return response
 
             def json(response):
@@ -270,7 +270,8 @@ class CollectionInstrument(object):
                 self._exercise_cache[exercise_id] = exercise
                 return exercise
 
-            deferred = treq.get('{protocol}://{host}:{port}{endpoint}'.format(**params))
+            url = '{protocol}://{host}:{port}{endpoint}'.format(**params)
+            deferred = treq.get(url)
             return deferred.addCallback(status_check).addCallback(treq.content).addCallback(json)
 
         params = {
@@ -279,11 +280,7 @@ class CollectionInstrument(object):
             'host': ons_env.api_host,
             'port': ons_env.api_port
         }
-        try:
-            return hit_route(params)
-        except Exception as e:
-            print('Error:', str(e))
-            return False
+        return hit_route(params)
 
     @protect(uuid=True)
     def upload(self, exercise_id, fileobject, ru_ref=None, survey_id=DEFAULT_SURVEY):
@@ -319,8 +316,15 @@ class CollectionInstrument(object):
         survey = self._get_survey(survey_id)
         if not survey:
             if reactor.running:
-                exercise = self._lookup_exercise(exercise_id)
-                survey_id = exercise.get('surveyId', None)
+                try:
+                    exercise = self._lookup_exercise(exercise_id)
+                    survey_id = exercise.get('surveyId', None)
+                except UserError as e:
+                    ons_env.logger.info('Error in survey lookup - {}'.format(str(e)))
+                    return 405, 'error looking up survey id'
+                except Exception as e:
+                    ons_env.logger.info('General exception: {}'.format(str(e)))
+                    return 500, 'error looking up survey id'
             else:
                 try:
                     survey_id = UUID(survey_id)
@@ -328,7 +332,7 @@ class CollectionInstrument(object):
                     ons_env.logger.error(e)
                     return 500, 'invalid survey ID'
             if not survey_id:
-                return "404", "unable to lookup exercise ID"
+                return 404, "unable to lookup exercise ID"
 
             survey = SurveyModel(survey_id=survey_id)
             ons_env.db.session.add(survey)
