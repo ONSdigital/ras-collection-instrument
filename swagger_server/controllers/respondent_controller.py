@@ -7,7 +7,7 @@
 ##############################################################################
 from flask import jsonify, make_response, request
 from .collectioninstrument import CollectionInstrument
-from ons_ras_common.ons_decorators import validate_jwt
+from ons_ras_common.ons_decorators import validate_jwt, before_request
 from .survey_response import SurveyResponse
 
 collection_instrument = CollectionInstrument()
@@ -15,6 +15,7 @@ collection_instrument = CollectionInstrument()
 #
 # /collectioninstrument
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def collectioninstrument_get(searchString=None, skip=None, limit=None):
     """
@@ -36,6 +37,7 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
 #
 # /collectioninstrument/id/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def get_collection_instrument_by_id(id):
     """
@@ -53,6 +55,7 @@ def get_collection_instrument_by_id(id):
 #
 # /survey_responses/{case_id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_get(case_id):
     """
@@ -70,6 +73,7 @@ def survey_responses_case_id_get(case_id):
 #
 # /survey_responses/{case_id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_post(case_id, file=None):
     """
