@@ -4,7 +4,7 @@ python:
 install:
   - pip install -r test-requirements.txt
 script:
-  - ONS_ENV=test pytest --cov=swagger_server/controllers
+  - ONS_ENV=travis pytest --cov=swagger_server/controllers
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
