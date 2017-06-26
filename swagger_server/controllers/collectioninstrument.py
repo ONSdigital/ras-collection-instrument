@@ -377,3 +377,14 @@ class CollectionInstrument(object):
         except Exception:
             print_exc(limit=5, file=stdout)
             return 500, {'text': 'Server error accessing database'}
+
+    def instrument_size(self, id):
+        """
+        Recover the size of an instrument
+        :param id:
+        :return: size
+        """
+        instrument = self._get_instrument(id)
+        if not instrument:
+            return 404, {'text': 'instrument not found', 'code': 404}
+        return 200, {'size': instrument.len, 'code': '200'}

@@ -12,6 +12,17 @@ from ons_ras_common.ons_decorators import validate_jwt
 collection_instrument = CollectionInstrument()
 
 
+@validate_jwt(['ci:read', 'ci:write'], request)
+def instrument_size_get(id):
+    """
+    Recover the size of a collection instrument
+    :param id:
+    :return: size
+    """
+    code, msg = collection_instrument.instrument_size(id)
+    return make_response(jsonify(msg), code)
+
+
 #
 # /status/{id}
 #

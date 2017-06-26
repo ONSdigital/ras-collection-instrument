@@ -48,5 +48,4 @@ with open('ru_ref_import.txt') as io:
             exit(1)
         print(".", end='')
         sys.stdout.flush()
-        os.remove(fname)
         sys.exit(1)
