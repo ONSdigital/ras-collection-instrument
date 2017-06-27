@@ -13,7 +13,8 @@ TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 urls = {
     'dev': 'http://api-dev.apps.mvp.onsclofo.uk',
-    'local': 'http://localhost:8080'
+    'local': 'http://localhost:8080',
+    'test': 'https://ras-api-gateway-test.apps.mvp.onsclofo.uk'
 }
 
 if len(sys.argv) < 2 or sys.argv[1] not in urls:
@@ -42,10 +43,11 @@ with open('ru_ref_import.txt') as io:
 
         files = {'files[]': (fname, open(fname, 'rb'), TYPE, {'Expires': 0})}
         url = API_UPLOAD.format(HOST, COLLECTION_EXERCISE, fname)
-        r = requests.post(url, files=files)
+        r = requests.post(url, files=files, verify=False)
         if r.status_code != 200:
             print('%% upload error "{}" - "{}"'.format(r.status_code, r.text))
             exit(1)
         print(".", end='')
         sys.stdout.flush()
-        sys.exit(1)
+        os.remove(fname)
+
