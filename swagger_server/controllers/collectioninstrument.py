@@ -12,8 +12,6 @@ from ..models.exercise import ExerciseModel
 from ..models.business import BusinessModel
 from ..models.survey import SurveyModel
 from ..models.classification import ClassificationModel, classifications
-from traceback import print_exc
-from sys import stdout
 from json import loads
 from uuid import UUID
 import treq
@@ -51,7 +49,7 @@ def protect(uuid=True):
             except ValueError:
                 return 500, {'text': 'id is not a valid UUID ({})'.format(my_id)}
             except Exception:
-                print_exc(limit=5, file=stdout)
+                ons_env.logger.exception("Server error")
                 return 500, {'text': 'Server experienced an unexpected error'}
         return func_wrapped
     return protect_wrapped
@@ -375,7 +373,7 @@ class CollectionInstrument(object):
                 records.append(result)
             return 200, records
         except Exception:
-            print_exc(limit=5, file=stdout)
+            ons_env.logger.exception("Server error")
             return 500, {'text': 'Server error accessing database'}
 
     def instrument_size(self, id):
