@@ -362,11 +362,11 @@ class CollectionInstrument(object):
             records = []
             for result in results:
                 instrument = ons_env.db.session.query(InstrumentModel).get(result.id)
-                classifiers = {'RU_REF': [], 'collectionExercise': []}
+                classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
                 for business in instrument.businesses:
                     classifiers['RU_REF'].append(business.ru_ref)
                 for exercise in instrument.exercises:
-                    classifiers['collectionExercise'].append(exercise.exercise_id)
+                    classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
                 result = {
                     'id': instrument.instrument_id,
                     'classifiers': classifiers,
