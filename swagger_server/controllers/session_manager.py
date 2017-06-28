@@ -13,4 +13,4 @@ def session_scope():
         session.rollback()
         raise SessionScopeException('session failed to commit: ' + str(e))
     finally:
-        session.close()
+        session.remove()

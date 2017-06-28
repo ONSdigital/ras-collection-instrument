@@ -347,6 +347,7 @@ class CollectionInstrument(object):
         :param searchString: Classifiers to filter on 
         :return: matching records
         """
+        ons_env.logger.info('Search String is "{}"'.format(searchString))
         try:
             if searchString and type(searchString) != str:
                 raise TypeError
