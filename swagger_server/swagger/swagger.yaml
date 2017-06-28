@@ -164,6 +164,21 @@ paths:
       summary: Download CSV file
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+  /instrument_size/{id}:
+    get:
+      consumes: [multipart/form-data]
+      description: recover the size of the instrument specified
+      operationId: instrument_size_get
+      parameters:
+      - {description: the instrument identifier, in: path, name: id, required: true,
+        type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: instrument size recovered}
+        404: {description: unable to find instrument}
+        500: {description: application error}
+      tags: [ciupload]
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /status/{id}:
     get:
       description: Return a count of items thus far and total in batch

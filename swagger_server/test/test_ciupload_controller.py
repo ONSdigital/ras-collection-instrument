@@ -11,6 +11,7 @@ from six import BytesIO
 from swagger_server.controllers.collectioninstrument import CollectionInstrument
 from uuid import uuid4
 from ons_ras_common import ons_env
+from json import loads
 
 DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 
@@ -295,6 +296,19 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.instruments('{"SIZE": "1234"}')
         self.assertTrue(code == 200, msg)
 
+    def test_instrument_size(self):
+        """Create an instrument, read it back, make sure the recovered size == the original size"""
+        batch = str(uuid4())
+        with open('swagger_server/test/upload.xlsx', 'rb') as io:
+            fileobject = FileStorage(stream=io, filename='dummy.txt', name='myname')
+            code, msg = self.collection_instrument.upload(batch, fileobject, 'file1')
+            self.assertTrue(code == 200, msg)
+
+        instrument = self.collection_instrument._get_instrument_by_ru("file1")
+        print(instrument)
+        code, msg = self.collection_instrument.instrument_size(instrument.instrument_id)
+        self.assertTrue(code == 200, msg)
+        self.assertTrue(msg['size'] == 5307)
 
 
 if __name__ == '__main__':
