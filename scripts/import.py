@@ -7,14 +7,19 @@ import requests
 import sys
 import os
 #
-COLLECTION_EXERCISE = '14fb3e68-4dca-46db-bf49-04b84e07e77c'
+#COLLECTION_EXERCISE = '14fb3e68-4dca-46db-bf49-04b84e07e77c'
+#COLLECTION_EXERCISE = 'c6467711-21eb-4e78-804c-1db8392f93fb'
+#COLLECTION_EXERCISE = "c6467711-21eb-4e78-804c-1db8392f93bb"
+COLLECTION_EXERCISE = "c6467711-21eb-4e78-804c-1db8392f93aa"
 API_UPLOAD = '{}/collection-instrument-api/1.0.2/upload/{}/{}'
 TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 urls = {
     'dev': 'http://api-dev.apps.mvp.onsclofo.uk',
     'local': 'http://localhost:8080',
-    'test': 'https://ras-api-gateway-test.apps.mvp.onsclofo.uk'
+    'test': 'https://ras-api-gateway-test.apps.mvp.onsclofo.uk',
+    'int': 'https://ras-api-gateway-int.apps.mvp.onsclofo.uk',
+    'demo': 'https://ras-api-gateway-demo.apps.mvp.onsclofo.uk'
 }
 
 if len(sys.argv) < 2 or sys.argv[1] not in urls:
@@ -50,5 +55,4 @@ with open('ru_ref_import.txt') as io:
         print(".", end='')
         sys.stdout.flush()
         os.remove(fname)
-        sys.exit(1)
 

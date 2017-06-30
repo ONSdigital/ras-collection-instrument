@@ -299,45 +299,36 @@ class CollectionInstrument(object):
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
 
-        exercise = self._get_exercise(exercise_id)
-        if not exercise:
-            exercise = ExerciseModel(exercise_id=exercise_id, items=1)
-        business = self._get_business(ru_ref)
-        if not business:
-            business = BusinessModel(ru_ref=ru_ref)
-        classifier = ClassificationModel(kind='SIZE', value=size)
-
-        instrument = InstrumentModel(len=size, data=blob)
-        instrument.exercises.append(exercise)
-        instrument.businesses.append(business)
-        instrument.classifications.append(classifier)
-        ons_env.db.session.add(instrument)
-
-        survey = self._get_survey(survey_id)
-        if not survey:
-            if reactor.running:
-                try:
-                    exercise = self._lookup_exercise(exercise_id)
-                    survey_id = exercise.get('surveyId', None)
-                except UserError as e:
-                    ons_env.logger.info('Error in survey lookup - {}'.format(str(e)))
-                    return 405, 'error looking up survey id'
-                except Exception as e:
-                    ons_env.logger.info('General exception: {}'.format(str(e)))
-                    return 500, 'error looking up survey id'
-            else:
-                try:
-                    survey_id = UUID(survey_id)
-                except Exception as e:
-                    ons_env.logger.error(e)
-                    return 500, 'invalid survey ID'
-            if not survey_id:
-                return 404, "unable to lookup exercise ID"
-
-            survey = SurveyModel(survey_id=survey_id)
-            ons_env.db.session.add(survey)
-        survey.instruments.append(instrument)
-        ons_env.db.session.commit()
+        try:
+            with ons_env.db.transaction():
+                exercise = self._get_exercise(exercise_id)
+                if not exercise:
+                    exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+                business = self._get_business(ru_ref)
+                if not business:
+                    business = BusinessModel(ru_ref=ru_ref)
+                classifier = ClassificationModel(kind='SIZE', value=size)
+                instrument = InstrumentModel(len=size, data=blob)
+                instrument.exercises.append(exercise)
+                instrument.businesses.append(business)
+                instrument.classifications.append(classifier)
+                ons_env.db.session.add(instrument)
+                survey = self._get_survey(survey_id)
+                if not survey:
+                    if reactor.running:
+                        exercise = self._lookup_exercise(exercise_id)
+                        survey_id = exercise.get('surveyId', None)
+                    else:
+                        survey_id = UUID(survey_id)
+                    if not survey_id:
+                        ons_env.logger.error('no survey ID returned')
+                        raise Exception('no survey ID returned')
+                    survey = SurveyModel(survey_id=survey_id)
+                    ons_env.db.session.add(survey)
+                survey.instruments.append(instrument)
+        except Exception as e:
+            ons_env.logger.error('Error uploading file: {}'.format(str(e)))
+            return 500, 'error uploading file'
         return 200, 'OK'
 
     def instruments(self, searchString):
