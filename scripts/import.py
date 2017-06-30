@@ -17,7 +17,7 @@ TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 urls = {
     'dev': 'http://api-dev.apps.mvp.onsclofo.uk',
     'local': 'http://localhost:8080',
-    'test': 'https://ras-api-gateway-test.apps.mvp.onsclofo.uk',
+    'test': 'http://ras-api-gateway-test.apps.mvp.onsclofo.uk',
     'int': 'https://ras-api-gateway-int.apps.mvp.onsclofo.uk',
     'demo': 'https://ras-api-gateway-demo.apps.mvp.onsclofo.uk'
 }
