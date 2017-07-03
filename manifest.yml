@@ -4,5 +4,6 @@ applications:
   memory: 512M
   host: collection-instrument-demo
   services:
-    - ras-postgres
+    - rm-pg-db
+    - rm-rabbitmq
 

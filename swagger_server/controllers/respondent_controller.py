@@ -15,6 +15,8 @@ collection_instrument = CollectionInstrument()
 #
 # /collectioninstrument
 #
+
+
 @before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def collectioninstrument_get(searchString=None, skip=None, limit=None):
@@ -51,28 +53,11 @@ def get_collection_instrument_by_id(id):
     code, msg = collection_instrument.instrument(id)
     return make_response(jsonify(msg), code)
 
-
 #
 # /survey_responses/{case_id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
-def survey_responses_case_id_get(case_id):
-    """
-    Get a survey response by case ID
-    Returns a survey response
-    :param case_id: ID of case
-    :type case_id: str
-
-    :rtype: None
-    """
-    code, msg = SurveyResponse().get_survey_response(case_id)
-    return make_response(jsonify(msg), code)
 
 
-#
-# /survey_responses/{case_id}
-#
 @before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_post(case_id, file=None):

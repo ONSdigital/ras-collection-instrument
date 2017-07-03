@@ -195,19 +195,6 @@ paths:
       tags: [ciupload]
       x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /survey_responses/{case_id}:
-    get:
-      description: Returns a survey response
-      operationId: survey_responses_case_id_get
-      parameters:
-      - {description: ID of case, in: path, name: case_id, required: true, type: string}
-      produces: [application/vnd.ons.collectioninstrument+json]
-      responses:
-        200: {description: Survey response representation}
-        404: {description: Survey response not found}
-        500: {description: Server was unable to complete the operation}
-      summary: Get a survey response by case ID
-      tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers.respondent_controller
     post:
       consumes: [multipart/form-data]
       description: The survey response file with the case id as identifier

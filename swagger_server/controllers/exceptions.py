@@ -1,5 +1,6 @@
-class SessionScopeException(Exception):
+class RequestException(Exception):
     """ Exception when session.commit fails """
+
     status_code = 400
 
     def __init__(self, message, status_code=None):
