@@ -62,8 +62,8 @@ class SurveyResponse(object):
 
         with session_scope() as session:
             result = session.query(SurveyResponseModel).filter(SurveyResponseModel.case_id == case_id).first()
-        if result:
-            return 200, result.json
+            if result:
+                return 200, result.json
         return 404, SURVEY_RESPONSE_NOT_FOUND
 
     @staticmethod
