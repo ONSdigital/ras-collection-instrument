@@ -6,7 +6,7 @@
 #                                                                            #
 ##############################################################################
 from ons_ras_common import ons_env
-from crochet import wait_for, no_setup
+from crochet import wait_for #, no_setup
 from ..models.instrument import InstrumentModel
 from ..models.exercise import ExerciseModel
 from ..models.business import BusinessModel
@@ -19,7 +19,7 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-no_setup()
+#no_setup()
 
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"

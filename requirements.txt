@@ -1,4 +1,4 @@
-git+https://github.com/ONSdigital/ras-common.git@0.1.114
+git+https://github.com/ONSdigital/ras-common.git@US032b/case-service-logging
 appdirs==1.4.3
 arrow==0.10.0
 asn1crypto==0.22.0

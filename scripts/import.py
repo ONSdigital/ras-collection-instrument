@@ -7,10 +7,10 @@ import requests
 import sys
 import os
 #
-#COLLECTION_EXERCISE = '14fb3e68-4dca-46db-bf49-04b84e07e77c'
+COLLECTION_EXERCISE = '14fb3e68-4dca-46db-bf49-04b84e07e77c'
 #COLLECTION_EXERCISE = 'c6467711-21eb-4e78-804c-1db8392f93fb'
 #COLLECTION_EXERCISE = "c6467711-21eb-4e78-804c-1db8392f93bb"
-COLLECTION_EXERCISE = "c6467711-21eb-4e78-804c-1db8392f93aa"
+#COLLECTION_EXERCISE = "c6467711-21eb-4e78-804c-1db8392f93aa"
 API_UPLOAD = '{}/collection-instrument-api/1.0.2/upload/{}/{}'
 TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
@@ -18,7 +18,7 @@ urls = {
     'dev': 'http://api-dev.apps.mvp.onsclofo.uk',
     'local': 'http://localhost:8080',
     'test': 'http://ras-api-gateway-test.apps.mvp.onsclofo.uk',
-    'int': 'https://ras-api-gateway-int.apps.mvp.onsclofo.uk',
+    'int': 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk',
     'demo': 'https://ras-api-gateway-demo.apps.mvp.onsclofo.uk'
 }
 
