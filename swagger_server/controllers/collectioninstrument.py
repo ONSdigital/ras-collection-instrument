@@ -6,17 +6,24 @@
 #                                                                            #
 ##############################################################################
 from ons_ras_common import ons_env
-from ..models_local.instrument import InstrumentModel
-from ..models_local.exercise import ExerciseModel
-from ..models_local.business import BusinessModel
-from ..models_local.survey import SurveyModel
-from ..models_local.classification import ClassificationModel, classifications
+from crochet import wait_for #, no_setup
+from ..models.instrument import InstrumentModel
+from ..models.exercise import ExerciseModel
+from ..models.business import BusinessModel
+from ..models.survey import SurveyModel
+from ..models.classification import ClassificationModel, classifications
 from traceback import print_exc
 from sys import stdout
 from json import loads
 from uuid import UUID
+import treq
+from twisted.internet import reactor
+from twisted.internet.error import UserError
+#no_setup()
 
-DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
+
+#DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
+DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 
 
 def protect(uuid=True):
@@ -57,7 +64,7 @@ class CollectionInstrument(object):
         The default entry here is used by the unit testing code, so although it looks
         redundant, please leave it in.
         """
-        pass
+        self._exercise_cache = {}
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
@@ -151,6 +158,21 @@ class CollectionInstrument(object):
         ons_env.db.session.commit()
         return 200, {'text': 'OK'}
 
+    @protect(uuid=False)
+    def clear_by_ref(self, ru_ref):
+        """
+        Clear an instrument
+
+        :param ru_ref: An RU_REF
+        :return: Returns a 200 if the batch was removed, or 204 if not found
+        """
+        instrument = self._get_instrument_by_ru(ru_ref)
+        if not instrument:
+            return 404, {'text': 'no such instrument'}
+        ons_env.db.session.delete(instrument)
+        ons_env.db.session.commit()
+        return 200, {'text': 'instrument deleted'}
+
     @protect(uuid=True)
     def instrument(self, instrument_id):
         """
@@ -227,8 +249,38 @@ class CollectionInstrument(object):
         """
         instrument = self._get_instrument(id)
         if not instrument:
-            return 404, 'Instrument not found'
-        return 200, ons_env.cipher.decrypt(instrument.data)
+            return 404, 'Instrument not found', None
+        ru_ref = instrument.businesses[0].ru_ref
+        return 200, ons_env.cipher.decrypt(instrument.data), ru_ref
+
+    @wait_for(timeout=5)
+    def _lookup_exercise(self, exercise_id):
+
+        if exercise_id in self._exercise_cache:
+            return self._exercise_cache[exercise_id]
+
+        def hit_route(params):
+            def status_check(response):
+                if response.code != 200:
+                    raise UserError(url)
+                return response
+
+            def json(response):
+                exercise = loads(response.decode())
+                self._exercise_cache[exercise_id] = exercise
+                return exercise
+
+            url = '{protocol}://{host}:{port}{endpoint}'.format(**params)
+            deferred = treq.get(url)
+            return deferred.addCallback(status_check).addCallback(treq.content).addCallback(json)
+
+        params = {
+            'endpoint': '/collectionexercises/{}'.format(exercise_id),
+            'protocol': ons_env.api_protocol,
+            'host': ons_env.api_host,
+            'port': ons_env.api_port
+        }
+        return hit_route(params)
 
     @protect(uuid=True)
     def upload(self, exercise_id, fileobject, ru_ref=None, survey_id=DEFAULT_SURVEY):
@@ -241,32 +293,42 @@ class CollectionInstrument(object):
         :param: survey_id: The survey identifier (UUID)
         :return: Returns True if the upload completed
         """
-        survey_id = UUID(survey_id)
-
         blob = fileobject.read()
         size = len(blob)
         blob = ons_env.cipher.encrypt(blob)
+        if '.' in ru_ref:
+            ru_ref = ru_ref.split('.')[0]
 
-        exercise = self._get_exercise(exercise_id)
-        if not exercise:
-            exercise = ExerciseModel(exercise_id=exercise_id, items=1)
-        business = self._get_business(ru_ref)
-        if not business:
-            business = BusinessModel(ru_ref=ru_ref)
-        classifier = ClassificationModel(kind='SIZE', value=size)
-
-        instrument = InstrumentModel(len=size, data=blob)
-        instrument.exercises.append(exercise)
-        instrument.businesses.append(business)
-        instrument.classifications.append(classifier)
-        ons_env.db.session.add(instrument)
-
-        survey = self._get_survey(survey_id)
-        if not survey:
-            survey = SurveyModel(survey_id=survey_id)
-            ons_env.db.session.add(survey)
-        survey.instruments.append(instrument)
-        ons_env.db.session.commit()
+        try:
+            with ons_env.db.transaction():
+                exercise = self._get_exercise(exercise_id)
+                if not exercise:
+                    exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+                business = self._get_business(ru_ref)
+                if not business:
+                    business = BusinessModel(ru_ref=ru_ref)
+                classifier = ClassificationModel(kind='SIZE', value=size)
+                instrument = InstrumentModel(len=size, data=blob)
+                instrument.exercises.append(exercise)
+                instrument.businesses.append(business)
+                instrument.classifications.append(classifier)
+                ons_env.db.session.add(instrument)
+                survey = self._get_survey(survey_id)
+                if not survey:
+                    if reactor.running:
+                        exercise = self._lookup_exercise(exercise_id)
+                        survey_id = exercise.get('surveyId', None)
+                    else:
+                        survey_id = UUID(survey_id)
+                    if not survey_id:
+                        ons_env.logger.error('no survey ID returned')
+                        raise Exception('no survey ID returned')
+                    survey = SurveyModel(survey_id=survey_id)
+                    ons_env.db.session.add(survey)
+                survey.instruments.append(instrument)
+        except Exception as e:
+            ons_env.logger.error('Error uploading file: {}'.format(str(e)))
+            return 500, 'error uploading file'
         return 200, 'OK'
 
     def instruments(self, searchString):
@@ -276,6 +338,7 @@ class CollectionInstrument(object):
         :param searchString: Classifiers to filter on 
         :return: matching records
         """
+        ons_env.logger.info('Search String is "{}"'.format(searchString))
         try:
             if searchString and type(searchString) != str:
                 raise TypeError
@@ -291,18 +354,29 @@ class CollectionInstrument(object):
             records = []
             for result in results:
                 instrument = ons_env.db.session.query(InstrumentModel).get(result.id)
-                classifiers = {'RU_REF': [], 'collectionExercise': []}
+                classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
                 for business in instrument.businesses:
                     classifiers['RU_REF'].append(business.ru_ref)
                 for exercise in instrument.exercises:
-                    classifiers['collectionExercise'].append(exercise.exercise_id)
+                    classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
                 result = {
                     'id': instrument.instrument_id,
                     'classifiers': classifiers,
-                    'surveyId': '(not available yet)'
+                    'surveyId': instrument.survey.survey_id
                 }
                 records.append(result)
             return 200, records
         except Exception:
             print_exc(limit=5, file=stdout)
             return 500, {'text': 'Server error accessing database'}
+
+    def instrument_size(self, id):
+        """
+        Recover the size of an instrument
+        :param id:
+        :return: size
+        """
+        instrument = self._get_instrument(id)
+        if not instrument:
+            return 404, {'text': 'instrument not found', 'code': 404}
+        return 200, {'size': instrument.len, 'code': '200'}

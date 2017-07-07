@@ -23,25 +23,12 @@ definitions:
         format: urn, type: string}
     required: [ciType, id, surveyId]
     type: object
-  vnd.collection+json:
-    properties:
-      href: {example: /collectioninstrument/id/12345678, type: string}
-      links:
-        items: {$ref: '#/definitions/vnd.collectionjson_links'}
-        type: array
-      version: {example: '1.0', type: string}
-    type: object
-  vnd.collectionjson_links:
-    properties:
-      href: {example: /collectioninstrument/id/12345678, type: string}
-      rel: {example: self, type: string}
-      type: {example: application/vnd.ons.collectioninstrument+json, type: string}
-host: localhost:35239
+host: localhost:8080
 info:
   contact: {email: ras@ons.gov.uk}
   description: Initial API for the Collection Instrument microservice.
   title: Collection Instrument API
-  version: 1.0.2
+  version: 1.0.3
 paths:
   /activate/{id}:
     put:
@@ -57,7 +44,7 @@ paths:
         501: {description: Batch is not in UPLOADING mode}
       summary: Activate batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /clear_batch/{id}:
     delete:
       description: Clear down a batch definition, useful for testing
@@ -73,7 +60,22 @@ paths:
         502: {description: Generic error message}
       summary: Clear a batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+  /clear_ruref/{ru_ref}:
+    delete:
+      description: Clear instrument by RU_REF
+      operationId: clear_ruref
+      parameters:
+      - {description: RU REF, in: path, name: ru_ref, required: true, type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: File was completed successfully}
+        500: {description: Server was unable to complete the operation}
+        501: {description: Batch does not exist}
+        502: {description: Generic error message}
+      summary: Clear an instrument
+      tags: [ciupload]
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /collectioninstrument:
     get:
       description: 'By passing in the appropriate options, you can search for available
@@ -94,7 +96,7 @@ paths:
         400: {description: bad input parameter}
       summary: searches collection instruments
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /collectioninstrument/id/{id}:
     get:
       description: Returns a single collection instrument
@@ -114,7 +116,7 @@ paths:
         404: {description: Collection instrument not found}
       summary: Get a collection instrument by ID
       tags: [respondent]
-      x-swagger-router-controller: swagger_server.controllers_local.respondent_controller
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /define_batch/{id}/{count}:
     post:
       description: Associate a service and ce with an item count
@@ -130,7 +132,7 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Specify the size of a batch
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /download/{id}:
     get:
       consumes: [multipart/form-data]
@@ -142,11 +144,11 @@ paths:
       produces: [application/vnd.collection+json]
       responses:
         200: {description: File was completed successfully}
-        404: {description: RU_REF does not exist}
+        404: {description: Instrument ID does not exist}
         500: {description: Server was unable to complete the operation}
-      summary: Download a file based on the id (RU_REF)
+      summary: Download a file based on the id (Instrument ID)
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /download_csv/{id}:
     get:
       description: Download a list of live spreadsheets
@@ -161,7 +163,22 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Download CSV file
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+  /instrument_size/{id}:
+    get:
+      consumes: [multipart/form-data]
+      description: recover the size of the instrument specified
+      operationId: instrument_size_get
+      parameters:
+      - {description: the instrument identifier, in: path, name: id, required: true,
+        type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: instrument size recovered}
+        404: {description: unable to find instrument}
+        500: {description: application error}
+      tags: [ciupload]
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
   /status/{id}:
     get:
       description: Return a count of items thus far and total in batch
@@ -176,7 +193,37 @@ paths:
         500: {description: Server was unable to complete the operation}
       summary: Get upload status
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+  /survey_responses/{case_id}:
+    get:
+      description: Returns a survey response
+      operationId: survey_responses_case_id_get
+      parameters:
+      - {description: ID of case, in: path, name: case_id, required: true, type: string}
+      produces: [application/vnd.ons.collectioninstrument+json]
+      responses:
+        200: {description: Survey response representation}
+        404: {description: Survey response not found}
+        500: {description: Server was unable to complete the operation}
+      summary: Get a survey response by case ID
+      tags: [respondent]
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
+    post:
+      consumes: [multipart/form-data]
+      description: The survey response file with the case id as identifier
+      operationId: survey_responses_case_id_post
+      parameters:
+      - {description: The file to upload, in: formData, name: file, required: false,
+        type: file}
+      - {description: Case id identifier, in: path, name: case_id, required: true,
+        type: string}
+      produces: [application/vnd.collection+json]
+      responses:
+        200: {description: File was uploaded successfully}
+        500: {description: Server was unable to complete the operation}
+      summary: Upload from the respondent
+      tags: [respondent]
+      x-swagger-router-controller: swagger_server.controllers.respondent_controller
   /upload/{id}/{file}:
     post:
       consumes: [multipart/form-data]
@@ -195,7 +242,7 @@ paths:
         501: {description: Batch does not exist}
       summary: Upload collection instrument
       tags: [ciupload]
-      x-swagger-router-controller: swagger_server.controllers_local.ciupload_controller
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
 schemes: [https]
 swagger: '2.0'
 tags:
