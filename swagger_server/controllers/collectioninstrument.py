@@ -6,20 +6,17 @@
 #                                                                            #
 ##############################################################################
 from ons_ras_common import ons_env
-from crochet import wait_for #, no_setup
+from crochet import wait_for
 from ..models.instrument import InstrumentModel
 from ..models.exercise import ExerciseModel
 from ..models.business import BusinessModel
 from ..models.survey import SurveyModel
 from ..models.classification import ClassificationModel, classifications
-from traceback import print_exc
-from sys import stdout
 from json import loads
 from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-#no_setup()
 
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
@@ -50,8 +47,8 @@ def protect(uuid=True):
                 return func(*(my_args if uuid else args), **kwargs)
             except ValueError:
                 return 500, {'text': 'id is not a valid UUID ({})'.format(my_id)}
-            except Exception:
-                print_exc(limit=5, file=stdout)
+            except Exception as e:
+                ons_env.logger.error(e)
                 return 500, {'text': 'Server experienced an unexpected error'}
         return func_wrapped
     return protect_wrapped
@@ -299,6 +296,7 @@ class CollectionInstrument(object):
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
 
+        ons_env.logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             with ons_env.db.transaction():
                 exercise = self._get_exercise(exercise_id)
@@ -367,7 +365,7 @@ class CollectionInstrument(object):
                 records.append(result)
             return 200, records
         except Exception:
-            print_exc(limit=5, file=stdout)
+            ons_env.logger.error(e)
             return 500, {'text': 'Server error accessing database'}
 
     def instrument_size(self, id):
