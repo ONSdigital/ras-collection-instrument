@@ -7,7 +7,7 @@
 ##############################################################################
 from flask import request, jsonify, make_response
 from .collectioninstrument import CollectionInstrument
-from ons_ras_common.ons_decorators import validate_jwt
+from ons_ras_common.ons_decorators import validate_jwt, before_request
 
 collection_instrument = CollectionInstrument()
 
@@ -26,6 +26,7 @@ def instrument_size_get(id):
 #
 # /status/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def status_id_get(id):
     """
@@ -43,6 +44,7 @@ def status_id_get(id):
 #
 # /define_batch/{id}/{count}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def define_batch_id_count_post(id, count):
     """
@@ -62,6 +64,7 @@ def define_batch_id_count_post(id, count):
 #
 # /upload/{id}/{file}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def upload_id_file_post(id, file, files=None):
     """
@@ -98,6 +101,7 @@ def upload_id_file_post(id, file, files=None):
 #
 # /download_csv/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def download_csv_id_get(id):
     """
@@ -118,6 +122,7 @@ def download_csv_id_get(id):
 #
 # /activate/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def activate_id_put(id):
     """
@@ -135,6 +140,7 @@ def activate_id_put(id):
 #
 # /clear_batch/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def clear_batch_id_delete(id):
     """
@@ -152,6 +158,7 @@ def clear_batch_id_delete(id):
 #
 # /clear_ruref/{re_ref}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def clear_ruref(ru_ref):
     """
@@ -167,6 +174,7 @@ def clear_ruref(ru_ref):
 #
 # /download/{id}
 #
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def download_id_get(id):
     """
