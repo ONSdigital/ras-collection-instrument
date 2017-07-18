@@ -1,4 +1,4 @@
-git+https://github.com/ONSdigital/ras-common.git@TBL074/ras_common_volatile
+git+https://github.com/ONSdigital/ras-common.git@0.1.114
 appdirs==1.4.3
 arrow==0.10.0
 asn1crypto==0.22.0
