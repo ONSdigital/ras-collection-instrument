@@ -1,14 +1,16 @@
 import os
 import requests
+import time
 import uuid
+from os import getenv
 
-from datetime import datetime
+from cfenv import AppEnv
 from ons_ras_common import ons_env
 from swagger_server.controllers.helper import is_valid_file_extension, is_valid_file_name_length, \
     convert_file_object_to_string_base64
 from swagger_server.controllers.submitter.encrypter import Encrypter
 from swagger_server.controllers.submitter.rabbitmq_submitter import RabbitMQSubmitter
-from swagger_server.controllers.exceptions import RequestException
+from swagger_server.controllers.exceptions import UploadException
 
 FILE_EXTENSION_ERROR = 'un-accepted file extension'
 FILE_NAME_LENGTH_ERROR = 'The name of the file is too long'
@@ -29,7 +31,7 @@ class SurveyResponse(object):
         :param file: A file object from which we can read the file contents
         :return: Returns status code and message
         """
-
+        ons_env.logger.error(getenv('PRIVATE_SIGNING_KEY'))
         tx_id = str(uuid.uuid4())
         ons_env.logger.info('Adding survey response')
 
@@ -59,7 +61,7 @@ class SurveyResponse(object):
             collection_exercise = self._get_collection_exercise(collection_exercise_id)
 
             if collection_exercise:
-                period = collection_exercise.get('periodStartDateTime')
+                period = collection_exercise.get('exerciseRef')
                 survey_id = collection_exercise.get('surveyId')
             else:
                 return self._invalid_upload()
@@ -68,12 +70,8 @@ class SurveyResponse(object):
             json_message = self._create_json_message_for_file(file, file_extension, period, ru, survey_id)
             encrypted_message = self._encrypt_message(json_message)
 
-            rabbit_mq = RabbitMQSubmitter()
+            return self._send_message_to_rabbitmq(encrypted_message, tx_id)
 
-            if rabbit_mq.send_message(encrypted_message, QUEUE_NAME, tx_id):
-                return 200, UPLOAD_SUCCESSFUL
-            else:
-                return 400, UPLOAD_UNSUCCESSFUL
         else:
             ons_env.logger.debug('case id or file missing')
             return self._invalid_upload()
@@ -94,7 +92,7 @@ class SurveyResponse(object):
         generated_file_name = self._generate_file_name(ru, period, survey_id, file_extension)
 
         message_json = {
-            'file_name': generated_file_name,
+            'filename': generated_file_name,
             'file': file_as_string
         }
 
@@ -111,8 +109,8 @@ class SurveyResponse(object):
         # TODO remove test url
         TEST_CASE_URL = 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk:80/cases/'
         case = None
-        url = os.environ.get('API_GATEWAY_CASE_URL', TEST_CASE_URL) + '{}'.format(case_id)
-
+        url = getenv('API_GATEWAY_CASE_URL') + '{}'.format(case_id)
+        ons_env.logger.error(url)
         response = self._gateway_request(url)
 
         if response.status_code == 200:
@@ -133,14 +131,40 @@ class SurveyResponse(object):
         # TODO remove test url
         TEST_EXERCISE_URL = 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk:80/collectionexercises/'
 
-        url = os.environ.get('API_GATEWAY_COLLECTION_EXERCISE_URL', TEST_EXERCISE_URL) \
-            + '{}'.format(collection_exercise_id)
+        url = getenv('API_GATEWAY_COLLECTION_EXERCISE_URL') + '{}'.format(collection_exercise_id)
+
         response = self._gateway_request(url)
+
         if response.status_code == 200:
             collection_exercise = response.json()
         else:
             ons_env.logger.debug('Collection Exercise not found')
         return collection_exercise
+
+    @staticmethod
+    def _send_message_to_rabbitmq(encrypted_message, tx_id):
+        """
+          Get details from environment credentials and send to rabbitmq
+          :param encrypted_message: The encrypted message
+          :param tx_id: The transaction id
+          :return: Returns status code and message 
+        """
+        ons_env.logger.info('Getting environmental details for rabbit')
+        env = AppEnv()
+        rabbitmq_label = getenv('RABBITMQ_LABEL')
+        rabbit_service = env.get_service(label=rabbitmq_label)
+
+        if rabbit_service:
+            rabbit_uri = rabbit_service.credentials['uri']
+            rabbit_mq = RabbitMQSubmitter(rabbit_uri)
+
+            if rabbit_mq.send_message(encrypted_message, QUEUE_NAME, tx_id):
+                return 200, UPLOAD_SUCCESSFUL
+            else:
+                return 500, UPLOAD_UNSUCCESSFUL
+        else:
+            ons_env.logger.error('There is no rabbitmq bound to the app with that label')
+            raise UploadException()
 
     @staticmethod
     def _get_jwt_value():
@@ -154,7 +178,6 @@ class SurveyResponse(object):
         :return: status code, message
         """
         return 400, INVALID_UPLOAD
-
 
     @staticmethod
     def _is_valid_file(file_name, file_extension):
@@ -198,12 +221,12 @@ class SurveyResponse(object):
 
         ons_env.logger.info('generating file name for upload')
 
-        time_date_stamp = datetime.now()
-        file_name = "{ru}-{survey_id}-{period}-{time_date_stamp}.{file_format}".format(ru=ru,
-                                                                                       survey_id=survey_id,
-                                                                                       period=period,
-                                                                                       time_date_stamp=time_date_stamp,
-                                                                                       file_format=file_extension)
+        time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
+        file_name = "{ru}-221-201712-{time_date_stamp}{file_format}".format(ru=ru,
+                                                                            survey_id=survey_id,
+                                                                            period=period,
+                                                                            time_date_stamp=time_date_stamp,
+                                                                            file_format=file_extension)
         return file_name
 
     @staticmethod
@@ -218,5 +241,5 @@ class SurveyResponse(object):
             response = requests.get(url, verify=False)
         except requests.exceptions.RequestException:
             ons_env.logger.error('request failed to connect to {}'.format(url))
-            raise RequestException('API gateway unavailable')
+            raise UploadException()
         return response

@@ -9,10 +9,11 @@ from swagger_server.controllers.cryptography.keys import TEST_PRIVATE_SIGNING_KE
 from swagger_server.controllers.survey_response import SurveyResponse, INVALID_UPLOAD, UPLOAD_SUCCESSFUL, \
     FILE_NAME_LENGTH_ERROR, FILE_EXTENSION_ERROR, UPLOAD_UNSUCCESSFUL
 from swagger_server.controllers.cryptography.jwe_decryption import JWERSAOAEPDecryptor
-from swagger_server.controllers.exceptions import RequestException
+from swagger_server.controllers.exceptions import UploadException
 from werkzeug.datastructures import FileStorage
 from requests.models import Response
 from unittest.mock import patch, Mock
+from unittest.mock import MagicMock
 
 TEST_FILE_LOCATION = 'swagger_server/test/test.xlsx'
 
@@ -25,15 +26,20 @@ class TestSurveyResponse(unittest.TestCase):
 
     def test_add_survey_response_success(self):
 
-        # Given a survey response with mocked micro-services
+        # Given a survey response
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename='test.xlsx')
-            self.survey_response._get_case_group = self.mock_get_case_data
-            self.survey_response._get_collection_exercise = self.mock_get_collection_data
+            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
+            self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
 
         # When the file is posted to the upload end point with a case_id
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'):
+            env = Mock()
+            service = Mock()
+            service.credentials = {'uri': 'test-uri'}
+            env.get_service = Mock(return_value=service)
+            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'), \
+                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
                 status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then the file uploads successfully
@@ -73,10 +79,8 @@ class TestSurveyResponse(unittest.TestCase):
 
             # When the file is posted to the upload end point with a case_id that doesn't exist in the case service
             case_id = 'b548d78-c2f1-400f-9899-79d944b87300'
-            self.survey_response._get_case_group = self.mock_get_case_data_none
-
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'):
-                status, msg = self.survey_response.add_survey_response(case_id, file)
+            self.survey_response._get_case = self.mock_get_case_data_none
+            status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then survey response causes an invalid upload
         self.assertEquals(status, 400)
@@ -87,14 +91,13 @@ class TestSurveyResponse(unittest.TestCase):
         # Given a survey response
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename='test.xlsx')
+            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
 
         # When the file is posted to the end point with a collection exercise that doesn't exist
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
 
             self.survey_response._get_collection_exercise = self.mock_get_collection_none
-
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'):
-                status, msg = self.survey_response.add_survey_response(case_id, file)
+            status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then survey response causes an invalid upload
         self.assertEquals(status, 400)
@@ -105,17 +108,25 @@ class TestSurveyResponse(unittest.TestCase):
         # Given a survey response
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename='test.xlsx')
+            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
+            self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
 
             # When the file is posted to the end with a mocked failing rabbit send message
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
 
             rabbit = Mock()
             rabbit.send_message = Mock(return_value=False)
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit):
+            env = Mock()
+            service = Mock()
+            service.credentials = {'uri': 'test-uri'}
+            env.get_service = Mock(return_value=service)
+
+            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit), \
+                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
                 status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then the upload is unsuccessful
-        self.assertEquals(status, 400)
+        self.assertEquals(status, 500)
         self.assertEquals(UPLOAD_UNSUCCESSFUL, msg)
 
     def test_add_survey_response_long_file_name(self):
@@ -151,11 +162,12 @@ class TestSurveyResponse(unittest.TestCase):
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename='test.xlsx')
 
+            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
+
         # When the file is posted to the end point with a party_id that doesn't match the JWT value
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
             self.survey_response._get_jwt_value = self.mock_get_jwt_value
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'):
-                status, msg = self.survey_response.add_survey_response(case_id, file)
+            status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then the survey response is invalid
         self.assertEquals(status, 400)
@@ -187,6 +199,34 @@ class TestSurveyResponse(unittest.TestCase):
             # Then a collection_exercise is not returned (None)
             self.assertIsNone(collection_exercise)
 
+    def test_get_case(self):
+
+        # Given a mocked response
+        mock_response = Response()
+        mock_response.status_code = 200
+        mock_response._content = b'{"case":"test"}'
+
+        # When a call is made to the case request
+        with patch('requests.get', return_value=mock_response):
+            case = self.survey_response._get_case('missing case')
+
+            # Then a case is returned
+            self.assertEquals(case, {'case': 'test'})
+
+    def test_get_collection_exercise(self):
+
+        # Given a mocked response
+        mock_response = Response()
+        mock_response.status_code = 200
+        mock_response._content = b'{"collection":"test"}'
+
+        # When a call is made to the collection exercise request
+        with patch('requests.get', return_value=mock_response):
+            collection_exercise = self.survey_response._get_collection_exercise('missing collection exercise')
+
+            # Then a collection_exercise is returned
+            self.assertEquals(collection_exercise, {'collection': 'test'})
+
     def test_gateway_request_success(self):
 
         # Given a mocked response status code 200
@@ -207,7 +247,7 @@ class TestSurveyResponse(unittest.TestCase):
 
             # When a call to the gateway is made
             # Then a request exception is raised
-            with self.assertRaises(RequestException):
+            with self.assertRaises(UploadException):
                 self.survey_response._gateway_request('http://test_failure_gateway.gov.uk')
 
     def test_create_jwe_for_file(self):
@@ -222,16 +262,39 @@ class TestSurveyResponse(unittest.TestCase):
         # Then it is the same message
         self.assertEquals(message, json)
 
+    def test_add_survey_response_missing_rabbitmq_binding(self):
+
+        # Given a survey response
+        with open(TEST_FILE_LOCATION, 'rb') as io:
+            file = FileStorage(stream=io, filename='test.xlsx')
+            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
+            self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
+
+            # When the file is posted to the end point without a rabbitmq binding
+            case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
+
+            rabbit = Mock()
+            rabbit.send_message = Mock(return_value=False)
+            env = Mock()
+            env.get_service = Mock(return_value=None)
+
+            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit), \
+                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
+
+                # Then an upload exception is raised
+                with self.assertRaises(UploadException):
+                    self.survey_response.add_survey_response(case_id, file)
+
     @staticmethod
     def mock_get_jwt_value():
         return 'invalid jwt'
 
     @staticmethod
-    def mock_get_case_data(case_id):
+    def mock_get_case_data():
         return {'id': 'ab548d78-c2f1-400f-9899-79d944b87300', 'state': 'INACTIONABLE', 'iac': None, 'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a', 'collectionInstrumentId': '40c7c047-4fb3-4abe-926e-bf19fa2c0a1e', 'partyId': 'db036fd7-ce17-40c2-a8fc-932e7c228397', 'sampleUnitType': 'BI', 'createdBy': 'SYSTEM', 'createdDateTime': '2017-07-11T08:35:01.872+0000', 'responses': [{'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T10:47:41.964+0000'}, {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T11:28:36.261+0000'}, {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T12:24:14.994+0000'}], 'caseGroup': {'collectionExerciseId': '14fb3e68-4dca-46db-bf49-04b84e07e77c', 'id': '9a5f2be5-f944-41f9-982c-3517cfcfef3c', 'partyId': '3b136c4b-7a14-4904-9e01-13364dd7b972', 'sampleUnitRef': '49900000000', 'sampleUnitType': 'B'}, 'caseEvents': None}
 
     @staticmethod
-    def mock_get_collection_data(collection_id):
+    def mock_get_collection_data():
         return {'executedBy': None, 'periodStartDateTime': '2017-09-07T23:00:00.000+0000', 'scheduledExecutionDateTime': None, 'scheduledReturnDateTime': None, 'id': '14fb3e68-4dca-46db-bf49-04b84e07e77c', 'surveyId': 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', 'caseTypes': [{'sampleUnitType': 'B', 'actionPlanId': 'e71002ac-3575-47eb-b87f-cd9db92bf9a7'}, {'sampleUnitType': 'BI', 'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a'}], 'scheduledEndDateTime': '2099-01-01T00:00:00.000+0000', 'state': 'INIT', 'actualExecutionDateTime': None, 'actualPublishDateTime': None, 'name': 'BRES_2016', 'periodEndDateTime': '2017-09-08T22:59:59.000+0000', 'scheduledStartDateTime': '2017-08-29T23:00:00.000+0000'}
 
     @staticmethod

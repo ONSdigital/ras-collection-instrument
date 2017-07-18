@@ -8,8 +8,7 @@ def is_valid_file_extension(file_name, extensions):
     :param extensions: The list of extensions that are valid
     :return: boolean
     """
-    extensions_tuple = tuple([e for e in extensions.split(",")])
-    return file_name.endswith(extensions_tuple)
+    return file_name.endswith(tuple(extensions.split(",")))
 
 
 def is_valid_file_name_length(file_name, length):

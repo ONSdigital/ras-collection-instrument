@@ -138,7 +138,7 @@ class TestHelper(unittest.TestCase):
         # Then a string is returned
         self.assertEqual(s, 'klm')
 
-    def test_to_string_with_None(self):
+    def test_to_string_with_none(self):
 
         # Given nothing is passed
         value = None

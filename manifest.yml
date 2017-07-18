@@ -1,9 +1,9 @@
 ---
 applications:
-- name: collection-instrument-demo
+- name: collection-instrument
   memory: 512M
-  host: collection-instrument-demo
+  host: collection-instrument
   services:
     - rm-pg-db
-    - rm-rabbitmq
+    - ras-rabbitmq-sdx-preprod
 

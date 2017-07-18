@@ -2,11 +2,13 @@ from ons_ras_common import ons_env
 
 from pika import BlockingConnection, BasicProperties, URLParameters
 from pika.exceptions import AMQPError
+from swagger_server.controllers.exceptions import UploadException
 
 
 class RabbitMQSubmitter:
 
-    def __init__(self):
+    def __init__(self, uri):
+        self.uri = uri
         self.connection = None
 
     def send_message(self, message, queue, tx_id=None):
@@ -15,7 +17,7 @@ class RabbitMQSubmitter:
         :param message: The message to send to the rabbit mq queue
         :param queue: the name of the queue
         :param tx_id: transaction id
-        :return: a boolean value indicating if it was successful
+        :return: boolean
         """
 
         ons_env.logger.info('sending message to queue')
@@ -26,32 +28,18 @@ class RabbitMQSubmitter:
             properties.headers['tx_id'] = tx_id
 
         try:
-            self.connection = self._get_connection()
+            self.connection = BlockingConnection(URLParameters(self.uri))
             channel = self.connection.channel()
-            channel.queue_declare(queue=queue)
-            published = channel.basic_publish(exchange='',
-                                              routing_key=queue,
-                                              body=message,
-                                              properties=properties)
-            return published
+            channel.queue_declare(queue=queue, durable=True)
+            #published = channel.basic_publish(exchange='',
+            #                                  routing_key=queue,
+            #                                  body=message,
+            #                                  properties=properties)
+
         except AMQPError:
-            ons_env.logger.error("Rabbitmq message not sent")
-            return False
+            ons_env.logger.error("Rabbitmq AMQP error")
+            raise UploadException()
         finally:
             if self.connection:
                 self.connection.close()
-
-    def _get_connection(self):
-        rabbitmq_url = self._get_rabbitmq_url()
-        return BlockingConnection(URLParameters(rabbitmq_url))
-
-    @staticmethod
-    def _get_rabbitmq_url():
-
-        rabbitmq_url = "amqp://{username}:{password}@{host}:{port}/{vhost}" \
-            .format(username=ons_env.rabbit.username,
-                    password=ons_env.rabbit.password,
-                    host=ons_env.rabbit.host,
-                    port=ons_env.rabbit.port,
-                    vhost=ons_env.rabbit.vhost)
-        return rabbitmq_url
+        return True
