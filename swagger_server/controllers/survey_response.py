@@ -2,7 +2,7 @@ import os
 import requests
 import time
 import uuid
-from os import getenv
+
 
 from cfenv import AppEnv
 from ons_ras_common import ons_env
@@ -31,7 +31,7 @@ class SurveyResponse(object):
         :param file: A file object from which we can read the file contents
         :return: Returns status code and message
         """
-        ons_env.logger.error(getenv('PRIVATE_SIGNING_KEY'))
+
         tx_id = str(uuid.uuid4())
         ons_env.logger.info('Adding survey response')
 
@@ -49,12 +49,8 @@ class SurveyResponse(object):
                 return self._invalid_upload()
 
             case_group = case.get('caseGroup')
-
-            if case_group.get('partyId') != self._get_jwt_value():
-                ons_env.logger.debug('The party ID in the case does not match the value in the JWT')
-                return self._invalid_upload()
-
             ru = case_group.get('sampleUnitRef')
+            exercise_ref = case_group.get('exerciseRef')
             collection_exercise_id = case_group.get('collectionExerciseId')
 
             # request collection_exercise from API gateway
@@ -67,7 +63,8 @@ class SurveyResponse(object):
                 return self._invalid_upload()
 
             # Create, encrypt and send message to rabbitmq
-            json_message = self._create_json_message_for_file(file, file_extension, period, ru, survey_id)
+            generated_file_name = self._generate_file_name(ru, exercise_ref, period, survey_id, file_extension)
+            json_message = self._create_json_message_for_file(generated_file_name, file)
             encrypted_message = self._encrypt_message(json_message)
 
             return self._send_message_to_rabbitmq(encrypted_message, tx_id)
@@ -76,20 +73,17 @@ class SurveyResponse(object):
             ons_env.logger.debug('case id or file missing')
             return self._invalid_upload()
 
-    def _create_json_message_for_file(self, file, file_extension, period, ru, survey_id):
+    @staticmethod
+    def _create_json_message_for_file(generated_file_name, file):
         """
           Create json message from file
+          :param generated_file_name: The generated file name
           :param file: The file uploaded
-          :param file_extension: The file type
-          :param period: The period from the collection exercise
-          :param ru: reporting unit
-          :param survey_id: The survey id
           :return: Returns json message 
         """
 
         ons_env.logger.info('creating json message')
         file_as_string = convert_file_object_to_string_base64(file)
-        generated_file_name = self._generate_file_name(ru, period, survey_id, file_extension)
 
         message_json = {
             'filename': generated_file_name,
@@ -106,12 +100,9 @@ class SurveyResponse(object):
         """
 
         ons_env.logger.info('Getting case from case service')
-        # TODO remove test url
-        TEST_CASE_URL = 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk:80/cases/'
         case = None
-        url = getenv('API_GATEWAY_CASE_URL') + '{}'.format(case_id)
-        ons_env.logger.error(url)
-        response = self._gateway_request(url)
+        request_url = self._build_request_url('API_GATEWAY_CASE_URL', case_id)
+        response = self._gateway_request(request_url)
 
         if response.status_code == 200:
             case = response.json()
@@ -128,18 +119,30 @@ class SurveyResponse(object):
 
         ons_env.logger.info('Getting collection from collection service')
         collection_exercise = None
-        # TODO remove test url
-        TEST_EXERCISE_URL = 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk:80/collectionexercises/'
-
-        url = getenv('API_GATEWAY_COLLECTION_EXERCISE_URL') + '{}'.format(collection_exercise_id)
-
-        response = self._gateway_request(url)
+        request_url = self._build_request_url('API_GATEWAY_COLLECTION_EXERCISE_URL', collection_exercise_id)
+        response = self._gateway_request(request_url)
 
         if response.status_code == 200:
             collection_exercise = response.json()
         else:
             ons_env.logger.debug('Collection Exercise not found')
         return collection_exercise
+
+    @staticmethod
+    def _build_request_url(service_url_key, search_value):
+        """
+        Builds the request url from the service url and the search param
+        :param service_url_key: environmental variable key
+        :param search_value: The value to add to the end of the url, the value to search for
+        :return: url string
+        """
+        request_url = os.getenv(service_url_key, ons_env.get(service_url_key))
+
+        if request_url:
+            return request_url + '{}'.format(search_value)
+        else:
+            ons_env.logger.error('Environmental variable {} not set'.format(service_url_key))
+            raise UploadException()
 
     @staticmethod
     def _send_message_to_rabbitmq(encrypted_message, tx_id):
@@ -151,7 +154,7 @@ class SurveyResponse(object):
         """
         ons_env.logger.info('Getting environmental details for rabbit')
         env = AppEnv()
-        rabbitmq_label = getenv('RABBITMQ_LABEL')
+        rabbitmq_label = os.getenv('RABBITMQ_LABEL')
         rabbit_service = env.get_service(label=rabbitmq_label)
 
         if rabbit_service:
@@ -165,11 +168,6 @@ class SurveyResponse(object):
         else:
             ons_env.logger.error('There is no rabbitmq bound to the app with that label')
             raise UploadException()
-
-    @staticmethod
-    def _get_jwt_value():
-        # TODO to be changed to the cookie value when available
-        return '3b136c4b-7a14-4904-9e01-13364dd7b972'
 
     @staticmethod
     def _invalid_upload():
@@ -209,10 +207,11 @@ class SurveyResponse(object):
         return encrypter.encrypt(message_json)
 
     @staticmethod
-    def _generate_file_name(ru, period, survey_id, file_extension):
+    def _generate_file_name(ru, exercise_ref, period, survey_id, file_extension):
         """
         Generate the file name for the upload
         :param ru: reporting unit
+        :param exercise_ref: exercise reference
         :param period: The collection period
         :param survey_id: The id of the survey
         :param file_extension: The upload file extension
@@ -222,11 +221,12 @@ class SurveyResponse(object):
         ons_env.logger.info('generating file name for upload')
 
         time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
-        file_name = "{ru}-221-201712-{time_date_stamp}{file_format}".format(ru=ru,
-                                                                            survey_id=survey_id,
-                                                                            period=period,
-                                                                            time_date_stamp=time_date_stamp,
-                                                                            file_format=file_extension)
+        file_name = "{ru}-221-2017-12-{time_date_stamp}{file_format}".format(ru=ru,
+                                                                             exercise_ref=exercise_ref,
+                                                                             survey_id=survey_id,
+                                                                             period=period,
+                                                                             time_date_stamp=time_date_stamp,
+                                                                             file_format=file_extension)
         return file_name
 
     @staticmethod
@@ -236,7 +236,6 @@ class SurveyResponse(object):
         :param url: The URL to request from 
         :return: response
         """
-
         try:
             response = requests.get(url, verify=False)
         except requests.exceptions.RequestException:

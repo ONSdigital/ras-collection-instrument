@@ -5,5 +5,5 @@ applications:
   host: collection-instrument
   services:
     - rm-pg-db
-    - ras-rabbitmq-sdx-preprod
+
 

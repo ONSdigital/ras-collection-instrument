@@ -31,10 +31,10 @@ class RabbitMQSubmitter:
             self.connection = BlockingConnection(URLParameters(self.uri))
             channel = self.connection.channel()
             channel.queue_declare(queue=queue, durable=True)
-            #published = channel.basic_publish(exchange='',
-            #                                  routing_key=queue,
-            #                                  body=message,
-            #                                  properties=properties)
+            published = channel.basic_publish(exchange='',
+                                              routing_key=queue,
+                                              body=message,
+                                              properties=properties)
 
         except AMQPError:
             ons_env.logger.error("Rabbitmq AMQP error")
@@ -42,4 +42,4 @@ class RabbitMQSubmitter:
         finally:
             if self.connection:
                 self.connection.close()
-        return True
+        return published

@@ -1,5 +1,4 @@
 import os
-from os import getenv
 import jwt
 from cryptography.hazmat.backends.openssl.backend import backend
 from cryptography.hazmat.primitives import hashes
@@ -18,13 +17,11 @@ KID = 'EDCSR'
 
 class Encrypter(JWEEncrypter):
 
-
     def __init__(self):
 
-        private_key = getenv('PRIVATE_SIGNING_KEY', TEST_PRIVATE_SIGNING_KEY)
-        private_key_password = getenv('PRIVATE_SIGNING_KEY_PASSWORD', TEST_PRIVATE_SIGNING_KEY_PASSWORD)
-        public_key = getenv('SDX_PUBLIC_KEY', TEST_SDX_PUBLIC_KEY)
-
+        private_key = os.getenv('PRIVATE_SIGNING_KEY', TEST_PRIVATE_SIGNING_KEY)
+        private_key_password = os.getenv('PRIVATE_SIGNING_KEY_PASSWORD', TEST_PRIVATE_SIGNING_KEY_PASSWORD)
+        public_key = os.getenv('SDX_PUBLIC_KEY', TEST_SDX_PUBLIC_KEY)
         self._load_keys(private_key, private_key_password, public_key)
 
         # first generate a random key

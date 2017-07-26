@@ -1,6 +1,7 @@
 import jwt
 import unittest
 import requests
+from os import putenv
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends.openssl.backend import backend
@@ -23,6 +24,9 @@ class TestSurveyResponse(unittest.TestCase):
 
     def setUp(self):
         self.survey_response = SurveyResponse()
+        putenv('API_GATEWAY_CASE_URL', 'test')
+        putenv('API_GATEWAY_COLLECTION_EXERCISE_URL', 'test')
+        putenv('RABBITMQ_LABEL', 'test')
 
     def test_add_survey_response_success(self):
 
@@ -155,23 +159,6 @@ class TestSurveyResponse(unittest.TestCase):
         # Then the file fails to upload, returning 400 and file type error
         self.assertEquals(status, 400)
         self.assertEquals(FILE_EXTENSION_ERROR, msg)
-
-    def test_add_survey_response_invalid_party_id_jwt_comparision(self):
-
-        # Given a survey response
-        with open(TEST_FILE_LOCATION, 'rb') as io:
-            file = FileStorage(stream=io, filename='test.xlsx')
-
-            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
-
-        # When the file is posted to the end point with a party_id that doesn't match the JWT value
-            case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
-            self.survey_response._get_jwt_value = self.mock_get_jwt_value
-            status, msg = self.survey_response.add_survey_response(case_id, file)
-
-        # Then the survey response is invalid
-        self.assertEquals(status, 400)
-        self.assertEquals(INVALID_UPLOAD, msg)
 
     def test_missing_case(self):
 
