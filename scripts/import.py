@@ -19,7 +19,8 @@ urls = {
     'local': 'http://localhost:8080',
     'test': 'http://ras-api-gateway-test.apps.devtest.onsclofo.uk',
     'int': 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk',
-    'demo': 'https://ras-api-gateway-demo.apps.devtest.onsclofo.uk'
+    'demo': 'http://ras-api-gateway-demo.apps.devtest.onsclofo.uk',
+    'sit': 'http://ras-api-gateway-sit.apps.devtest.onsclofo.uk'
 }
 
 if len(sys.argv) < 2 or sys.argv[1] not in urls:

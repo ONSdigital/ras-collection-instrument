@@ -1,0 +1,15 @@
+consumes: [application/json]
+host: localhost:8080
+info: {title: healthcheck, version: 1.0.0}
+paths:
+  /info:
+    get:
+      description: Basic service health check
+      operationId: info
+      responses:
+        200: {description: documented info structure}
+        500: {description: server error}
+      x-swagger-router-controller: swagger_server.controllers.ciupload_controller
+produces: [application/json]
+schemes: [http, https]
+swagger: '2.0'
