@@ -42,8 +42,7 @@ class TestSurveyResponse(unittest.TestCase):
             service = Mock()
             service.credentials = {'uri': 'test-uri'}
             env.get_service = Mock(return_value=service)
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'), \
-                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
+            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter'):
                 status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then the file uploads successfully
@@ -125,8 +124,7 @@ class TestSurveyResponse(unittest.TestCase):
             service.credentials = {'uri': 'test-uri'}
             env.get_service = Mock(return_value=service)
 
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit), \
-                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
+            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit):
                 status, msg = self.survey_response.add_survey_response(case_id, file)
 
         # Then the upload is unsuccessful
@@ -248,29 +246,6 @@ class TestSurveyResponse(unittest.TestCase):
 
         # Then it is the same message
         self.assertEquals(message, json)
-
-    def test_add_survey_response_missing_rabbitmq_binding(self):
-
-        # Given a survey response
-        with open(TEST_FILE_LOCATION, 'rb') as io:
-            file = FileStorage(stream=io, filename='test.xlsx')
-            self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
-            self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
-
-            # When the file is posted to the end point without a rabbitmq binding
-            case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
-
-            rabbit = Mock()
-            rabbit.send_message = Mock(return_value=False)
-            env = Mock()
-            env.get_service = Mock(return_value=None)
-
-            with patch('swagger_server.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit), \
-                    patch('swagger_server.controllers.survey_response.AppEnv', return_value=env):
-
-                # Then an upload exception is raised
-                with self.assertRaises(UploadException):
-                    self.survey_response.add_survey_response(case_id, file)
 
     @staticmethod
     def mock_get_jwt_value():

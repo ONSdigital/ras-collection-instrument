@@ -3,8 +3,6 @@ import requests
 import time
 import uuid
 
-
-from cfenv import AppEnv
 from ons_ras_common import ons_env
 from swagger_server.controllers.helper import is_valid_file_extension, is_valid_file_name_length, \
     convert_file_object_to_string_base64
@@ -57,13 +55,13 @@ class SurveyResponse(object):
             collection_exercise = self._get_collection_exercise(collection_exercise_id)
 
             if collection_exercise:
-                period = collection_exercise.get('exerciseRef')
+                exercise_ref = collection_exercise.get('exerciseRef')
                 survey_id = collection_exercise.get('surveyId')
             else:
                 return self._invalid_upload()
 
             # Create, encrypt and send message to rabbitmq
-            generated_file_name = self._generate_file_name(ru, exercise_ref, period, survey_id, file_extension)
+            generated_file_name = self._generate_file_name(ru, exercise_ref, survey_id, file_extension)
             json_message = self._create_json_message_for_file(generated_file_name, file)
             encrypted_message = self._encrypt_message(json_message)
 
@@ -153,21 +151,13 @@ class SurveyResponse(object):
           :return: Returns status code and message 
         """
         ons_env.logger.info('Getting environmental details for rabbit')
-        env = AppEnv()
-        rabbitmq_label = os.getenv('RABBITMQ_LABEL')
-        rabbit_service = env.get_service(label=rabbitmq_label)
+        rabbitmq_amqp = os.getenv('RABBITMQ_AMQP', ons_env.get('RABBITMQ_AMQP'))
+        rabbit_mq = RabbitMQSubmitter(rabbitmq_amqp)
 
-        if rabbit_service:
-            rabbit_uri = rabbit_service.credentials['uri']
-            rabbit_mq = RabbitMQSubmitter(rabbit_uri)
-
-            if rabbit_mq.send_message(encrypted_message, QUEUE_NAME, tx_id):
-                return 200, UPLOAD_SUCCESSFUL
-            else:
-                return 500, UPLOAD_UNSUCCESSFUL
+        if rabbit_mq.send_message(encrypted_message, QUEUE_NAME, tx_id):
+            return 200, UPLOAD_SUCCESSFUL
         else:
-            ons_env.logger.error('There is no rabbitmq bound to the app with that label')
-            raise UploadException()
+            return 500, UPLOAD_UNSUCCESSFUL
 
     @staticmethod
     def _invalid_upload():
@@ -207,7 +197,7 @@ class SurveyResponse(object):
         return encrypter.encrypt(message_json)
 
     @staticmethod
-    def _generate_file_name(ru, exercise_ref, period, survey_id, file_extension):
+    def _generate_file_name(ru, exercise_ref, survey_id, file_extension):
         """
         Generate the file name for the upload
         :param ru: reporting unit
@@ -221,12 +211,11 @@ class SurveyResponse(object):
         ons_env.logger.info('generating file name for upload')
 
         time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
-        file_name = "{ru}-221-2017-12-{time_date_stamp}{file_format}".format(ru=ru,
-                                                                             exercise_ref=exercise_ref,
-                                                                             survey_id=survey_id,
-                                                                             period=period,
-                                                                             time_date_stamp=time_date_stamp,
-                                                                             file_format=file_extension)
+        file_name = "{ru}-{exercise_ref}-{time_date_stamp}{file_format}".format(ru=ru,
+                                                                                exercise_ref=exercise_ref,
+                                                                                survey_id=survey_id,
+                                                                                time_date_stamp=time_date_stamp,
+                                                                                file_format=file_extension)
         return file_name
 
     @staticmethod
