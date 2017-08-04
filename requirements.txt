@@ -1,4 +1,4 @@
-git+https://github.com/ONSdigital/ras-common.git@TBL063/healthcheck#0.2.19
+git+https://github.com/ONSdigital/ras-common.git@TBLXXX/cfenv#0.2.20
 appdirs==1.4.3
 arrow==0.10.0
 asn1crypto==0.22.0
