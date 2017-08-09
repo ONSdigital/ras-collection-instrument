@@ -1,8 +1,9 @@
 ---
 applications:
-- name: collection-instrument-demo
+- name: collection-instrument
   memory: 512M
-  host: collection-instrument-demo
+  host: collection-instrument
   services:
-    - ras-postgres
+    - rm-pg-db
+
 

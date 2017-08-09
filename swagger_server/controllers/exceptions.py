@@ -1,9 +1,14 @@
-class SessionScopeException(Exception):
-    """ Exception when session.commit fails """
-    status_code = 400
+class UploadException(Exception):
+    """ Generic Ras exception """
 
-    def __init__(self, message, status_code=None):
+    status_code = 400
+    message = "Upload failed"
+
+    def __init__(self, message=None, status_code=None):
         Exception.__init__(self)
-        self.message = message
+
+        if message is not None:
+            self.message = message
         if status_code is not None:
             self.status_code = status_code
+
