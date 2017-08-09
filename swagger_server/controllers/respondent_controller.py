@@ -52,7 +52,6 @@ def get_collection_instrument_by_id(id):
     code, msg = collection_instrument.instrument(id)
     return make_response(jsonify(msg), code)
 
-
 #
 # /survey_responses/{case_id}
 #
@@ -71,9 +70,6 @@ def survey_responses_case_id_get(case_id):
     return make_response(jsonify(msg), code)
 
 
-#
-# /survey_responses/{case_id}
-#
 @before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def survey_responses_case_id_post(case_id, file=None):
