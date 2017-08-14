@@ -102,10 +102,9 @@ class CollectionInstrument(object):
                 used.append(BusinessModel)
             elif attr == 'COLLECTION_EXERCISE' and ExerciseModel not in used:
                 query = query.join((ExerciseModel, InstrumentModel.exercises))
-                query = query.join((ExerciseModel, InstrumentModel.exercises))
                 used.append(ExerciseModel)
             elif attr == 'SURVEY_ID' and SurveyModel not in used:
-                query = query.join(SurveyModel.instruments)
+                query = query.join(SurveyModel, InstrumentModel.survey)
                 used.append(SurveyModel)
             elif attr in classifications and ClassificationModel not in used:
                 query = query.join(ClassificationModel.instrument)
