@@ -15,11 +15,12 @@ API_UPLOAD = '{}/collection-instrument-api/1.0.2/upload/{}/{}'
 TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 urls = {
-    'dev': 'http://api-dev.apps.mvp.onsclofo.uk',
+    'dev': 'http://api-dev.apps.devtest.onsclofo.uk',
     'local': 'http://localhost:8080',
-    'test': 'http://ras-api-gateway-test.apps.mvp.onsclofo.uk',
+    'test': 'http://ras-api-gateway-test.apps.devtest.onsclofo.uk',
     'int': 'http://ras-api-gateway-int.apps.devtest.onsclofo.uk',
-    'demo': 'https://ras-api-gateway-demo.apps.mvp.onsclofo.uk'
+    'demo': 'http://ras-api-gateway-demo.apps.devtest.onsclofo.uk',
+    'sit': 'http://ras-api-gateway-sit.apps.devtest.onsclofo.uk'
 }
 
 if len(sys.argv) < 2 or sys.argv[1] not in urls:

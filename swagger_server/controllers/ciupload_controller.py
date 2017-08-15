@@ -1,17 +1,12 @@
-##############################################################################
-#                                                                            #
-#   Collection Instruments Upload                                            #
-#   License: MIT                                                             #
-#   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
-#                                                                            #
-##############################################################################
 from flask import request, jsonify, make_response
 from .collectioninstrument import CollectionInstrument
 from ons_ras_common.ons_decorators import validate_jwt, before_request
+from ons_ras_common import ons_env
 
 collection_instrument = CollectionInstrument()
 
 
+@before_request(request)
 @validate_jwt(['ci:read', 'ci:write'], request)
 def instrument_size_get(id):
     """
@@ -193,3 +188,10 @@ def download_id_get(id):
         response.headers["Content-Disposition"] = "attachment; filename={}.xlsx".format(args[2])
         response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return response
+
+
+def info():
+    """
+    Handle the /info endpoint and return the health_check info
+    """
+    return make_response(jsonify(ons_env.info))
