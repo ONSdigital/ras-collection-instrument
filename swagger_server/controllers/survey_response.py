@@ -62,7 +62,7 @@ class SurveyResponse(object):
 
             # Create, encrypt and send message to rabbitmq
             generated_file_name = self._generate_file_name(ru, exercise_ref, survey_id, file_extension)
-            json_message = self._create_json_message_for_file(generated_file_name, file)
+            json_message = self._create_json_message_for_file(generated_file_name, file, case_id)
             encrypted_message = self._encrypt_message(json_message)
 
             return self._send_message_to_rabbitmq(encrypted_message, tx_id)
@@ -72,11 +72,12 @@ class SurveyResponse(object):
             return self._invalid_upload()
 
     @staticmethod
-    def _create_json_message_for_file(generated_file_name, file):
+    def _create_json_message_for_file(generated_file_name, file, case_id):
         """
           Create json message from file
           :param generated_file_name: The generated file name
           :param file: The file uploaded
+          :param case_id: The case UUID
           :return: Returns json message 
         """
 
@@ -85,7 +86,8 @@ class SurveyResponse(object):
 
         message_json = {
             'filename': generated_file_name,
-            'file': file_as_string
+            'file': file_as_string,
+            'case_id': case_id
         }
 
         return message_json
