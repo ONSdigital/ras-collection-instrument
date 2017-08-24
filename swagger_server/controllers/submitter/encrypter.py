@@ -40,7 +40,7 @@ class Encrypter(JWEEncrypter):
         self.public_key = serialization.load_pem_public_key(data=public_key_bytes, backend=backend)
 
     def _jwe_protected_header(self):
-        return self._base_64_encode(b'{"alg":"RSA-OAEP","enc":"A256GCM","kid":"inbound-encryption}')
+        return self._base_64_encode(b'{"alg":"RSA-OAEP","enc":"A256GCM","kid":"inbound-encryption"}')
 
     def _encrypted_key(self, cek):
         ciphertext = self.public_key.encrypt(cek, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA1()), algorithm=hashes.SHA1(), label=None))
@@ -50,7 +50,7 @@ class Encrypter(JWEEncrypter):
         return self._base_64_encode(iv)
 
     def _encode_and_signed(self, payload):
-        return jwt.encode(payload, self.private_key, algorithm="RS256", headers={'kid': "inbound-signing", 'typ': 'jwt'})
+        return jwt.encode(payload, self.private_key, algorithm="RS256", headers={'kid': 'inbound-signing', 'typ': 'jwt'})
 
     def encrypt(self, json):
         payload = self._encode_and_signed(json)
