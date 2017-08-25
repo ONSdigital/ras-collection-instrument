@@ -17,7 +17,7 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-from sqlalchemy.orm.session import sessionmaker
+from sqlalchemy.orm.session import sessionmaker, scoped_session
 
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
@@ -306,14 +306,15 @@ class CollectionInstrument(object):
         logger.info("Encrypted spreadsheet size {}".format(encrypted_size))
 
         logger.info("Creating session")
-        Session = sessionmaker(bind=ons_env.db.engine)
-        session = Session()
+
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
 
         logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             logger.info("Creating db models")
+            Session = sessionmaker(bind=ons_env.db.engine)
+            session = scoped_session(Session())
             exercise = self._get_exercise(exercise_id, session)
             if not exercise:
                 exercise = ExerciseModel(exercise_id=exercise_id, items=1)
@@ -340,7 +341,6 @@ class CollectionInstrument(object):
                 session.add(survey)
             survey.instruments.append(instrument)
             logger.info("Commit session")
-            session.flush()
             session.commit()
         except Exception as e:
             logger.info("Rollback session")
