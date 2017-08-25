@@ -5,19 +5,21 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-from ons_ras_common import ons_env
-from crochet import wait_for
-from ..models.instrument import InstrumentModel
-from ..models.exercise import ExerciseModel
-from ..models.business import BusinessModel
-from ..models.survey import SurveyModel
-from ..models.classification import ClassificationModel, classifications
+import threading
 from json import loads
 from uuid import UUID
+
 import treq
+from crochet import wait_for
+from ons_ras_common import ons_env
 from twisted.internet import reactor
 from twisted.internet.error import UserError
 
+from ..models.business import BusinessModel
+from ..models.classification import ClassificationModel, classifications
+from ..models.exercise import ExerciseModel
+from ..models.instrument import InstrumentModel
+from ..models.survey import SurveyModel
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -267,7 +269,7 @@ class CollectionInstrument(object):
                 return exercise
 
             url = '{protocol}://{host}:{port}{endpoint}'.format(**params)
-            deferred = treq.get(url)
+            deferred = treq.get(url, auth=(ons_env.security_user_name, ons_env.security_user_password))
             return deferred.addCallback(status_check).addCallback(treq.content).addCallback(json)
 
         params = {
@@ -294,6 +296,8 @@ class CollectionInstrument(object):
         blob = ons_env.cipher.encrypt(blob)
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
+
+        ons_env.logger.info('**** Thread id {}'.format(threading.current_thread()))
 
         ons_env.logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:

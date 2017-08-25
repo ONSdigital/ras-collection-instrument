@@ -1,19 +1,20 @@
 from flask import request, jsonify, make_response
 from .collectioninstrument import CollectionInstrument
-from ons_ras_common.ons_decorators import validate_jwt, before_request
 from ons_ras_common import ons_env
 
 collection_instrument = CollectionInstrument()
 
 
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def instrument_size_get(id):
     """
     Recover the size of a collection instrument
     :param id:
     :return: size
     """
+    # Because apparently we can't use the basic_auth.required decorator with connexion...
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.instrument_size(id)
     return make_response(jsonify(msg), code)
 
@@ -21,8 +22,7 @@ def instrument_size_get(id):
 #
 # /status/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def status_id_get(id):
     """
     Get upload status
@@ -32,6 +32,8 @@ def status_id_get(id):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.status(id)
     return make_response(jsonify(msg), code)
 
@@ -39,8 +41,7 @@ def status_id_get(id):
 #
 # /define_batch/{id}/{count}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def define_batch_id_count_post(id, count):
     """
     Specify the size of a batch
@@ -52,6 +53,8 @@ def define_batch_id_count_post(id, count):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.define_batch(id, count)
     return make_response(jsonify(msg), code)
 
@@ -59,8 +62,7 @@ def define_batch_id_count_post(id, count):
 #
 # /upload/{id}/{file}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def upload_id_file_post(id, file, files=None):
     """
     Upload collection instrument
@@ -74,6 +76,8 @@ def upload_id_file_post(id, file, files=None):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     uploaded_files = None
     for index in ['files', 'files[]', 'upfile']:
         if index in request.files:
@@ -96,8 +100,7 @@ def upload_id_file_post(id, file, files=None):
 #
 # /download_csv/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def download_csv_id_get(id):
     """
     Download CSV file
@@ -107,6 +110,8 @@ def download_csv_id_get(id):
 
     :rtype: file
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.csv(id)
     response = make_response(msg if type(msg) == str else msg['text'], code)
     response.headers["Content-Disposition"] = "attachment; filename=download.csv"
@@ -117,8 +122,7 @@ def download_csv_id_get(id):
 #
 # /activate/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def activate_id_put(id):
     """
     Activate batch
@@ -128,6 +132,8 @@ def activate_id_put(id):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.activate(id)
     return make_response(jsonify(msg), code)
 
@@ -135,8 +141,7 @@ def activate_id_put(id):
 #
 # /clear_batch/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def clear_batch_id_delete(id):
     """
     Clear a batch
@@ -146,6 +151,8 @@ def clear_batch_id_delete(id):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.clear(id)
     return make_response(jsonify(msg), code)
 
@@ -153,8 +160,7 @@ def clear_batch_id_delete(id):
 #
 # /clear_ruref/{re_ref}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def clear_ruref(ru_ref):
     """
     Clear an instrument by ru_ref, useful for testing
@@ -163,14 +169,16 @@ def clear_ruref(ru_ref):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     code, msg = collection_instrument.clear_by_ref(ru_ref)
     return make_response(jsonify(msg), code)
+
 
 #
 # /download/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+# @ons_env.basic_auth.required
 def download_id_get(id):
     """
     Download a file based on the id (Instrument ID)
@@ -180,6 +188,8 @@ def download_id_get(id):
 
     :rtype: None
     """
+    if not ons_env.basic_auth.authenticate():
+        return ons_env.basic_auth.challenge()
     args = collection_instrument.download(id)
     code = args[0]
     msg = args[1]
