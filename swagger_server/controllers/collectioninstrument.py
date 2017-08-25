@@ -313,7 +313,10 @@ class CollectionInstrument(object):
         logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             logger.info("Creating db models")
-            session = scoped_session(sessionmaker())
+            session_factory = sessionmaker(bind=ons_env.db.engine)
+            Session = scoped_session(session_factory)
+            session = Session()
+
             exercise = self._get_exercise(exercise_id, session)
             if not exercise:
                 exercise = ExerciseModel(exercise_id=exercise_id, items=1)
@@ -350,6 +353,7 @@ class CollectionInstrument(object):
         finally:
             logger.info("Close session")
             session.close()
+            Session.remove()
         return 200, 'OK'
 
     def instruments(self, searchString):
