@@ -297,7 +297,7 @@ class CollectionInstrument(object):
         logger.info("Spreadsheet size {}".format(size))
         blob = ons_env.cipher.encrypt(blob)
         encrypted_size = len(blob)
-        logger.info("Encrypted spreadsheet size".format(encrypted_size))
+        logger.info("Encrypted spreadsheet size {}".format(encrypted_size))
 
         logger.info("Creating session")
         session = Session()
