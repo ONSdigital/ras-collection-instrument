@@ -17,6 +17,7 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
+from sqlalchemy.orm.session import Session
 
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
@@ -289,43 +290,59 @@ class CollectionInstrument(object):
         :param: survey_id: The survey identifier (UUID)
         :return: Returns True if the upload completed
         """
+        logger = ons_env.logger
+        logger.info("About to encrypt spreadsheet")
         blob = fileobject.read()
         size = len(blob)
+        logger.info("Spreadsheet size {}".format(size))
         blob = ons_env.cipher.encrypt(blob)
+        encrypted_size = len(blob)
+        logger.info("Encrypted spreadsheet size".format(encrypted_size))
+
+        logger.info("Creating session")
+        session = Session()
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
 
-        ons_env.logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
+        logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
-            with ons_env.db.transaction():
-                exercise = self._get_exercise(exercise_id)
-                if not exercise:
-                    exercise = ExerciseModel(exercise_id=exercise_id, items=1)
-                business = self._get_business(ru_ref)
-                if not business:
-                    business = BusinessModel(ru_ref=ru_ref)
-                classifier = ClassificationModel(kind='SIZE', value=size)
-                instrument = InstrumentModel(len=size, data=blob)
-                instrument.exercises.append(exercise)
-                instrument.businesses.append(business)
-                instrument.classifications.append(classifier)
-                ons_env.db.session.add(instrument)
-                survey = self._get_survey(survey_id)
-                if not survey:
-                    if reactor.running:
-                        exercise = self._lookup_exercise(exercise_id)
-                        survey_id = exercise.get('surveyId', None)
-                    else:
-                        survey_id = UUID(survey_id)
-                    if not survey_id:
-                        ons_env.logger.error('no survey ID returned')
-                        raise Exception('no survey ID returned')
-                    survey = SurveyModel(survey_id=survey_id)
-                    ons_env.db.session.add(survey)
-                survey.instruments.append(instrument)
+            logger.info("Creating db models")
+            exercise = self._get_exercise(exercise_id)
+            if not exercise:
+                exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+            business = self._get_business(ru_ref)
+            if not business:
+                business = BusinessModel(ru_ref=ru_ref)
+            classifier = ClassificationModel(kind='SIZE', value=size)
+            instrument = InstrumentModel(len=size, data=blob)
+            instrument.exercises.append(exercise)
+            instrument.businesses.append(business)
+            instrument.classifications.append(classifier)
+            ons_env.db.session.add(instrument)
+            survey = self._get_survey(survey_id)
+            if not survey:
+                if reactor.running:
+                    exercise = self._lookup_exercise(exercise_id)
+                    survey_id = exercise.get('surveyId', None)
+                else:
+                    survey_id = UUID(survey_id)
+                if not survey_id:
+                    ons_env.logger.error('no survey ID returned')
+                    raise Exception('no survey ID returned')
+                survey = SurveyModel(survey_id=survey_id)
+                ons_env.db.session.add(survey)
+            survey.instruments.append(instrument)
+            logger.info("Commit session")
+            session.commit()
         except Exception as e:
+            logger.info("Rollback session")
+            session.rollback()
+            logger.exception(e)
             ons_env.logger.error('Error uploading file: {}'.format(str(e)))
             return 500, 'error uploading file'
+        finally:
+            logger.info("Close session")
+            session.close()
         return 200, 'OK'
 
     def instruments(self, searchString):
