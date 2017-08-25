@@ -81,7 +81,7 @@ class CollectionInstrument(object):
     def _get_survey(self, survey_id, session=None):
         if not session:
             session = ons_env.db.session
-        return ons_env.db.session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
+        return session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
 
     def _get_instrument(self, instrument_id):
         return ons_env.db.session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
