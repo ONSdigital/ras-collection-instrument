@@ -313,8 +313,7 @@ class CollectionInstrument(object):
         logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             logger.info("Creating db models")
-            Session = sessionmaker(bind=ons_env.db.engine)
-            session = scoped_session(Session())
+            session = scoped_session(sessionmaker())
             exercise = self._get_exercise(exercise_id, session)
             if not exercise:
                 exercise = ExerciseModel(exercise_id=exercise_id, items=1)
