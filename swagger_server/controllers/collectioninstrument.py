@@ -345,8 +345,8 @@ class CollectionInstrument(object):
         except Exception as e:
             logger.info("Rollback session")
             session.rollback()
-            logger.exception(e)
-            ons_env.logger.error('Error uploading file: {}'.format(str(e)))
+            logger.error('Error uploading file: {}'.format(str(e)))
+            logger.logger.exception(e)
             return 500, 'error uploading file'
         finally:
             logger.info("Close session")
