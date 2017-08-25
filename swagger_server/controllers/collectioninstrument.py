@@ -17,7 +17,7 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-from sqlalchemy.orm.session import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
