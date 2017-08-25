@@ -68,13 +68,19 @@ class CollectionInstrument(object):
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
     some 'more' obvious shortcuts to functions, purely from a 'readability' perspective.
     """
-    def _get_exercise(self, exercise_id):
-        return ons_env.db.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+    def _get_exercise(self, exercise_id, session=None):
+        if not session:
+            session = ons_env.db.session
+        return session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
 
-    def _get_business(self, ru_ref):
-        return ons_env.db.session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
+    def _get_business(self, ru_ref, session=None):
+        if not session:
+            session = ons_env.db.session
+        return session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
 
-    def _get_survey(self, survey_id):
+    def _get_survey(self, survey_id, session=None):
+        if not session:
+            session = ons_env.db.session
         return ons_env.db.session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
 
     def _get_instrument(self, instrument_id):
@@ -308,10 +314,10 @@ class CollectionInstrument(object):
         logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             logger.info("Creating db models")
-            exercise = self._get_exercise(exercise_id)
+            exercise = self._get_exercise(exercise_id, session)
             if not exercise:
                 exercise = ExerciseModel(exercise_id=exercise_id, items=1)
-            business = self._get_business(ru_ref)
+            business = self._get_business(ru_ref, session)
             if not business:
                 business = BusinessModel(ru_ref=ru_ref)
             classifier = ClassificationModel(kind='SIZE', value=size)
@@ -319,8 +325,8 @@ class CollectionInstrument(object):
             instrument.exercises.append(exercise)
             instrument.businesses.append(business)
             instrument.classifications.append(classifier)
-            ons_env.db.session.add(instrument)
-            survey = self._get_survey(survey_id)
+            session.add(instrument)
+            survey = self._get_survey(survey_id, session)
             if not survey:
                 if reactor.running:
                     exercise = self._lookup_exercise(exercise_id)
@@ -328,10 +334,10 @@ class CollectionInstrument(object):
                 else:
                     survey_id = UUID(survey_id)
                 if not survey_id:
-                    ons_env.logger.error('no survey ID returned')
+                    logger.error('no survey ID returned')
                     raise Exception('no survey ID returned')
                 survey = SurveyModel(survey_id=survey_id)
-                ons_env.db.session.add(survey)
+                session.add(survey)
             survey.instruments.append(instrument)
             logger.info("Commit session")
             session.flush()
