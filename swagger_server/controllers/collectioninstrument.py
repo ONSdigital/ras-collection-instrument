@@ -352,7 +352,6 @@ class CollectionInstrument(object):
         finally:
             logger.info("Close session")
             session.close()
-            Session.remove()
         return 200, 'OK'
 
     def instruments(self, searchString):
