@@ -340,7 +340,7 @@ class CollectionInstrument(object):
                     raise Exception('no survey ID returned')
                 survey = SurveyModel(survey_id=survey_id)
                 session.add(survey)
-            survey.instruments.append(instrument)
+            # survey.instruments.append(instrument)
             logger.info("Commit session")
             session.commit()
         except Exception as e:
