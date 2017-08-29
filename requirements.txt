@@ -61,4 +61,4 @@ PyJWT==1.4.0
 pika==0.10.0
 jsonpickle==0.8.0
 flake8-mock==0.3
-Flask-BasicAuth==0.2.0
+Flask-HTTPAuth==3.2.3
