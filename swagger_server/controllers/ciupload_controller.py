@@ -193,7 +193,6 @@ def download_id_get(id):
     return response
 
 
-@auth.login_required
 def info():
     """
     Handle the /info endpoint and return the health_check info
