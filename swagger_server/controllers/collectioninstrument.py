@@ -18,6 +18,7 @@ import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
 from sqlalchemy.orm.session import Session
+import logging
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -62,6 +63,7 @@ class CollectionInstrument(object):
         redundant, please leave it in.
         """
         self._exercise_cache = {}
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
