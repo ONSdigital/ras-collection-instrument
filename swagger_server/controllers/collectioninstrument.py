@@ -314,8 +314,7 @@ class CollectionInstrument(object):
         try:
             logger.info("Creating db models")
             session_factory = sessionmaker(bind=ons_env.db.engine)
-            Session = scoped_session(session_factory)
-            session = Session()
+            session = session_factory()
 
             exercise = self._get_exercise(exercise_id, session)
             if not exercise:
