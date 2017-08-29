@@ -17,7 +17,8 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-
+from sqlalchemy.orm.session import Session
+import logging
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -62,19 +63,26 @@ class CollectionInstrument(object):
         redundant, please leave it in.
         """
         self._exercise_cache = {}
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
     """
     Database shortcuts, the SQLAlchemy syntax isn't always immediately obvious, so here we're just using
     some 'more' obvious shortcuts to functions, purely from a 'readability' perspective.
     """
-    def _get_exercise(self, exercise_id):
-        return ons_env.db.session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+    def _get_exercise(self, exercise_id, session=None):
+        if not session:
+            session = ons_env.db.session
+        return session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
 
-    def _get_business(self, ru_ref):
-        return ons_env.db.session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
+    def _get_business(self, ru_ref, session=None):
+        if not session:
+            session = ons_env.db.session
+        return session.query(BusinessModel).filter(BusinessModel.ru_ref == ru_ref).first()
 
-    def _get_survey(self, survey_id):
-        return ons_env.db.session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
+    def _get_survey(self, survey_id, session=None):
+        if not session:
+            session = ons_env.db.session
+        return session.query(SurveyModel).filter(SurveyModel.survey_id == survey_id).first()
 
     def _get_instrument(self, instrument_id):
         return ons_env.db.session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
@@ -289,43 +297,61 @@ class CollectionInstrument(object):
         :param: survey_id: The survey identifier (UUID)
         :return: Returns True if the upload completed
         """
+        logger = ons_env.logger
+        logger.info("About to encrypt spreadsheet")
         blob = fileobject.read()
         size = len(blob)
+        logger.info("Spreadsheet size {}".format(size))
         blob = ons_env.cipher.encrypt(blob)
+        encrypted_size = len(blob)
+        logger.info("Encrypted spreadsheet size {}".format(encrypted_size))
+
+        logger.info("Creating session")
+
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
 
-        ons_env.logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
+        logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
-            with ons_env.db.transaction():
-                exercise = self._get_exercise(exercise_id)
-                if not exercise:
-                    exercise = ExerciseModel(exercise_id=exercise_id, items=1)
-                business = self._get_business(ru_ref)
-                if not business:
-                    business = BusinessModel(ru_ref=ru_ref)
-                classifier = ClassificationModel(kind='SIZE', value=size)
-                instrument = InstrumentModel(len=size, data=blob)
-                instrument.exercises.append(exercise)
-                instrument.businesses.append(business)
-                instrument.classifications.append(classifier)
-                ons_env.db.session.add(instrument)
-                survey = self._get_survey(survey_id)
-                if not survey:
-                    if reactor.running:
-                        exercise = self._lookup_exercise(exercise_id)
-                        survey_id = exercise.get('surveyId', None)
-                    else:
-                        survey_id = UUID(survey_id)
-                    if not survey_id:
-                        ons_env.logger.error('no survey ID returned')
-                        raise Exception('no survey ID returned')
-                    survey = SurveyModel(survey_id=survey_id)
-                    ons_env.db.session.add(survey)
-                survey.instruments.append(instrument)
+            logger.info("Creating db models")
+            session = Session(bind=ons_env.db.engine)
+
+            exercise = self._get_exercise(exercise_id, session)
+            if not exercise:
+                exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+            business = self._get_business(ru_ref, session)
+            if not business:
+                business = BusinessModel(ru_ref=ru_ref)
+            classifier = ClassificationModel(kind='SIZE', value=size)
+            instrument = InstrumentModel(len=size, data=blob)
+            instrument.exercises.append(exercise)
+            instrument.businesses.append(business)
+            instrument.classifications.append(classifier)
+            session.add(instrument)
+            survey = self._get_survey(survey_id, session)
+            if not survey:
+                if reactor.running:
+                    exercise = self._lookup_exercise(exercise_id)
+                    survey_id = exercise.get('surveyId', None)
+                else:
+                    survey_id = UUID(survey_id)
+                if not survey_id:
+                    logger.error('no survey ID returned')
+                    raise Exception('no survey ID returned')
+                survey = SurveyModel(survey_id=survey_id)
+                session.add(survey)
+            instrument.survey_id = survey.id
+            logger.info("Commit session")
+            session.commit()
         except Exception as e:
-            ons_env.logger.error('Error uploading file: {}'.format(str(e)))
+            logger.info("Rollback session")
+            session.rollback()
+            logger.error('Error uploading file: {}'.format(str(e)))
+            logger.logger.exception(e)
             return 500, 'error uploading file'
+        finally:
+            logger.info("Close session")
+            session.close()
         return 200, 'OK'
 
     def instruments(self, searchString):

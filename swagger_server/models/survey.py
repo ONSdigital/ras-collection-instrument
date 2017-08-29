@@ -14,7 +14,7 @@ class SurveyModel(ons_env.db.base):
 
     id = Column(Integer, primary_key=True)
     survey_id = Column(GUID, index=True)
-    instruments = relationship('InstrumentModel', back_populates='survey')
+    # instruments = relationship('InstrumentModel', back_populates='survey')
 
     def __init__(self, survey_id=None, items=0, status='pending'):
         """Initialise the class with optionally supplied defaults"""
