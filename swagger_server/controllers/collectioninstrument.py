@@ -17,8 +17,7 @@ from uuid import UUID
 import treq
 from twisted.internet import reactor
 from twisted.internet.error import UserError
-from sqlalchemy.orm import sessionmaker, scoped_session
-
+from sqlalchemy.orm.session import Session
 
 #DEFAULT_SURVEY = "3decb89c-c5f5-41b8-9e74-5033395d247e"
 DEFAULT_SURVEY = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -313,8 +312,7 @@ class CollectionInstrument(object):
         logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
             logger.info("Creating db models")
-            session_factory = sessionmaker(bind=ons_env.db.engine)
-            session = session_factory()
+            session = Session(bind=ons_env.db.engine)
 
             exercise = self._get_exercise(exercise_id, session)
             if not exercise:
@@ -352,6 +350,7 @@ class CollectionInstrument(object):
         finally:
             logger.info("Close session")
             session.close()
+            session.remove()
         return 200, 'OK'
 
     def instruments(self, searchString):
