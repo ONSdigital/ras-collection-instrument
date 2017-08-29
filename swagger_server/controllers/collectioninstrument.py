@@ -322,7 +322,7 @@ class CollectionInstrument(object):
                         raise Exception('no survey ID returned')
                     survey = SurveyModel(survey_id=survey_id)
                     ons_env.db.session.add(survey)
-                survey.instruments.append(instrument)
+                instrument.survey_id = survey.id
         except Exception as e:
             ons_env.logger.error('Error uploading file: {}'.format(str(e)))
             return 500, 'error uploading file'
