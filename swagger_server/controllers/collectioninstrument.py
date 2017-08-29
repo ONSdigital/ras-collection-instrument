@@ -338,7 +338,7 @@ class CollectionInstrument(object):
                 if not survey_id:
                     logger.error('no survey ID returned')
                     raise Exception('no survey ID returned')
-            instrument.survey_id = survey_id
+            instrument.survey_id = survey.id
             logger.info("Commit session")
             session.commit()
         except Exception as e:
