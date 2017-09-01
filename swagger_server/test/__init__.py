@@ -1,3 +1,5 @@
+import base64
+
 from flask_testing import TestCase
 import connexion
 import logging
@@ -17,3 +19,10 @@ class BaseTestCase(TestCase):
         app = connexion.App(__name__, specification_dir='../swagger/')
         app.add_api('swagger.yaml')
         return app.app
+
+    @property
+    def auth_headers(self):
+        auth = "{}:{}".format(ons_env.security_user_name, ons_env.security_user_password).encode('utf-8')
+        return {
+            'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
+        }

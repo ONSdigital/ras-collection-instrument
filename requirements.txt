@@ -1,4 +1,4 @@
-git+https://github.com/ONSdigital/ras-common.git@0.2.26
+git+https://github.com/ONSdigital/ras-common.git@0.3.0
 appdirs==1.4.3
 arrow==0.10.0
 asn1crypto==0.22.0

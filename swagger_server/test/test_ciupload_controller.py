@@ -23,7 +23,6 @@ class TestCiuploadController(BaseTestCase):
         """
         The collection_instrument variable represents the external class we're about to exercise ...
         """
-        super()
         self.collection_instrument = CollectionInstrument()
 
     def test_define_batch_for_testing_only_as_this_is_done_by_upload(self):
@@ -35,7 +34,7 @@ class TestCiuploadController(BaseTestCase):
         try:
             code, msg = self.collection_instrument.define_batch(0, 100)
             self.assertTrue(code == 200, msg)
-        except:
+        except:  # TODO: why is this here, we should know in a test whether or not we expect the code to throw?
             pass
 
     def test_upload_a_file_and_store_in_a_database_row(self):
@@ -119,52 +118,33 @@ class TestCiuploadController(BaseTestCase):
             pass
         self.assertTrue(code == 400, msg)
 
-
     def test_upload_a_file_to_the_actual_upload_endpoint_effecting_an_integration_test(self):
         """
         This is the really fun bit (!) we're need to contact the endpoint directly and make sure we can upload
         a file to at. We need to pick up on uploads with no file attached, and uploads to undefined batches.
         """
-        from datetime import datetime, timedelta
-        now = datetime.now()
-        jwt = {
-            'expires_at': (now + timedelta(seconds=60)).timestamp(),
-            'scope': ['ci:read', 'ci:write']
-        }
-        token = ons_env.jwt.encode(jwt)
-
         batch = str(uuid4())
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
-        response = self.client.open(
+
+        response = self.client.post(
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
-            method='POST',
-            headers={'authorization': token},
+            headers=self.auth_headers,
             data=data,
             content_type='multipart/form-data')
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
-        response = self.client.open(
+        response = self.client.post(
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=batch,file='fred.txt'),
-            method='POST',
-            headers={'authorization': token},
+            headers=self.auth_headers,
             data='',
             content_type='multipart/form-data')
         self.assert500(response, "Response body is : " + response.data.decode('utf-8'))
         data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
-        response = self.client.open(
+        response = self.client.post(
             '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref=str(uuid4()), file='fred.txt'),
-            method='POST',
             data=data,
-            headers={'authorization': token},
+            headers=self.auth_headers,
             content_type='multipart/form-data')
         self.assertTrue(response.status_code == 200, "Response body is : " + response.data.decode('utf-8'))
-        data = dict(upfile=(BytesIO(b'some file data'), 'file.txt'))
-        #response = self.client.open(
-        #    '/collection-instrument-api/1.0.2/upload/{ref}/{file}'.format(ref="1", file='fred.txt'),
-        #    method='POST',
-        #    data=data,
-        #    headers={'authorization': '123'},
-        #    content_type='multipart/form-data')
-        #self.assertTrue(response.status_code == 403, "Response body is : " + response.data.decode('utf-8'))
 
     def test_download_an_instrument_to_ensure_the_round_trip_encryption_decryption_is_working(self):
         """
