@@ -73,8 +73,6 @@ class TestCiuploadController(BaseTestCase):
         code, msg = self.collection_instrument.csv('0')
         self.assertTrue(code == 500, "CSV download")
 
-
-
     def test_call_the_status_endpoint_and_check_the_result_is_as_expected(self):
         """
         Make sure a /status works and that it see's an attempt to /status an undefined batch 
@@ -96,7 +94,6 @@ class TestCiuploadController(BaseTestCase):
         except Exception:
             pass
         self.assertTrue(code == 400, msg)
-
 
     def test_call_the_activate_endpoint_and_check_the_result_is_as_expected(self):
         """        

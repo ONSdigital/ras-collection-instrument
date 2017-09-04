@@ -5,7 +5,6 @@
 #   Copyright (c) 2017 Crown Copyright (Office for National Statistics)      #
 #                                                                            #
 ##############################################################################
-import threading
 from json import loads
 from uuid import UUID
 
@@ -296,8 +295,6 @@ class CollectionInstrument(object):
         blob = ons_env.cipher.encrypt(blob)
         if '.' in ru_ref:
             ru_ref = ru_ref.split('.')[0]
-
-        ons_env.logger.info('**** Thread id {}'.format(threading.current_thread()))
 
         ons_env.logger.info('Uploading Ru-Ref: {}'.format(ru_ref))
         try:
