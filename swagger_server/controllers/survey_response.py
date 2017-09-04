@@ -213,6 +213,7 @@ class SurveyResponse(object):
         ons_env.logger.info('generating file name for upload')
 
         time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
+        time_date_stamp2 = time.strftime("%Y%m%d%H%M%S")
         file_name = "{ru}-{exercise_ref}-{time_date_stamp}{file_format}".format(ru=ru,
                                                                                 exercise_ref=exercise_ref,
                                                                                 survey_id=survey_id,
