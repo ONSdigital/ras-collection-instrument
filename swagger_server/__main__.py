@@ -14,4 +14,4 @@ if __name__ == '__main__':
         from swagger_server.controllers.error_handlers import upload_exception_handler
         app.app.register_error_handler(UploadException, upload_exception_handler)
 
-    ons_env.activate(callback)
+    ons_env.activate(callback, twisted=True)

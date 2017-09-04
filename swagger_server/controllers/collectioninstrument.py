@@ -310,7 +310,6 @@ class CollectionInstrument(object):
                 instrument.exercises.append(exercise)
                 instrument.businesses.append(business)
                 instrument.classifications.append(classifier)
-                ons_env.db.session.add(instrument)
                 survey = self._get_survey(survey_id)
                 if not survey:
                     if reactor.running:
@@ -323,7 +322,8 @@ class CollectionInstrument(object):
                         raise Exception('no survey ID returned')
                     survey = SurveyModel(survey_id=survey_id)
                     ons_env.db.session.add(survey)
-                survey.instruments.append(instrument)
+                instrument.survey = survey
+                ons_env.db.session.add(instrument)
         except Exception as e:
             ons_env.logger.error('Error uploading file: {}'.format(str(e)))
             return 500, 'error uploading file'
