@@ -10,6 +10,7 @@ from swagger_server.controllers.helper import is_valid_file_extension, is_valid_
 from swagger_server.controllers.submitter.encrypter import Encrypter
 from swagger_server.controllers.submitter.rabbitmq_submitter import RabbitMQSubmitter
 from swagger_server.controllers.exceptions import UploadException
+from werkzeug.utils import secure_filename
 
 FILE_EXTENSION_ERROR = 'un-accepted file extension'
 FILE_NAME_LENGTH_ERROR = 'The name of the file is too long'
@@ -36,7 +37,7 @@ class SurveyResponse(object):
         ons_env.logger.info('Adding survey response')
 
         if case_id and file and hasattr(file, 'filename'):
-            file_name, file_extension = os.path.splitext(file.filename)
+            file_name, file_extension = os.path.splitext(secure_filename(file.filename))
             file_contents = file.read()
             is_valid_file, msg = self._is_valid_file(file_contents, file_name, file_extension)
 
