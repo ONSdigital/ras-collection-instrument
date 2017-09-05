@@ -1,13 +1,23 @@
 from flask import request, jsonify, make_response
-from .collectioninstrument import CollectionInstrument
-from ons_ras_common.ons_decorators import validate_jwt, before_request
+from flask_httpauth import HTTPBasicAuth
 from ons_ras_common import ons_env
+
+from .collectioninstrument import CollectionInstrument
 
 collection_instrument = CollectionInstrument()
 
+auth = HTTPBasicAuth()
 
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+
+@auth.get_password
+def get_pw(username):
+    config_username = ons_env.security_user_name
+    config_password = ons_env.security_user_password
+    if username == config_username:
+        return config_password
+
+
+@auth.login_required
 def instrument_size_get(id):
     """
     Recover the size of a collection instrument
@@ -21,8 +31,7 @@ def instrument_size_get(id):
 #
 # /status/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def status_id_get(id):
     """
     Get upload status
@@ -39,8 +48,7 @@ def status_id_get(id):
 #
 # /define_batch/{id}/{count}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def define_batch_id_count_post(id, count):
     """
     Specify the size of a batch
@@ -59,8 +67,7 @@ def define_batch_id_count_post(id, count):
 #
 # /upload/{id}/{file}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def upload_id_file_post(id, file, files=None):
     """
     Upload collection instrument
@@ -96,8 +103,7 @@ def upload_id_file_post(id, file, files=None):
 #
 # /download_csv/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def download_csv_id_get(id):
     """
     Download CSV file
@@ -117,8 +123,7 @@ def download_csv_id_get(id):
 #
 # /activate/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def activate_id_put(id):
     """
     Activate batch
@@ -135,8 +140,7 @@ def activate_id_put(id):
 #
 # /clear_batch/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def clear_batch_id_delete(id):
     """
     Clear a batch
@@ -153,8 +157,7 @@ def clear_batch_id_delete(id):
 #
 # /clear_ruref/{re_ref}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def clear_ruref(ru_ref):
     """
     Clear an instrument by ru_ref, useful for testing
@@ -166,11 +169,11 @@ def clear_ruref(ru_ref):
     code, msg = collection_instrument.clear_by_ref(ru_ref)
     return make_response(jsonify(msg), code)
 
+
 #
 # /download/{id}
 #
-@before_request(request)
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def download_id_get(id):
     """
     Download a file based on the id (Instrument ID)
