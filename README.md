@@ -38,10 +38,10 @@ on the following diagram;
 
 ## Running Locally
 
-To run locally from the root of your repository (against the 'development' profile), run;
+To run locally from the root of your repository using sqlite (against the 'development' profile), run;
 
 ```bash
-./scripts/run.sh
+	/> ONS_ENV=travis python -m swagger_server
 ```
 
 On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
