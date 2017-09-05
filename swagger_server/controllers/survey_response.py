@@ -224,14 +224,19 @@ class SurveyResponse(object):
         :return: file name
         """
 
-        ons_env.logger.info('generating file name for upload')
+        check_letter = 'X'      # A letter used for part of the file name that is defaulted to X for on line docs
 
-        time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
-        file_name = "{ru}-{exercise_ref}-{time_date_stamp}{file_format}".format(ru=ru,
+        #time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
+        time_date_stamp = time.strftime("%Y%m%d%H%M%S")
+        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_id}_{time_date_stamp}.{file_format}".format(ru=ru,
+                                                                                check_letter=check_letter,
                                                                                 exercise_ref=exercise_ref,
                                                                                 survey_id=survey_id,
                                                                                 time_date_stamp=time_date_stamp,
                                                                                 file_format=file_extension)
+
+        ons_env.logger.info('generated file name for upload. file name is: {}'.format(file_name))
+
         return file_name
 
     @staticmethod
