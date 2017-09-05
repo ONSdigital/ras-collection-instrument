@@ -27,8 +27,7 @@ def convert_file_object_to_string_base64(file):
     :param file: The file to conver
     :return: String
     """
-    f = file.read()
-    return base64.b64encode(f).decode()
+    return base64.b64encode(file).decode()
 
 
 def convert_string_to_bytes_base64(string):

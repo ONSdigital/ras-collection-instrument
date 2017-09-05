@@ -2,6 +2,7 @@ import os
 import requests
 import time
 import uuid
+import magic
 
 from ons_ras_common import ons_env
 from swagger_server.controllers.helper import is_valid_file_extension, is_valid_file_name_length, \
@@ -9,6 +10,7 @@ from swagger_server.controllers.helper import is_valid_file_extension, is_valid_
 from swagger_server.controllers.submitter.encrypter import Encrypter
 from swagger_server.controllers.submitter.rabbitmq_submitter import RabbitMQSubmitter
 from swagger_server.controllers.exceptions import UploadException
+from werkzeug.utils import secure_filename
 
 FILE_EXTENSION_ERROR = 'un-accepted file extension'
 FILE_NAME_LENGTH_ERROR = 'The name of the file is too long'
@@ -16,6 +18,7 @@ UPLOAD_SUCCESSFUL = 'Upload successful'
 UPLOAD_UNSUCCESSFUL = 'Upload failed'
 INVALID_UPLOAD = 'The upload must have valid case_id and a file attached'
 QUEUE_NAME = 'Seft.Responses'
+MICROSOFT_DOCUMENT_FORMAT ="Composite Document File V2 Document"
 
 
 class SurveyResponse(object):
@@ -34,8 +37,9 @@ class SurveyResponse(object):
         ons_env.logger.info('Adding survey response')
 
         if case_id and file and hasattr(file, 'filename'):
-            file_name, file_extension = os.path.splitext(file.filename)
-            is_valid_file, msg = self._is_valid_file(file_name, file_extension)
+            file_name, file_extension = os.path.splitext(secure_filename(file.filename))
+            file_contents = file.read()
+            is_valid_file, msg = self._is_valid_file(file_contents, file_name, file_extension)
 
             if not is_valid_file:
                 return 400, msg
@@ -61,13 +65,13 @@ class SurveyResponse(object):
 
             # Create, encrypt and send message to rabbitmq
             generated_file_name = self._generate_file_name(ru, exercise_ref, survey_id, file_extension)
-            json_message = self._create_json_message_for_file(generated_file_name, file, case_id)
+            json_message = self._create_json_message_for_file(generated_file_name, file_contents, case_id)
             encrypted_message = self._encrypt_message(json_message)
 
             return self._send_message_to_rabbitmq(encrypted_message, tx_id)
 
         else:
-            ons_env.logger.debug('case id or file missing')
+            ons_env.logger.info('case id or file missing')
             return self._invalid_upload()
 
     @staticmethod
@@ -106,7 +110,7 @@ class SurveyResponse(object):
         if response.status_code == 200:
             case = response.json()
         else:
-            ons_env.logger.error("Case not found")
+            ons_env.logger.error("Case not found for {}".format(case_id))
         return case
 
     def _get_collection_exercise(self, collection_exercise_id):
@@ -124,7 +128,7 @@ class SurveyResponse(object):
         if response.status_code == 200:
             collection_exercise = response.json()
         else:
-            ons_env.logger.debug('Collection Exercise not found')
+            ons_env.logger.info('Collection Exercise not found for {}'.format(collection_exercise_id))
         return collection_exercise
 
     @staticmethod
@@ -169,18 +173,29 @@ class SurveyResponse(object):
         return 400, INVALID_UPLOAD
 
     @staticmethod
-    def _is_valid_file(file_name, file_extension):
+    def _is_valid_file(file_contents, file_name, file_extension):
         """
         Check a file is valid
+        :param file_contents: The file contents
         :param file_name: The file_name to check
+        :param file_extension: The file extension
         :return: boolean
         """
 
         ons_env.logger.info('checking if file is valid')
+
         if not is_valid_file_extension(file_extension, ons_env.get('upload_file_extensions')):
+            ons_env.logger.info('File extension not valid')
             return False, FILE_EXTENSION_ERROR
 
+        file_type = magic.from_buffer(file_contents)
+
+        if MICROSOFT_DOCUMENT_FORMAT not in file_type:
+            ons_env.logger.error('The file extension has been altered, the original file is {}'.format(file_type))
+            raise UploadException()
+
         if not is_valid_file_name_length(file_name, ons_env.get('max_upload_file_name_length')):
+            ons_env.logger.info('File name too long')
             return False, FILE_NAME_LENGTH_ERROR
 
         return True, ""

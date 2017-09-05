@@ -17,6 +17,7 @@ from unittest.mock import patch, Mock
 from unittest.mock import MagicMock
 
 TEST_FILE_LOCATION = 'swagger_server/test/test.xlsx'
+TEST_FILE_CHANGED_EXTENSION_LOCATION = 'swagger_server/test/fake_exe.xls'
 
 
 class TestSurveyResponse(unittest.TestCase):
@@ -167,6 +168,18 @@ class TestSurveyResponse(unittest.TestCase):
         # Then the file fails to upload, returning 400 and file name length error
         self.assertEquals(status, 400)
         self.assertEquals(FILE_NAME_LENGTH_ERROR, msg)
+
+    def test_add_survey_response_file_extension_changed(self):
+        # Given a survey response which has been changed from a exe to a xls
+        with open(TEST_FILE_CHANGED_EXTENSION_LOCATION, 'rb') as io:
+            file = FileStorage(stream=io, filename='test.xls')
+
+            # When the file is posted to the end point with a case_id
+            case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
+            # Then a upload exception is raised
+            with self.assertRaises(UploadException):
+                self.survey_response.add_survey_response(case_id, file)
+
 
     def test_add_survey_response_file_extension(self):
 

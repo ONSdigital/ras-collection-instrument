@@ -18,7 +18,8 @@ class TestHelper(unittest.TestCase):
             file = FileStorage(stream=io, filename='test.xlsx')
 
             # When it is converted to a string
-            file_as_string = convert_file_object_to_string_base64(file)
+            f = file.read()
+            file_as_string = convert_file_object_to_string_base64(f)
 
             # Then it is a string
             self.assertEquals(type(file_as_string), str)
@@ -28,7 +29,8 @@ class TestHelper(unittest.TestCase):
         # Given a file has been converted to a string
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename='test.xlsx')
-            file_as_string = convert_file_object_to_string_base64(file)
+            f = file.read()
+            file_as_string = convert_file_object_to_string_base64(f)
 
             # When it is converted to bytes
             string_as_bytes = convert_string_to_bytes_base64(file_as_string)
