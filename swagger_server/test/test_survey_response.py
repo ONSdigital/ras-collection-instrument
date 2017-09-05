@@ -49,6 +49,30 @@ class TestSurveyResponse(unittest.TestCase):
         self.assertEquals(status, 200)
         self.assertEquals(UPLOAD_SUCCESSFUL, msg)
 
+    def test_add_survey_response_success_check_file_name(self):
+        # Given a survey file name of
+        ru = '60218763103'
+        exercise_ref = '201706'
+        survey_id = '221'
+        file_extension = 'xls'
+
+        # Calculate the file name
+        my_file_name = self.survey_response._generate_file_name(ru, exercise_ref, survey_id, file_extension)
+
+        # File name should look something like this: 60218763103X_201706_221_20170905113039.xls
+        # Check we are delimited by underscores and have 4 components i.e. ABC_DEV_EFG_HIJ
+        file_components = my_file_name.split('_')
+        self.assertEqual(len(file_components), 4)
+
+        # Check our values
+        self.assertEqual(file_components[0][0:-1], ru)
+        self.assertEqual(file_components[0][-1], 'X')               # This checks default check letter exists
+        self.assertEqual(file_components[1], exercise_ref)
+        self.assertEqual(file_components[2], survey_id)
+        self.assertEqual(file_components[3][-3:], file_extension)   # Check 'xls'
+        self.assertEqual(file_components[3][-4:-3], '.')            # Check we have the dot '.'
+        print("**** file name is: {} *****".format(my_file_name))
+
     def test_add_survey_response_missing_file(self):
         # Given a survey response with no file attached
         file = None
@@ -253,11 +277,42 @@ class TestSurveyResponse(unittest.TestCase):
 
     @staticmethod
     def mock_get_case_data():
-        return {'id': 'ab548d78-c2f1-400f-9899-79d944b87300', 'state': 'INACTIONABLE', 'iac': None, 'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a', 'collectionInstrumentId': '40c7c047-4fb3-4abe-926e-bf19fa2c0a1e', 'partyId': 'db036fd7-ce17-40c2-a8fc-932e7c228397', 'sampleUnitType': 'BI', 'createdBy': 'SYSTEM', 'createdDateTime': '2017-07-11T08:35:01.872+0000', 'responses': [{'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T10:47:41.964+0000'}, {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T11:28:36.261+0000'}, {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T12:24:14.994+0000'}], 'caseGroup': {'collectionExerciseId': '14fb3e68-4dca-46db-bf49-04b84e07e77c', 'id': '9a5f2be5-f944-41f9-982c-3517cfcfef3c', 'partyId': '3b136c4b-7a14-4904-9e01-13364dd7b972', 'sampleUnitRef': '49900000000', 'sampleUnitType': 'B'}, 'caseEvents': None}
+        return {'id': 'ab548d78-c2f1-400f-9899-79d944b87300',
+                'state': 'INACTIONABLE',
+                'iac': None,
+                'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a',
+                'collectionInstrumentId': '40c7c047-4fb3-4abe-926e-bf19fa2c0a1e',
+                'partyId': 'db036fd7-ce17-40c2-a8fc-932e7c228397',
+                'sampleUnitType': 'BI',
+                'createdBy': 'SYSTEM',
+                'createdDateTime': '2017-07-11T08:35:01.872+0000',
+                'responses': [{'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T10:47:41.964+0000'},
+                              {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T11:28:36.261+0000'},
+                              {'inboundChannel': 'OFFLINE', 'dateTime': '2017-07-12T12:24:14.994+0000'}],
+                'caseGroup': {'collectionExerciseId': '14fb3e68-4dca-46db-bf49-04b84e07e77c',
+                              'id': '9a5f2be5-f944-41f9-982c-3517cfcfef3c',
+                              'partyId': '3b136c4b-7a14-4904-9e01-13364dd7b972',
+                              'sampleUnitRef': '49900000000',
+                              'sampleUnitType': 'B'},
+                'caseEvents': None}
 
     @staticmethod
     def mock_get_collection_data():
-        return {'executedBy': None, 'periodStartDateTime': '2017-09-07T23:00:00.000+0000', 'scheduledExecutionDateTime': None, 'scheduledReturnDateTime': None, 'id': '14fb3e68-4dca-46db-bf49-04b84e07e77c', 'surveyId': 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', 'caseTypes': [{'sampleUnitType': 'B', 'actionPlanId': 'e71002ac-3575-47eb-b87f-cd9db92bf9a7'}, {'sampleUnitType': 'BI', 'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a'}], 'scheduledEndDateTime': '2099-01-01T00:00:00.000+0000', 'state': 'INIT', 'actualExecutionDateTime': None, 'actualPublishDateTime': None, 'name': 'BRES_2016', 'periodEndDateTime': '2017-09-08T22:59:59.000+0000', 'scheduledStartDateTime': '2017-08-29T23:00:00.000+0000'}
+        return {'executedBy': None,
+                'periodStartDateTime': '2017-09-07T23:00:00.000+0000',
+                'scheduledExecutionDateTime': None,
+                'scheduledReturnDateTime': None,
+                'id': '14fb3e68-4dca-46db-bf49-04b84e07e77c',
+                'surveyId': 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
+                'caseTypes': [{'sampleUnitType': 'B', 'actionPlanId': 'e71002ac-3575-47eb-b87f-cd9db92bf9a7'},
+                              {'sampleUnitType': 'BI', 'actionPlanId': '0009e978-0932-463b-a2a1-b45cb3ffcb2a'}],
+                'scheduledEndDateTime': '2099-01-01T00:00:00.000+0000',
+                'state': 'INIT',
+                'actualExecutionDateTime': None,
+                'actualPublishDateTime': None,
+                'name': 'BRES_2016',
+                'periodEndDateTime': '2017-09-08T22:59:59.000+0000',
+                'scheduledStartDateTime': '2017-08-29T23:00:00.000+0000'}
 
     @staticmethod
     def mock_get_case_data_none(case_id):
