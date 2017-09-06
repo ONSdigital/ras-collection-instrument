@@ -1,74 +1,32 @@
+import json
+import logging
 import os
-import jwt
-from cryptography.hazmat.backends.openssl.backend import backend
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers import algorithms
-from cryptography.hazmat.primitives.ciphers import modes
+from sdc.crypto.key_store import validate_required_keys
+from sdc.crypto.key_store import KeyStore
+from sdc.crypto.encrypter import encrypt
+from swagger_server.controllers.helper import to_str
+from swagger_server.controllers.cryptography.keys import TEST_KEYS_YML
 
-from swagger_server.controllers.cryptography.jwe_encryption import JWEEncrypter
-from swagger_server.controllers.helper import to_bytes, to_str
-from swagger_server.controllers.cryptography.keys import TEST_PRIVATE_SIGNING_KEY, TEST_PRIVATE_SIGNING_KEY_PASSWORD, \
-    TEST_SDX_PUBLIC_KEY
+KEY_PURPOSE = "inbound"
 
 
-class Encrypter(JWEEncrypter):
+logger = logging.getLogger(__name__)
+
+
+class Encrypter:
 
     def __init__(self):
+        logger.info("Loading keys from environment")
+        json_string = os.getenv('CI_SECRETS', TEST_KEYS_YML)
+        keys = json.loads(json_string)
+        logger.info("Loaded keys from environment")
 
-        private_key = os.getenv('PRIVATE_SIGNING_KEY', TEST_PRIVATE_SIGNING_KEY)
-        private_key_password = os.getenv('PRIVATE_SIGNING_KEY_PASSWORD', TEST_PRIVATE_SIGNING_KEY_PASSWORD)
-        public_key = os.getenv('SDX_PUBLIC_KEY', TEST_SDX_PUBLIC_KEY)
-        self._load_keys(private_key, private_key_password, public_key)
+        validate_required_keys(keys, KEY_PURPOSE)
 
-        # first generate a random key
-        self.cek = os.urandom(32)  # 256 bit random CEK
+        self.keystore = KeyStore(keys)
 
-        # now generate a random IV
-        self.iv = os.urandom(12)  # 96 bit random IV
-
-    def _load_keys(self, private_key, private_key_password, public_key):
-        private_key_bytes = to_bytes(private_key)
-        private_key_password_bytes = to_bytes(private_key_password)
-        public_key_bytes = to_bytes(public_key)
-
-        self.private_key = serialization.load_pem_private_key(data=private_key_bytes,
-                                                              password=private_key_password_bytes,
-                                                              backend=backend)
-        self.public_key = serialization.load_pem_public_key(data=public_key_bytes, backend=backend)
-
-    def _jwe_protected_header(self):
-        return self._base_64_encode(b'{"alg":"RSA-OAEP","enc":"A256GCM","kid":"inbound-encryption"}')
-
-    def _encrypted_key(self, cek):
-        ciphertext = self.public_key.encrypt(cek, padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA1()), algorithm=hashes.SHA1(), label=None))
-        return self._base_64_encode(ciphertext)
-
-    def _encode_iv(self, iv):
-        return self._base_64_encode(iv)
-
-    def _encode_and_signed(self, payload):
-        return jwt.encode(payload, self.private_key, algorithm="RS256", headers={'kid': 'inbound-signing', 'typ': 'jwt'})
-
-    def encrypt(self, json):
-        payload = self._encode_and_signed(json)
-        jwe_protected_header = self._jwe_protected_header()
-        encrypted_key = self._encrypted_key(self.cek)
-
-        cipher = Cipher(algorithms.AES(self.cek), modes.GCM(self.iv), backend=backend)
-        encryptor = cipher.encryptor()
-        encryptor.authenticate_additional_data(jwe_protected_header)
-
-        ciphertext = encryptor.update(payload) + encryptor.finalize()
-
-        tag = encryptor.tag
-
-        encoded_ciphertext = self._base_64_encode(ciphertext)
-        encoded_tag = self._base_64_encode(tag)
-
-        # assemble result
-        jwe = jwe_protected_header + b"." + encrypted_key + b"." + self._encode_iv(self.iv) + b"." + encoded_ciphertext + b"." + encoded_tag
-
-        return to_str(jwe)
+    def encrypt(self, payload):
+        logger.debug("About to encrypted data")
+        encrypted_data = encrypt(payload, key_store=self.keystore, key_purpose=KEY_PURPOSE)
+        logger.debug("Encrypted")
+        return to_str(encrypted_data)
