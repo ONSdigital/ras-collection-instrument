@@ -62,5 +62,3 @@ pika==0.10.0
 jsonpickle==0.8.0
 flake8-mock==0.3
 Flask-HTTPAuth==3.2.3
-python-magic==0.4.13
-libmagic==1.0
