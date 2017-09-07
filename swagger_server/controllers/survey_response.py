@@ -238,8 +238,10 @@ class SurveyResponse(object):
         :param url: The URL to request from 
         :return: response
         """
+
+        auth = (ons_env.security_user_name, ons_env.security_user_password)
         try:
-            response = requests.get(url, verify=False)
+            response = requests.get(url, auth=auth, verify=False)
         except requests.exceptions.RequestException:
             ons_env.logger.error('request failed to connect to {}'.format(url))
             raise UploadException()

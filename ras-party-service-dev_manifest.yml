@@ -1,0 +1,32 @@
+applications:
+- name: ras-party-service-dev
+  instances: 1
+  memory: 512M
+  disk_quota: 1024M
+  routes:
+  - route: ras-party-service-dev.apps.devtest.onsclofo.uk
+  env:
+    SECURITY_USER_NAME: sdc.dev
+    SECURITY_USER_PASSWORD: tusk.dogtrot.neophyte.wayside.shriek.vane
+    case-service.host: casesvc-dev.apps.devtest.onsclofo.uk
+    case-service.port: "80"
+    collectionexercise-service.host: collectionexercisesvc-dev.apps.devtest.onsclofo.uk
+    collectionexercise-service.port: "80"
+    feature.send_email_to_gov_notify: "false"
+    frontstage-service.host: ras-frontstage-dev.apps.devtest.onsclofo.uk
+    frontstage-service.port: "80"
+    gov-uk-notify-service.gov_notify_api_key: 79610a18-8abb-4b6c-9e96-b45deb12e5d6
+    gov-uk-notify-service.gov_notify_service_id: ce3674b1-7b08-4377-a6a7-05b5722d4ea5
+    gov-uk-notify-service.gov_notify_template_id: 53c59576-8c3b-4298-99d1-b245ddd28500
+    iac-service.host: iacsvc-dev.apps.devtest.onsclofo.uk
+    iac-service.port: "80"
+    oauth2-service.host: ras-django-dev.apps.devtest.onsclofo.uk
+    oauth2-service.port: "80"
+    survey-service.host: surveysvc-dev.apps.devtest.onsclofo.uk
+    survey-service.port: "80"
+  services:
+  - ras-party-db
+  stack: cflinuxfs2
+  timeout: 180
+  health-check-type: http
+  health-check-http-endpoint: /info
