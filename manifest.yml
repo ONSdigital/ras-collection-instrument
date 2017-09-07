@@ -1,9 +1,0 @@
----
-applications:
-- name: collection-instrument
-  memory: 512M
-  host: collection-instrument
-  services:
-    - rm-pg-db
-
-
