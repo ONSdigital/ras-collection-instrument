@@ -6,6 +6,8 @@
 #                                                                            #
 ##############################################################################
 from flask import jsonify, make_response, request
+
+from swagger_server.controllers.basic_auth import auth
 from .collectioninstrument import CollectionInstrument
 from ons_ras_common.ons_decorators import validate_jwt
 from ons_ras_common import ons_env
@@ -17,7 +19,7 @@ collection_instrument = CollectionInstrument()
 #
 # /collectioninstrument
 #
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def collectioninstrument_get(searchString=None, skip=None, limit=None):
     """
     searches collection instruments
@@ -38,7 +40,7 @@ def collectioninstrument_get(searchString=None, skip=None, limit=None):
 #
 # /collectioninstrument/id/{id}
 #
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def get_collection_instrument_by_id(id):
     """
     Get a collection instrument by ID
@@ -52,7 +54,7 @@ def get_collection_instrument_by_id(id):
     return make_response(jsonify(msg), code)
 
 
-@validate_jwt(['ci:read', 'ci:write'], request)
+@auth.login_required
 def survey_responses_case_id_post(case_id, file=None):
     """
     Upload from the respondent
