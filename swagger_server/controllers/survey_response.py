@@ -201,7 +201,8 @@ class SurveyResponse(object):
         """
 
         ons_env.logger.info('encrypting json')
-        encrypter = Encrypter()
+        json_secret_keys = os.getenv('JSON_SECRET_KEYS')
+        encrypter = Encrypter(json_secret_keys)
         return encrypter.encrypt(message_json)
 
     @staticmethod
@@ -216,9 +217,7 @@ class SurveyResponse(object):
         :return: file name
         """
 
-        check_letter = 'X'      # A letter used for part of the file name that is defaulted to X for on line docs
-
-        #time_date_stamp = time.strftime("%d-%m-%Y-%H-%M-%S")
+        check_letter = 'X'
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
         file_name = "{ru}{check_letter}_{exercise_ref}_{survey_id}_{time_date_stamp}.{file_format}".format(ru=ru,
                                                                                 check_letter=check_letter,
