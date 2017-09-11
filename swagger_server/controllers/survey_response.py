@@ -61,8 +61,18 @@ class SurveyResponse(object):
             else:
                 return self._invalid_upload()
 
+            # request survey service data from the API gateway
+            survey_service_data = self._get_survey_service(survey_id)
+
+            if survey_service_data:
+                survey_ref = survey_service_data('surveyRef')
+                ons_env.logger.debug('generating file name for survey reference id for upload with a survey ID of: {}'.format(survey_ref))
+            else:
+                return self._invalid_upload()
+
             # Create, encrypt and send message to rabbitmq
-            generated_file_name = self._generate_file_name(ru, exercise_ref, survey_id, file_extension)
+
+            generated_file_name = self._generate_file_name(ru, exercise_ref, survey_ref, file_extension)
             file_contents = file.read()
             json_message = self._create_json_message_for_file(generated_file_name, file_contents, case_id)
             encrypted_message = self._encrypt_message(json_message)
@@ -129,6 +139,39 @@ class SurveyResponse(object):
         else:
             ons_env.logger.info('Collection Exercise not found for {}'.format(collection_exercise_id))
         return collection_exercise
+
+
+    def _get_survey_service(self, survey_id):
+        """
+        Used to get the SurveyRef number from the survey service. This is used to construct the file name of an
+        uploaded survey.
+        See: https://github.com/ONSdigital/rm-survey-service/blob/master/API.md
+
+        :param survey_id: The survey_id UUID to search with
+            e.g. http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87
+
+        :return: JSON e.g.
+
+        {
+          "id": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+          "shortName": "BRES",
+          "longName": "Business Register and Employment Survey",
+          "surveyRef": "221"
+        }
+
+        """
+
+        ons_env.logger.info('Getting survey data from the survey service')
+        survey_service_data = None
+        request_url = self._build_request_url('API_GATEWAY_SURVEY_SERVICE_URL', survey_id)
+        response = self._gateway_request(request_url)
+
+        if response.status_code == 200:
+            survey_service_data = response.json()
+        else:
+            ons_env.logger.debug('Survey service data not found')
+        return survey_service_data
+
 
     @staticmethod
     def _build_request_url(service_url_key, search_value):
