@@ -57,6 +57,7 @@ class SurveyResponse(object):
             if collection_exercise:
                 exercise_ref = collection_exercise.get('exerciseRef')
                 survey_id = collection_exercise.get('surveyId')
+                ons_env.logger.debug('generating file name for upload with a survey ID of: {}'.format(survey_id))
             else:
                 return self._invalid_upload()
 
@@ -219,7 +220,7 @@ class SurveyResponse(object):
 
         check_letter = 'X'
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
-        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_id}_{time_date_stamp}.{file_format}".format(ru=ru,
+        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_id}_{time_date_stamp}{file_format}".format(ru=ru,
                                                                                 check_letter=check_letter,
                                                                                 exercise_ref=exercise_ref,
                                                                                 survey_id=survey_id,
