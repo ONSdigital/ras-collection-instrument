@@ -65,7 +65,7 @@ class SurveyResponse(object):
             survey_service_data = self._get_survey_service(survey_id)
 
             if survey_service_data:
-                survey_ref = survey_service_data('surveyRef')
+                survey_ref = survey_service_data.get('surveyRef')
                 ons_env.logger.debug('generating file name for survey reference id for upload with a survey ID of: {}'.format(survey_ref))
             else:
                 return self._invalid_upload()
