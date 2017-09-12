@@ -140,7 +140,6 @@ class SurveyResponse(object):
             ons_env.logger.info('Collection Exercise not found for {}'.format(collection_exercise_id))
         return collection_exercise
 
-
     def _get_survey_service(self, survey_id):
         """
         Used to get the SurveyRef number from the survey service. This is used to construct the file name of an

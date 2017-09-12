@@ -34,6 +34,7 @@ class TestSurveyResponse(unittest.TestCase):
             file = FileStorage(stream=io, filename='test.xlsx')
             self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
             self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
+            self.survey_response._get_survey_service = MagicMock(return_value=self.mock_get_survey_service())
 
         # When the file is posted to the upload end point with a case_id
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
@@ -53,7 +54,7 @@ class TestSurveyResponse(unittest.TestCase):
         ru = '60218763103'
         exercise_ref = '201706'
         survey_id = '221'
-        file_extension = 'xls'
+        file_extension = '.xls'
 
         # Calculate the file name
         my_file_name = self.survey_response._generate_file_name(ru, exercise_ref, survey_id, file_extension)
@@ -68,10 +69,9 @@ class TestSurveyResponse(unittest.TestCase):
         self.assertEqual(file_components[0][-1], 'X')               # This checks default check letter exists
         self.assertEqual(file_components[1], exercise_ref)
         self.assertEqual(file_components[2], survey_id)
-        self.assertEqual(file_components[3][-3:], file_extension)   # Check 'xls'
-        self.assertEqual(file_components[3][-4:-3], '.')            # Check we have the dot '.'
-        print("**** file name is: {} *****".format(my_file_name))
+        self.assertEqual(file_components[3][-4:], file_extension)
 
+        
     def test_add_survey_response_missing_file(self):
         # Given a survey response with no file attached
         file = None
@@ -136,6 +136,7 @@ class TestSurveyResponse(unittest.TestCase):
             file = FileStorage(stream=io, filename='test.xlsx')
             self.survey_response._get_case = MagicMock(return_value=self.mock_get_case_data())
             self.survey_response._get_collection_exercise = MagicMock(return_value=self.mock_get_collection_data())
+            self.survey_response._get_survey_service = MagicMock(return_value=self.mock_get_survey_service())
 
             # When the file is posted to the end with a mocked failing rabbit send message
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
@@ -283,6 +284,15 @@ class TestSurveyResponse(unittest.TestCase):
                               'sampleUnitRef': '49900000000',
                               'sampleUnitType': 'B'},
                 'caseEvents': None}
+
+    @staticmethod
+    def mock_get_survey_service():
+        return {
+          "id": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+          "shortName": "BRES",
+          "longName": "Business Register and Employment Survey",
+          "surveyRef": "221"
+        }
 
     @staticmethod
     def mock_get_collection_data():
