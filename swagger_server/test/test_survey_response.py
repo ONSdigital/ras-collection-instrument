@@ -1,15 +1,11 @@
-import jwt
+
 import unittest
 import requests
-from os import putenv
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends.openssl.backend import backend
-from swagger_server.controllers.cryptography.keys import TEST_PRIVATE_SIGNING_KEY_PASSWORD, \
-    TEST_SDX_PRIVATE_KEY, TEST_PUBLIC_ENCRYPTION_KEY
+from os import putenv, environ
+
 from swagger_server.controllers.survey_response import SurveyResponse, INVALID_UPLOAD, UPLOAD_SUCCESSFUL, \
     FILE_NAME_LENGTH_ERROR, FILE_EXTENSION_ERROR, UPLOAD_UNSUCCESSFUL
-from swagger_server.controllers.cryptography.jwe_decryption import JWERSAOAEPDecryptor
 from swagger_server.controllers.exceptions import UploadException
 from werkzeug.datastructures import FileStorage
 from requests.models import Response
@@ -17,6 +13,9 @@ from unittest.mock import patch, Mock
 from unittest.mock import MagicMock
 
 TEST_FILE_LOCATION = 'swagger_server/test/test.xlsx'
+
+with open("./test_keys/keys.json") as fp:
+    environ["JSON_SECRET_KEYS"] = fp.read()
 
 
 class TestSurveyResponse(unittest.TestCase):
@@ -260,18 +259,6 @@ class TestSurveyResponse(unittest.TestCase):
             with self.assertRaises(UploadException):
                 self.survey_response._gateway_request('http://test_failure_gateway.gov.uk')
 
-    def test_create_jwe_for_file(self):
-        # Given a json message
-        json = {'file': 'file_as_string', 'file_name': 'file_name'}
-
-        # When it is encrypted using jwe and then decrypted
-        jwe = self.survey_response._encrypt_message(json)
-        decrypter = Decrypter()
-        message = decrypter.decrypt(jwe)
-
-        # Then it is the same message
-        self.assertEquals(message, json)
-
     @staticmethod
     def mock_get_jwt_value():
         return 'invalid jwt'
@@ -322,17 +309,3 @@ class TestSurveyResponse(unittest.TestCase):
     @staticmethod
     def mock_get_collection_none(collection_id):
         return None
-
-
-class Decrypter(JWERSAOAEPDecryptor):
-    """ A class used for just testing decryption"""
-    def __init__(self):
-        super().__init__(TEST_SDX_PRIVATE_KEY, TEST_PRIVATE_SIGNING_KEY_PASSWORD)
-        self.rrm_public_key = serialization.load_pem_public_key(
-            TEST_PUBLIC_ENCRYPTION_KEY.encode(),
-            backend=backend
-        )
-
-    def decrypt(self, token):
-        signed_token = super().decrypt(token)
-        return jwt.decode(signed_token, self.rrm_public_key, algorithms=['RS256'])
