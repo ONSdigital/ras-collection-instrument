@@ -266,7 +266,10 @@ class SurveyResponse(object):
 
         # TODO exercise_ref looks like "221_201712" it should look like "201712". This is a work around until the
         # collection exercise service corrects it's database model.
-        exercise_reference = exercise_ref.split('_')[1]
+        try:
+            exercise_reference = exercise_ref.split('_')[1]
+        except IndexError:
+            exercise_reference = exercise_ref
 
         file_name = "{ru}{check_letter}_{exercise_reference}_{survey_id}_{time_date_stamp}{file_format}".format(ru=ru,
                                                                                 check_letter=check_letter,
