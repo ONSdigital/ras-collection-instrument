@@ -263,9 +263,14 @@ class SurveyResponse(object):
 
         check_letter = 'X'
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
-        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_id}_{time_date_stamp}{file_format}".format(ru=ru,
+
+        # TODO exercise_ref looks like "221_201712" it should look like "201712". This is a work around until the
+        # collection exercise service corrects it's database model.
+        exercise_reference = exercise_ref.split('_')[1]
+
+        file_name = "{ru}{check_letter}_{exercise_reference}_{survey_id}_{time_date_stamp}{file_format}".format(ru=ru,
                                                                                 check_letter=check_letter,
-                                                                                exercise_ref=exercise_ref,
+                                                                                exercise_reference=exercise_reference,
                                                                                 survey_id=survey_id,
                                                                                 time_date_stamp=time_date_stamp,
                                                                                 file_format=file_extension)
