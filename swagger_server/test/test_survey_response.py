@@ -52,7 +52,7 @@ class TestSurveyResponse(unittest.TestCase):
     def test_add_survey_response_success_check_file_name(self):
         # Given a survey file name of
         ru = '60218763103'
-        exercise_ref = '201706'
+        exercise_ref = '221_201706'
         survey_id = '221'
         file_extension = '.xls'
 
@@ -67,11 +67,37 @@ class TestSurveyResponse(unittest.TestCase):
         # Check our values
         self.assertEqual(file_components[0][0:-1], ru)
         self.assertEqual(file_components[0][-1], 'X')               # This checks default check letter exists
-        self.assertEqual(file_components[1], exercise_ref)
+        self.assertEqual(file_components[1], exercise_ref.split('_')[1])  # Checks the program strips off first section
         self.assertEqual(file_components[2], survey_id)
-        self.assertEqual(file_components[3][-4:], file_extension)
+        self.assertEqual(file_components[3][-4:], file_extension)   # Check '.xls'
+        self.assertEqual(file_components[3][-4:-3], '.')            # Check we have the dot '.'
+        print("**** file name is: {} *****".format(my_file_name))
 
-        
+    # This will ensure the program handles the old data type for exerciseRef argument
+    def test_add_survey_response_success_old_exerciseRef_file_name(self):
+        # Given a survey file name of
+        ru = '60218763103'
+        old_exercise_ref = '201706'
+        survey_id = '221'
+        file_extension = '.xls'
+
+        # Calculate the file name
+        my_file_name = self.survey_response._generate_file_name(ru, old_exercise_ref, survey_id, file_extension)
+
+        # File name should look something like this: 60218763103X_201706_221_20170905113039.xls
+        # Check we are delimited by underscores and have 4 components i.e. ABC_DEV_EFG_HIJ
+        file_components = my_file_name.split('_')
+        self.assertEqual(len(file_components), 4)
+
+        # Check our values
+        self.assertEqual(file_components[0][0:-1], ru)
+        self.assertEqual(file_components[0][-1], 'X')               # This checks default check letter exists
+        self.assertEqual(file_components[1], old_exercise_ref)      # Checks the program strips off first section
+        self.assertEqual(file_components[2], survey_id)
+        self.assertEqual(file_components[3][-4:], file_extension)   # Check '.xls'
+        self.assertEqual(file_components[3][-4:-3], '.')            # Check we have the dot '.'
+        print("**** file name is: {} *****".format(my_file_name))
+
     def test_add_survey_response_missing_file(self):
         # Given a survey response with no file attached
         file = None
@@ -288,10 +314,10 @@ class TestSurveyResponse(unittest.TestCase):
     @staticmethod
     def mock_get_survey_service():
         return {
-          "id": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-          "shortName": "BRES",
-          "longName": "Business Register and Employment Survey",
-          "surveyRef": "221"
+        "id": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+        "shortName": "BRES",
+        "longName": "Business Register and Employment Survey",
+        "surveyRef": "221"
         }
 
     @staticmethod
@@ -310,7 +336,8 @@ class TestSurveyResponse(unittest.TestCase):
                 'actualPublishDateTime': None,
                 'name': 'BRES_2016',
                 'periodEndDateTime': '2017-09-08T22:59:59.000+0000',
-                'scheduledStartDateTime': '2017-08-29T23:00:00.000+0000'}
+                'scheduledStartDateTime': '2017-08-29T23:00:00.000+0000',
+                'exerciseRef': '221_201712'}
 
     @staticmethod
     def mock_get_case_data_none(case_id):
