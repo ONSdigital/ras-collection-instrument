@@ -11,8 +11,8 @@ from swagger_server.controllers.submitter.rabbitmq_submitter import RabbitMQSubm
 from swagger_server.controllers.exceptions import UploadException
 from werkzeug.utils import secure_filename
 
-FILE_EXTENSION_ERROR = 'un-accepted file extension'
-FILE_NAME_LENGTH_ERROR = 'The name of the file is too long'
+FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls ot .xlsx format'
+FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'
 UPLOAD_SUCCESSFUL = 'Upload successful'
 UPLOAD_UNSUCCESSFUL = 'Upload failed'
 INVALID_UPLOAD = 'The upload must have valid case_id and a file attached'
@@ -139,7 +139,6 @@ class SurveyResponse(object):
         else:
             ons_env.logger.info('Collection Exercise not found for {}'.format(collection_exercise_id))
         return collection_exercise
-
 
     def _get_survey_service(self, survey_id):
         """

@@ -98,7 +98,6 @@ class TestSurveyResponse(unittest.TestCase):
         self.assertEqual(file_components[3][-4:-3], '.')            # Check we have the dot '.'
         print("**** file name is: {} *****".format(my_file_name))
 
-
     def test_add_survey_response_missing_file(self):
         # Given a survey response with no file attached
         file = None
