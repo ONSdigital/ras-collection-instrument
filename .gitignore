@@ -3,9 +3,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
 env/
@@ -35,35 +32,22 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
+.build-test/
 htmlcov/
 .tox/
 .coverage
 .coverage.*
 .cache
-nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
 venv/
 .python-version
 
-# Translations
-*.mo
-*.pot
+**/test.db
+config/local.yaml
+ras-ci
 
-# Django stuff:
-*.log
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-#Ipython Notebook
-.ipynb_checkpoints
-
-.idea
-.build
-.build-test
+.build/
+.idea/
 onsdb

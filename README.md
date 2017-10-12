@@ -1,98 +1,31 @@
-# Collection Instruments API Microservice
-[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument-demo)
-[![codecov](https://codecov.io/gh/onsdigital/ras-collection-instrument/branch/master/graph/badge.svg)](https://codecov.io/gh/onsdigital/ras-collection-instrument-demo)
+# RAS Collection Instrument
 
-This server contains auto-generated code, please refer to the 
-[ras-swagger-codegen](https://github.com/ONSdigital/ras-swagger-codegen) project, before making changes 
-to this repository.
+[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e4cee89df456488c95c26c10a07e4f97)](https://www.codacy.com/app/ONSDigital/ras-collection-instrument?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/ras-collection-instrument&amp;utm_campaign=Badge_Grade)
 
 ## Overview
+This is the RAS Collection Instrument micro-service, responsible for the uploading of collection exercises and instruments
 
-This repository implements REST endpoints for the RAS Collection Instrument based on the Swagger API 
-definition embedded within this repository. Please look in the swagger_server/swagger/swagger.yaml file for details.
-Please use a validating OpenAPI 2.0 editor when changing this file, currently we recommend the local
-Swagger editor.
+The API is specified [here](./API.md).
 
-![ons_startup.png](ons_startup.png)
 
-#### Your changes
+## Tests
+To run the tests with [tox], install tox, then simply run the command `pipenv run tox` in the root of the project.
+tox will create a unique virtualenv, run the unit tests with py.test, then run flake8 coverage.
 
-Changes should only be made to code in the following folders;
-
-* swagger\_server/controllers
-* swagger\_server/test
-* swagger\_server/models
-* README.md
-* local.ini
-
-You will find general configuration options in **config.ini**, these can
-be overridden on a stanza by stanza basis by putting project specific
-options in **local.ini**.
-
-### Database Design
-
-Note, this is subject to change, but for now the Database model is based
-on the following diagram;
-
-![ons_erm.png](ons_erm.png)
-
-## Running Locally
-
-To run locally from the root of your repository using sqlite (against the 'development' profile), run:
-
-```bash
-$ pip install pipenv
-$ pipenv install
-$ ONS_ENV=travis pipenv run ./scripts/run.sh
+To install and run:
+``` bash
+pipenv run python run.py
 ```
 
-By default the service will be available 
-on **http://localhost:8082/collection-instrument-api/1.0.3/ui**.
+To test the service is up:
 
-### Uploading files from the command line
-
-Note that starting with this release we have introduced a UUID type into
-the database which maps to the various parmameters that can be supplied
-to endpoints. These UUID types are **validated** which means you will need
-to supply valid UUID's when testing.
-
-For testing, you can upload from the **scripts** folder, you should be able to run;
-
-```bash
-ce=`pipenv run python -c "from uuid import uuid4; print(uuid4())"`
-pipenv run ./upload.py local $ce 30
 ```
-To upload files to the current CF installation, use **live** instead of local.
-A batch (collection exercise) will be created automatically based on the UUID you
-supply - if it doesn't already exist.
-
-#### Testing
-
-To run the unit tests and code coverage, run the test.sh script an you should get something like this;
-
-```bash
-$ pipenv install --dev
-$ ONS_ENV=test pipenv run ./scripts/test.sh
-================================================================================================= test session starts =================================================================================================
-platform linux -- Python 3.5.3, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
-rootdir: /home/gareth/ONS/ras-repos/ras-collection-instrument, inifile:
-plugins: cov-2.5.1
-collected 23 items
-
-swagger_server/test/test_ciupload_controller.py .......
-swagger_server/test/test_respondent_controller.py ..
-swagger_server/test/test_static_controller.py .
-swagger_server/test_local/test_ciupload_controller.py ..........
-swagger_server/test_local/test_encryption.py ...
-
------------ coverage: platform linux, python 3.5.3-final-0 -----------
-Name                                                        Stmts   Miss  Cover   Missing
------------------------------------------------------------------------------------------
-swagger_server/controllers_local/ciupload_controller.py        45      0   100%
-swagger_server/controllers_local/collectioninstrument.py      167      0   100%
-swagger_server/controllers_local/encryption.py                 23      0   100%
-swagger_server/controllers_local/respondent_controller.py      11      0   100%
-swagger_server/controllers_local/static_controller.py           6      0   100%
------------------------------------------------------------------------------------------
-TOTAL                                                         252      0   100%
+curl http://localhost:8082/info
 ```
+
+The database will automatically be created when starting the application.
+
+## Upload test collection instruments
+Navigate to /developer_scripts and run import.py, answer the prompts on the command line
+
+

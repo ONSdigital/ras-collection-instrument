@@ -1,19 +1,9 @@
-# coding: utf-8
-
-import sys
 from setuptools import setup, find_packages
 
-NAME = "swagger_server"
-VERSION = "1.0.1"
+NAME = "RAS Collection Instrument"
+VERSION = "1.0.2"
 
-# To install the library, run the following
-#
-# python setup.py install
-#
-# prerequisite: setuptools
-# http://pypi.python.org/pypi/setuptools
-
-REQUIRES = ["connexion"]
+REQUIRES = []
 
 setup(
     name=NAME,
@@ -21,13 +11,8 @@ setup(
     description="Collection Instrument API",
     author_email="ras@ons.gov.uk",
     url="",
-    keywords=["Swagger", "Collection Instrument API"],
+    keywords=["Collection Instrument API"],
     install_requires=REQUIRES,
     packages=find_packages(),
-    package_data={'': ['swagger/swagger.yaml']},
-    include_package_data=True,
-    long_description="""\
-    Initial API for the Collection Instrument microservice.
-    """
+    long_description="RAS Collection Instrument microservice."
 )
-
