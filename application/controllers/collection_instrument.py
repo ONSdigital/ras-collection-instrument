@@ -1,6 +1,6 @@
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
-from application.controllers.service_request import service_request
+from application.controllers.service_helper import service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
@@ -13,8 +13,6 @@ from structlog import get_logger
 log = get_logger()
 
 UPLOAD_SUCCESSFUL = 'The upload was successful'
-COLLECTION_EXERCISE_NOT_FOUND = 'Collection exercise not found'
-COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 INVALID_CLASSIFIER = "{} is an invalid classifier, you can't search on it"
 DEFAULT_SURVEY_ID = 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
 
@@ -38,22 +36,21 @@ class CollectionInstrument(object):
             json_search_parameters = {}
 
         results = self._get_instruments_by_classifier(json_search_parameters, session)
-
-        records = []
+        instruments = []
         for result in results:
-            instrument = session.query(InstrumentModel).get(result.id)
+            query = session.query(InstrumentModel).get(result.id)
             classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
-            for business in instrument.businesses:
+            for business in query.businesses:
                 classifiers['RU_REF'].append(business.ru_ref)
-            for exercise in instrument.exercises:
+            for exercise in query.exercises:
                 classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
             result = {
-                'id': instrument.instrument_id,
+                'id': query.instrument_id,
                 'classifiers': classifiers,
-                'surveyId': instrument.survey.survey_id
+                'surveyId': query.survey.survey_id
             }
-            records.append(result)
-        return 200, records
+            instruments.append(result)
+        return instruments
 
     @staticmethod
     @with_db_session
@@ -103,8 +100,7 @@ class CollectionInstrument(object):
 
         instrument.survey = survey
         session.add(instrument)
-
-        return 200, UPLOAD_SUCCESSFUL
+        return UPLOAD_SUCCESSFUL
 
     @staticmethod
     @with_db_session
@@ -120,27 +116,27 @@ class CollectionInstrument(object):
         validate_uuid([exercise_id])
         csv_format = '"{count}","{ru_ref}","{length}","{date_stamp}"\n'
         count = 1
-        result = csv_format.format(count='Count',
-                                   ru_ref='RU Code',
-                                   length='Length',
-                                   date_stamp='Time Stamp')
+        csv = csv_format.format(count='Count',
+                                ru_ref='RU Code',
+                                length='Length',
+                                date_stamp='Time Stamp')
         exercise = query_exercise_by_id(exercise_id, session)
 
         if not exercise:
-            return 404, COLLECTION_EXERCISE_NOT_FOUND
+            return None
 
         for instrument in exercise.instruments:
             for business in instrument.businesses:
-                result += csv_format.format(count=count,
-                                            ru_ref=business.ru_ref,
-                                            length=instrument.len,
-                                            date_stamp=instrument.stamp)
+                csv += csv_format.format(count=count,
+                                         ru_ref=business.ru_ref,
+                                         length=instrument.len,
+                                         date_stamp=instrument.stamp)
                 count += 1
-        return 200, result
+        return csv
 
     @staticmethod
     @with_db_session
-    def get_instrument_by_id(instrument_id, session=None):
+    def get_instrument_json_by_id(instrument_id, session=None):
         """
         Get collection instrument from the db using the id
         :param instrument_id: The id of the instrument we want
@@ -149,13 +145,15 @@ class CollectionInstrument(object):
         """
 
         log.info('Searching for instrument using id {}'.format(instrument_id))
-
+        instrument_json = None
         validate_uuid([instrument_id])
 
         instrument = query_instrument_by_id(instrument_id, session)
-        if not instrument:
-            return 404, COLLECTION_INSTRUMENT_NOT_FOUND
-        return 200, instrument.json
+
+        if instrument:
+            instrument_json = instrument.json
+
+        return instrument_json
 
     def _get_instruments_by_classifier(self, json_search_parameters, session):
         """

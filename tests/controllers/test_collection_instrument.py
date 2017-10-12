@@ -1,6 +1,6 @@
 import json
 
-from application.controllers.collection_instrument import CollectionInstrument, COLLECTION_INSTRUMENT_NOT_FOUND
+from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
 from ras_common_utils.ras_error.ras_error import RasDatabaseError, RasError
@@ -21,32 +21,29 @@ class TestCollectionInstrument(TestClient):
 
         # Given there is an instrument in the db
         # When a collection exercise id is used to find that instrument
-        status, msg = self.collection_instrument.get_instrument_by_search_string(
+        instrument = self.collection_instrument.get_instrument_by_search_string(
             '{\"COLLECTION_EXERCISE\": \"db0711c3-0ac8-41d3-ae0e-567e5ea1ef87\"}')
 
         # Then that instrument is returned
-        self.assertEquals(status, 200)
-        self.assertIn(str(self.instrument_id), json.dumps(str(msg)))
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
 
     def test_get_instrument_by_search_string_survey_id(self):
         # Given there is an instrument in the db
         # When the survey id is used to find that instrument
-        status, msg = self.collection_instrument.get_instrument_by_search_string(
+        instrument = self.collection_instrument.get_instrument_by_search_string(
             '{\"SURVEY_ID\": \"cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87\"}')
 
         # Then that instrument is returned
-        self.assertEquals(status, 200)
-        self.assertIn(str(self.instrument_id), json.dumps(str(msg)))
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
 
     def test_get_instrument_by_search_string_empty_search(self):
 
         # Given there is an instrument in the db
         # When an empty search string is used
-        status, msg = self.collection_instrument.get_instrument_by_search_string()
+        instrument = self.collection_instrument.get_instrument_by_search_string()
 
         # Then that instrument is returned
-        self.assertEquals(status, 200)
-        self.assertIn(str(self.instrument_id), json.dumps(str(msg)))
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
 
     def test_get_instrument_by_invalid_search_string_classifier(self):
 
@@ -64,25 +61,14 @@ class TestCollectionInstrument(TestClient):
         with self.assertRaises(RasDatabaseError):
             self.collection_instrument.get_instrument_by_search_string('{\"COLLECTION_EXERCISE\": \"invalid_uuid\"}')
 
-    def test_get_instrument_by_id(self):
-
-        # Given there is an instrument in the db
-        # When an correct instrument id is used to find that instrument
-        status, msg = self.collection_instrument.get_instrument_by_id(str(self.instrument_id))
-
-        # Then that instrument is returned
-        self.assertEquals(status, 200)
-        self.assertIn(str(self.instrument_id), json.dumps(str(msg)))
-
     def test_get_instrument_by_incorrect_id(self):
 
         # Given there is an instrument in the db
         # When an incorrect instrument id is used to find that instrument
-        status, msg = self.collection_instrument.get_instrument_by_id('db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
+        instrument = self.collection_instrument.get_instrument_json_by_id('db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
 
         # Then that instrument is not found
-        self.assertEquals(status, 404)
-        self.assertEquals(msg, COLLECTION_INSTRUMENT_NOT_FOUND)
+        self.assertEquals(instrument, None)
 
     @staticmethod
     @with_db_session

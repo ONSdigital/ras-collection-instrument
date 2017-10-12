@@ -1,9 +1,9 @@
 import base64
 
-from application.controllers.collection_instrument import UPLOAD_SUCCESSFUL, COLLECTION_EXERCISE_NOT_FOUND, \
-    INVALID_CLASSIFIER
+from application.controllers.collection_instrument import UPLOAD_SUCCESSFUL, INVALID_CLASSIFIER
 from application.controllers.session_decorator import with_db_session
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
+from application.views.collection_instrument_view import COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE
 from flask import current_app
 from requests.models import Response
 from six import BytesIO
@@ -86,6 +86,20 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn('test_ru_ref', response.data.decode())
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
 
+    def test_get_instrument_by_id_no_instrument(self):
+
+        # Given a instrument which doesn't exist
+        missing_instrument_id = 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+
+        # When the collection instrument end point is called with an id
+        response = self.client.get('/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}'
+                                   .format(instrument_id=missing_instrument_id),
+                                   headers=self.get_auth_headers())
+
+        # Then the response returns no data
+        self.assertStatus(response, 404)
+        self.assertEquals(response.data.decode(), COLLECTION_INSTRUMENT_NOT_FOUND)
+
     def test_download_exercise_csv_missing(self):
         # Given a incorrect exercise id
         # When a call is made to the download_csv end point
@@ -94,7 +108,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then a collection exercise is not found
         self.assertStatus(response, 404)
-        self.assertIn(COLLECTION_EXERCISE_NOT_FOUND, response.data.decode())
+        self.assertEquals(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
 
     def test_app_error_handler(self):
         # Given an invalid classifier

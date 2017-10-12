@@ -1,11 +1,11 @@
-from application.controllers.service_request import service_request
+from application.controllers.service_helper import service_request
 from ras_common_utils.ras_error.ras_error import RasError
 from tests.test_client import TestClient
 from unittest.mock import patch
 from requests.models import Response
 
 
-class TestServiceRequest(TestClient):
+class TestServiceHelper(TestClient):
 
     def test_service_request(self):
         # Given a configured service
