@@ -38,15 +38,16 @@ on the following diagram;
 
 ## Running Locally
 
-To run locally from the root of your repository using sqlite (against the 'development' profile), run;
+To run locally from the root of your repository using sqlite (against the 'development' profile), run:
 
 ```bash
-	/> ONS_ENV=travis python -m swagger_server
+$ pip install pipenv
+$ pipenv install
+$ ONS_ENV=travis pipenv run ./scripts/run.sh
 ```
 
-On your first attempt it will build a virtual environment in .build, which will take 30 seconds or so, on 
-subsequent runs this will be almost instantaneous. By default the service will be available 
-on **http://localhost:8080/collection-instrument-api/1.0.3/ui**.
+By default the service will be available 
+on **http://localhost:8082/collection-instrument-api/1.0.3/ui**.
 
 ### Uploading files from the command line
 
@@ -58,8 +59,8 @@ to supply valid UUID's when testing.
 For testing, you can upload from the **scripts** folder, you should be able to run;
 
 ```bash
-ce=`python3 -c "from uuid import uuid4; print(uuid4())"`
-./upload.py local $ce 30
+ce=`pipenv run python -c "from uuid import uuid4; print(uuid4())"`
+pipenv run ./upload.py local $ce 30
 ```
 To upload files to the current CF installation, use **live** instead of local.
 A batch (collection exercise) will be created automatically based on the UUID you
@@ -70,7 +71,8 @@ supply - if it doesn't already exist.
 To run the unit tests and code coverage, run the test.sh script an you should get something like this;
 
 ```bash
-$ ONS_ENV=test ./scripts/test.sh
+$ pipenv install --dev
+$ ONS_ENV=test pipenv run ./scripts/test.sh
 ================================================================================================= test session starts =================================================================================================
 platform linux -- Python 3.5.3, pytest-3.0.7, py-1.4.33, pluggy-0.4.0
 rootdir: /home/gareth/ONS/ras-repos/ras-collection-instrument, inifile:
@@ -94,4 +96,3 @@ swagger_server/controllers_local/static_controller.py           6      0   100%
 -----------------------------------------------------------------------------------------
 TOTAL                                                         252      0   100%
 ```
-.
