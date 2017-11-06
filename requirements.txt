@@ -48,7 +48,6 @@ SQLAlchemy==1.1.10
 SQLAlchemy-Utils==0.32.14
 strict-rfc3339==0.7
 swagger-spec-validator==2.1.0
-tox==2.7.0
 travis==0.0.3
 Twisted==17.5.0
 typing==3.6.1
