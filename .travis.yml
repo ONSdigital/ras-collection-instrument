@@ -2,9 +2,11 @@ language: python
 python:
   - "3.6"
 install:
-  - pip install -r test-requirements.txt
+  - pip install pipenv
+  - pipenv install --dev --deploy
+  - pipenv check
 script:
-  - ONS_ENV=travis pytest --cov=swagger_server/controllers
+  - ONS_ENV=travis pipenv run pytest --cov=swagger_server/controllers
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
