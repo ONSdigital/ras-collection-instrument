@@ -167,6 +167,7 @@
         },
         "flask-httpauth": {
             "hashes": [
+                "sha256:c2ba01d832827f1d1bab39b321a134f9dded8d48f87e71c86ee16848d8e5a422",
                 "sha256:5f4ba7ab79103e28b566c6a0592076312d17c716e079c66ca9ffe21a7871ee8d"
             ],
             "version": "==3.2.3"
