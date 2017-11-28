@@ -5,8 +5,9 @@ install:
   - pip install pipenv
   - pipenv install --dev --deploy
   - pipenv check
+  - pip install tox==2.7.0
 script:
-  - ONS_ENV=travis pipenv run pytest --cov=swagger_server/controllers
+  - pipenv run tox
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 notifications:
