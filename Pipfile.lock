@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "76f9feb3059bd93b995c38d95ecfc9d6b3f4d761771ad0d170c5eaf2d5e0e72b"
+            "sha256": "76a4b592a11ec471a65b1fff96108077a74cb17dadd1b7ee01afbc18777657aa"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -11,7 +11,7 @@
             "platform_python_implementation": "CPython",
             "platform_release": "17.2.0",
             "platform_system": "Darwin",
-            "platform_version": "Darwin Kernel Version 16.7.0: Wed Oct  4 00:17:00 PDT 2017; root:xnu-3789.71.6~1/RELEASE_X86_64",
+            "platform_version": "Darwin Kernel Version 17.2.0: Fri Sep 29 18:27:05 PDT 2017; root:xnu-4570.20.62~3/RELEASE_X86_64",
             "python_full_version": "3.6.3",
             "python_version": "3.6",
             "sys_platform": "darwin"
@@ -102,12 +102,6 @@
             ],
             "version": "==1.9"
         },
-        "dev": {
-            "hashes": [
-                "sha256:3f84372244076c68a73fdb30359ab8ca0c826a6d04fa589e7c44a02c637a3a4c"
-            ],
-            "version": "==0.4.0"
-        },
         "flask": {
             "hashes": [
                 "sha256:0749df235e3ff61ac108f69ac178c9770caeaccad2509cb762ce1f65570a8856",
@@ -117,8 +111,6 @@
         },
         "flask-cors": {
             "hashes": [
-                "sha256:c2ba01d832827f1d1bab39b321a134f9dded8d48f87e71c86ee16848d8e5a422",
-                "sha256:5f4ba7ab79103e28b566c6a0592076312d17c716e079c66ca9ffe21a7871ee8d"
                 "sha256:55eb3864b4290f939ff19a2250fcb47d8c0f63d250c6780b922629299d011ec8",
                 "sha256:ac4b81b3d90f5f18714c995c807f94501df8c9bbc22ef4261c1cd850748c3850",
                 "sha256:62ebc5ad80dc21ca0ea9f57466c2c74e24a62274af890b391790c260eb7b754b"
