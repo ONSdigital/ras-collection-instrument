@@ -239,8 +239,10 @@
             "version": "==3.12"
         },
         "ras-common-utils": {
-            "git": "https://github.com/ONSdigital/ras-common-utils.git",
-            "ref": "0.0.7"
+            "hashes": [
+                "sha256:94bfc59b2ba6cf90894831b20d3aa1853f62a9443513c62117d8f77f8e8cb3ed"
+            ],
+            "version": "1.0.2"
         },
         "sdc-cryptography": {
             "hashes": [
