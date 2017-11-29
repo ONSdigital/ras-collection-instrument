@@ -1,18 +1,18 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "81ee62cdf74ef9cea376c25c53c713c21b7e0bac1b7e67264ae03e9227732701"
+            "sha256": "76f9feb3059bd93b995c38d95ecfc9d6b3f4d761771ad0d170c5eaf2d5e0e72b"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
-            "implementation_version": "3.6.1",
+            "implementation_version": "3.6.3",
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
             "platform_release": "16.7.0",
             "platform_system": "Darwin",
-            "platform_version": "Darwin Kernel Version 16.7.0: Thu Jun 15 17:36:27 PDT 2017; root:xnu-3789.70.16~2/RELEASE_X86_64",
-            "python_full_version": "3.6.1",
+            "platform_version": "Darwin Kernel Version 16.7.0: Wed Oct  4 00:17:00 PDT 2017; root:xnu-3789.71.6~1/RELEASE_X86_64",
+            "python_full_version": "3.6.3",
             "python_version": "3.6",
             "sys_platform": "darwin"
         },
@@ -240,9 +240,9 @@
         },
         "ras-common-utils": {
             "hashes": [
-                "sha256:94bfc59b2ba6cf90894831b20d3aa1853f62a9443513c62117d8f77f8e8cb3ed"
+                "sha256:96b1741717afe0f213aafcb89c9caba7085f99dec50e616143d28a14e9056168"
             ],
-            "version": "1.0.2"
+            "version": "==1.0.2"
         },
         "sdc-cryptography": {
             "hashes": [
