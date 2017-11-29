@@ -27,7 +27,7 @@ class SurveyResponse(object):
         :param case_id: A case id
         :param file: A file object from which we can read the file contents
         :param file_name: The filename
-        :return: Returns status code and message
+        :return: Returns boolean
         """
 
         tx_id = str(uuid.uuid4())
