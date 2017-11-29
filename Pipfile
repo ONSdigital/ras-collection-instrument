@@ -12,7 +12,7 @@ python_version = "3.6"
 
 [packages]
 
-ras_common_utils = {git = "https://github.com/ONSdigital/ras-common-utils.git", ref="0.0.7"}
+ras_common_utils = "==1.0.2"
 Flask = "==0.12.2"
 Flask_Cors = "==3.0.3"
 gunicorn = "==19.7.1"
