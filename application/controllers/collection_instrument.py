@@ -9,7 +9,6 @@ from json import loads
 from ras_common_utils.ras_error.ras_error import RasError
 from structlog import get_logger
 
-
 log = get_logger()
 
 UPLOAD_SUCCESSFUL = 'The upload was successful'
@@ -136,24 +135,51 @@ class CollectionInstrument(object):
 
     @staticmethod
     @with_db_session
-    def get_instrument_json_by_id(instrument_id, session=None):
+    def get_instrument_json(instrument_id, session):
         """
-        Get collection instrument from the db using the id
+        Get collection instrument json from the db
         :param instrument_id: The id of the instrument we want
-        :param session: database session
         :return: formatted JSON version of the instrument
         """
 
-        log.info('Searching for instrument using id {}'.format(instrument_id))
+        instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
+
         instrument_json = None
-        validate_uuid([instrument_id])
-
-        instrument = query_instrument_by_id(instrument_id, session)
-
         if instrument:
             instrument_json = instrument.json
-
         return instrument_json
+
+    @staticmethod
+    @with_db_session
+    def get_instrument_data(instrument_id, session):
+        """
+        Get the instrument data from the db using the id
+        :param instrument_id: The id of the instrument we want
+        :return: data and ru_ref
+        """
+
+        instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
+
+        data = None
+        ru_ref = None
+        if instrument:
+            log.info('Decrypting collection instrument data for {}'.format(instrument_id))
+            cryptographer = Cryptographer()
+            data = cryptographer.decrypt(instrument.data)
+            ru_ref = instrument.businesses[0].ru_ref
+        return data, ru_ref
+
+    @staticmethod
+    def get_instrument_by_id(instrument_id, session):
+        """
+        Get the collection instrument from the db using the id
+        :param instrument_id: The id of the instrument we want
+        :return: instrument
+        """
+        log.info('Searching for instrument using id {}'.format(instrument_id))
+        validate_uuid([instrument_id])
+        instrument = query_instrument_by_id(instrument_id, session)
+        return instrument
 
     def _get_instruments_by_classifier(self, json_search_parameters, session):
         """
