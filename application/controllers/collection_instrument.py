@@ -143,10 +143,7 @@ class CollectionInstrument(object):
         """
 
         instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
-
-        instrument_json = None
-        if instrument:
-            instrument_json = instrument.json
+        instrument_json = instrument.json if instrument else None
         return instrument_json
 
     @staticmethod

@@ -31,8 +31,8 @@ def download_csv(exercise_id):
                 .format(exercise_id=exercise_id)
         response.headers["Content-type"] = "text/csv"
         return response
-    else:
-        return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
+
+    return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
 
 
 @auth.login_required
@@ -50,8 +50,8 @@ def collection_instrument_by_id(instrument_id):
 
     if instrument_json:
         return make_response(jsonify(instrument_json), 200)
-    else:
-        return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
+    return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
 
 
 @auth.login_required
@@ -65,6 +65,7 @@ def instrument_data(instrument_id):
         response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     else:
         response = make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
     return response
 
 
@@ -75,5 +76,5 @@ def instrument_size(instrument_id):
 
     if instrument and 'len' in instrument:
         return make_response(jsonify(instrument['len']), 200)
-    else:
-        return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
+    return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
