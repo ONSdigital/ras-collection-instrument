@@ -65,7 +65,7 @@ class TestCollectionInstrument(TestClient):
 
         # Given there is an instrument in the db
         # When an incorrect instrument id is used to find that instrument
-        instrument = self.collection_instrument.get_instrument_json_by_id('db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
+        instrument = self.collection_instrument.get_instrument_json('db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
 
         # Then that instrument is not found
         self.assertEquals(instrument, None)

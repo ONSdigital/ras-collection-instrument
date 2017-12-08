@@ -9,13 +9,13 @@ from requests.models import Response
 from six import BytesIO
 from tests.test_client import TestClient
 from unittest.mock import patch
+from application.controllers.cryptographer import Cryptographer
 
 
 class TestCollectionInstrumentView(TestClient):
     """ Collection Instrument view unit tests"""
 
     def test_collection_instrument_upload(self):
-
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
@@ -23,7 +23,6 @@ class TestCollectionInstrumentView(TestClient):
 
         data = dict(file=(BytesIO(b'test data'), 'test.xls'))
         with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service):
-
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/{ref}/{file}'
@@ -59,9 +58,8 @@ class TestCollectionInstrumentView(TestClient):
 
     def test_get_instrument_by_search_string_ru(self):
 
-        # Given an instrument is persisted in the db
+        # Given an instrument which is in the db
         self.add_instrument_data()
-
         # When the collection instrument end point is called with a search string
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}',
@@ -74,9 +72,8 @@ class TestCollectionInstrumentView(TestClient):
 
     def test_get_instrument_by_id(self):
 
-        # Given an instrument is persisted in the db
+        # Given an instrument which is in the db
         instrument = self.add_instrument_data()
-
         # When the collection instrument end point is called with an id
         response = self.client.get('/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}'
                                    .format(instrument_id=instrument), headers=self.get_auth_headers())
@@ -110,6 +107,54 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEquals(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
 
+    def test_get_instrument_size(self):
+
+        # Given an instrument which is in the db
+        instrument = self.add_instrument_data()
+        # When the collection instrument size end point is called with an id
+        response = self.client.get('/collection-instrument-api/1.0.2/instrument_size/{instrument_id}'
+                                   .format(instrument_id=instrument), headers=self.get_auth_headers())
+
+        # Then the response returns the correct size
+        self.assertStatus(response, 200)
+        self.assertIn('999', response.data.decode())
+
+    def test_get_instrument_size_missing_instrument(self):
+
+        # Given an instrument id which doesn't exist in the db
+        instrument = '655488ea-ccaa-4d02-8f73-3d20bceed706'
+
+        # When the collection instrument end point is called with an id
+        response = self.client.get('/collection-instrument-api/1.0.2/instrument_size/{instrument_id}'
+                                   .format(instrument_id=instrument), headers=self.get_auth_headers())
+
+        # Then the response returns a 404
+        self.assertStatus(response, 404)
+
+    def test_get_instrument_download(self):
+
+        # Given an instrument which is in the db
+        instrument = self.add_instrument_data()
+        # When the collection instrument end point is called with an id
+        response = self.client.get('/collection-instrument-api/1.0.2/download/{instrument_id}'
+                                   .format(instrument_id=instrument), headers=self.get_auth_headers())
+
+        # Then the response returns the correct instrument
+        self.assertStatus(response, 200)
+        self.assertIn('test data', response.data.decode())
+
+    def test_get_instrument_download_missing_instrument(self):
+
+        # Given an instrument which doesn't exists in the db
+        instrument = '655488ea-ccaa-4d02-8f73-3d20bceed706'
+
+        # When the collection instrument end point is called with an id
+        response = self.client.get('/collection-instrument-api/1.0.2/download/{instrument_id}'
+                                   .format(instrument_id=instrument), headers=self.get_auth_headers())
+
+        # Then the response returns a 404
+        self.assertStatus(response, 404)
+
     def test_app_error_handler(self):
         # Given an invalid classifier
         classifier = 'INVALID'
@@ -133,7 +178,10 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel()
+        instrument = InstrumentModel(length='999')
+        crypto = Cryptographer()
+        data = BytesIO(b'test data')
+        instrument.data = crypto.encrypt(data.read())
         exercise = ExerciseModel()
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)

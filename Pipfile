@@ -27,6 +27,8 @@ pika = "==0.10.0"
 cryptography = "==1.9"
 flask-httpauth = "==3.2.3"
 six = "==1.10.0"
+requests = "==2.18.4"
+XlsxWriter = "==1.0.2"
 
 
 [dev-packages]

@@ -31,8 +31,8 @@ def download_csv(exercise_id):
                 .format(exercise_id=exercise_id)
         response.headers["Content-type"] = "text/csv"
         return response
-    else:
-        return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
+
+    return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
 
 
 @auth.login_required
@@ -46,9 +46,35 @@ def collection_instrument_by_search_string():
 @auth.login_required
 @collection_instrument_view.route('/collectioninstrument/id/<instrument_id>', methods=['GET'])
 def collection_instrument_by_id(instrument_id):
-    instrument_json = CollectionInstrument().get_instrument_json_by_id(instrument_id)
+    instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
 
     if instrument_json:
         return make_response(jsonify(instrument_json), 200)
+
+    return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
+
+@auth.login_required
+@collection_instrument_view.route('/download/<instrument_id>', methods=['GET'])
+def instrument_data(instrument_id):
+    data, ru_ref = CollectionInstrument().get_instrument_data(instrument_id)
+
+    if data and ru_ref:
+        response = make_response(data, 200)
+        response.headers["Content-Disposition"] = "attachment; filename={}.xlsx".format(ru_ref)
+        response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     else:
-        return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+        response = make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
+    return response
+
+
+@auth.login_required
+@collection_instrument_view.route('/instrument_size/<instrument_id>', methods=['GET'])
+def instrument_size(instrument_id):
+    instrument = CollectionInstrument().get_instrument_json(instrument_id)
+
+    if instrument and 'len' in instrument:
+        return make_response(jsonify(instrument['len']), 200)
+
+    return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
