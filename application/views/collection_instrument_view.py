@@ -75,6 +75,6 @@ def instrument_size(instrument_id):
     instrument = CollectionInstrument().get_instrument_json(instrument_id)
 
     if instrument and 'len' in instrument:
-        return make_response(jsonify(instrument['len']), 200)
+        return make_response(str(instrument['len']), 200)
 
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
