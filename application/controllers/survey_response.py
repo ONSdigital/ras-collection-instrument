@@ -56,7 +56,7 @@ class SurveyResponse(object):
         """
 
         log.info('Creating json message filename:{0} case_id:{1} survey_id:{2}'.format(generated_file_name, case_id,
-                                                                                    survey_ref))
+                                                                                       survey_ref))
         file_as_string = convert_file_object_to_string_base64(file)
 
         message_json = {

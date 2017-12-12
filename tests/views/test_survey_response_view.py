@@ -64,7 +64,7 @@ class TestSurveyResponseView(TestClient):
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
                 patch('application.controllers.survey_response.RabbitMQSubmitter'):
-            with self.assertLogs(level= 'INFO') as cm:
+            with self.assertLogs(level='INFO') as cm:
                 # When that file is post to the survey response end point
                 self.client.post(
                     '/survey_response-api/v1/survey_responses/{case_id}'.
@@ -73,9 +73,6 @@ class TestSurveyResponseView(TestClient):
                     content_type='multipart/form-data')
 
                 self.assertTrue('survey_id:123456' in cm[1][4])
-
-
-
 
     def test_add_survey_response_missing_case_data(self):
 
