@@ -7,6 +7,12 @@ This is the RAS Collection Instrument micro-service, responsible for the uploadi
 
 The API is specified [here](./API.md).
 
+## Environment
+This requires pipenv and tox to be installed:
+```
+pip install pipenv
+pip install tox
+```
 
 ## Tests
 To run the tests with [tox], install tox, then simply run the command `pipenv run tox` in the root of the project.

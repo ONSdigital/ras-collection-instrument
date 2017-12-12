@@ -8,7 +8,7 @@ from run import create_app, initialise_db
 
 logger = structlog.get_logger()
 
-config_path = 'config/config.yaml'
+config_path = '/config/config.yaml'
 config = ras_config.from_yaml_file(config_path)
 
 app = create_app(config)
