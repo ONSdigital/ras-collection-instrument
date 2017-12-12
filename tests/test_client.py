@@ -9,7 +9,7 @@ class TestClient(TestCase):
 
     @staticmethod
     def create_app():
-        config_path = '/Users/andrewtorrance/projects/ras-collection-instrument/config/config.yaml'
+        config_path = 'config/config.yaml'
         config = ras_config.from_yaml_file(config_path)
         app = create_app(config)
         configure_logger(app.config)
