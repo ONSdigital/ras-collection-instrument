@@ -3,7 +3,6 @@ import time
 import uuid
 
 from flask import current_app
-from ras_common_utils.ras_error.ras_error import RasError
 from sdc.rabbit.exceptions import PublishMessageError
 from sdc.rabbit.publisher import QueuePublisher
 from structlog import get_logger
@@ -89,7 +88,8 @@ class SurveyResponse(object):
             result = publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
                                                immediate=False, mandatory=True)
         except PublishMessageError:
-            raise RasError('Rabbitmq error', 500)
+            log.error()
+            return False
 
         if result:
             log.info('Collection instrument successfully send to rabbitmq with tx_id {}'.format(tx_id))

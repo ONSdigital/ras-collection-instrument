@@ -8,6 +8,7 @@ from unittest.mock import patch, Mock
 from sdc.rabbit.publisher import PublishMessageError
 
 
+
 class TestSurveyResponseView(TestClient):
     """ Survey response unit tests"""
 
@@ -274,4 +275,4 @@ class TestSurveyResponseView(TestClient):
 
             # Then the file does not upload successfully
             self.assertStatus(response, 500)
-            self.assertEquals(response.data.decode(), 'Rabbitmq error')
+            self.assertEquals(response.data.decode(), UPLOAD_UNSUCCESSFUL)
