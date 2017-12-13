@@ -1,15 +1,17 @@
+import logging
+import structlog
+
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
+from application.exceptions import RasError
 from application.models.models import BusinessModel, ClassificationModel, ExerciseModel, InstrumentModel, SurveyModel
 from json import loads
-from ras_common_utils.ras_error.ras_error import RasError
-from structlog import get_logger
 
-log = get_logger()
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 UPLOAD_SUCCESSFUL = 'The upload was successful'
 INVALID_CLASSIFIER = "{} is an invalid classifier, you can't search on it"

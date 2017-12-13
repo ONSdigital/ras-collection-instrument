@@ -1,16 +1,17 @@
 import os
 import time
 import uuid
+import logging
+import structlog
 
 from application.controllers.helper import is_valid_file_extension, is_valid_file_name_length, \
     convert_file_object_to_string_base64
 from application.controllers.json_encrypter import Encrypter
 from application.controllers.rabbitmq_submitter import RabbitMQSubmitter
 from flask import current_app
-from structlog import get_logger
 from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
 
-log = get_logger()
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls or .xlsx format'
 FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'

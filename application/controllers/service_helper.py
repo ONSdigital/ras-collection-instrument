@@ -1,10 +1,12 @@
 import requests
+import logging
+import structlog
 
 from flask import current_app
-from ras_common_utils.ras_error.ras_error import RasError
-from structlog import get_logger
+from application.exceptions import RasError
 
-log = get_logger()
+
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 def get_case_group(case_id):

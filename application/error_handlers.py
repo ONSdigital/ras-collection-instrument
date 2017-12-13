@@ -1,11 +1,11 @@
 import logging
+import structlog
 
-from structlog import wrap_logger
-from ras_common_utils.ras_error.ras_error import RasError
+from application.exceptions import RasError
 from flask import jsonify
 from application import app
 
-logger = wrap_logger(logging.getLogger(__name__))
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 @app.errorhandler(Exception)

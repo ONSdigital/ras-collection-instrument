@@ -1,6 +1,6 @@
 from pika import BlockingConnection, BasicProperties, URLParameters
 from pika.exceptions import AMQPError
-from ras_common_utils.ras_error.ras_error import RasError
+from application.exceptions import RasError
 from structlog import get_logger
 
 log = get_logger()

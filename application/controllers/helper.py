@@ -1,6 +1,6 @@
 import base64
+from application.exceptions import RasError
 
-from ras_common_utils.ras_error.ras_error import RasError
 from uuid import UUID
 
 

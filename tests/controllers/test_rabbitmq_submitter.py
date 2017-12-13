@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from pika.exceptions import AMQPError
-from ras_common_utils.ras_error.ras_error import RasError
+from application.exceptions import RasError
 from application.controllers.rabbitmq_submitter import RabbitMQSubmitter
 
 TEST_FILE_LOCATION = 'tests/files/tests.xlsx'

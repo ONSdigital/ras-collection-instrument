@@ -3,7 +3,7 @@ import json
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
-from ras_common_utils.ras_error.ras_error import RasDatabaseError, RasError
+from application.exceptions import RasDatabaseError, RasError
 from tests.test_client import TestClient
 
 
