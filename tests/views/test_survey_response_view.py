@@ -8,7 +8,6 @@ from unittest.mock import patch, Mock
 from sdc.rabbit.publisher import PublishMessageError
 
 
-
 class TestSurveyResponseView(TestClient):
     """ Survey response unit tests"""
 
@@ -264,14 +263,14 @@ class TestSurveyResponseView(TestClient):
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service,
                                 mock_survey_service]), \
-             patch('application.controllers.survey_response.QueuePublisher',
-                   return_value=rabbit):
+            patch('application.controllers.survey_response.QueuePublisher',
+                  return_value=rabbit):
             # When that file is post to the survey response end point
             response = self.client.post(
-                '/survey_response-api/v1/survey_responses/{case_id}'.
-                    format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+                '/survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
                 data=data,
-                content_type='multipart/form-data')
+                content_type='multipart/form-data'
+            )
 
             # Then the file does not upload successfully
             self.assertStatus(response, 500)
