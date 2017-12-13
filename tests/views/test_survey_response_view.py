@@ -30,7 +30,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -63,7 +63,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
             with self.assertLogs(level='INFO') as cm:
                 # When that file is post to the survey response end point
                 self.client.post(
@@ -84,7 +84,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -116,7 +116,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -144,7 +144,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -223,11 +223,11 @@ class TestSurveyResponseView(TestClient):
         mock_survey_service._content = b'{"surveyRef": "123456"}'
 
         rabbit = Mock()
-        rabbit.send_message = Mock(return_value=False)
+        rabbit.publish_message = Mock(return_value=False)
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]), \
-                patch('application.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit):
+                patch('application.controllers.survey_response.QueuePublisher', return_value=rabbit):
             # When that file is post to the survey response end point
             response = self.client.post(
                 '/survey_response-api/v1/survey_responses/{case_id}'.
