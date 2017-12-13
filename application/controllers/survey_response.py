@@ -157,12 +157,12 @@ class SurveyResponse(object):
         check_letter = 'X'  # Business related file name requirement
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
         file_name = "{ru}{check_letter}_{exercise_ref}_" \
-                    "{survey_id}_{time_date_stamp}{file_format}".format(ru=ru,
-                                                                        check_letter=check_letter,
-                                                                        exercise_ref=exercise_ref,
-                                                                        survey_id=survey_ref,
-                                                                        time_date_stamp=time_date_stamp,
-                                                                        file_format=file_extension)
+                    "{survey_ref}_{time_date_stamp}{file_format}".format(ru=ru,
+                                                                         check_letter=check_letter,
+                                                                         exercise_ref=exercise_ref,
+                                                                         survey_ref=survey_ref,
+                                                                         time_date_stamp=time_date_stamp,
+                                                                         file_format=file_extension)
 
         log.info('Generated file name for upload. file name is: {}'.format(file_name))
 
