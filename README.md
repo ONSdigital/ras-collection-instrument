@@ -7,10 +7,20 @@ This is the RAS Collection Instrument micro-service, responsible for the uploadi
 
 The API is specified [here](./API.md).
 
+## Environment
+This requires pipenv to be installed:
+```
+pip install pipenv
+```
 
 ## Tests
-To run the tests with [tox], install tox, then simply run the command `pipenv run tox` in the root of the project.
-tox will create a unique virtualenv, run the unit tests with py.test, then run flake8 coverage.
+To run the tests, install the dev dependencies using Pipenv and run tox within the virtual environment, 
+which will run the unit tests with py.test, then run flake8 coverage.
+```
+pipenv install --dev
+pipenv run tox
+```
+
 
 To install and run:
 ``` bash

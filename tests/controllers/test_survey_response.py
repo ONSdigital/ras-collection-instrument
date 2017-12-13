@@ -34,7 +34,7 @@ class TestSurveyResponse(TestClient):
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
             with patch('application.controllers.survey_response.RabbitMQSubmitter'):
-                status = self.survey_response.add_survey_response(case_id, file, filename)
+                status = self.survey_response.add_survey_response(case_id, file, filename, '023')
 
         # Then the file uploads successfully
         self.assertTrue(status)

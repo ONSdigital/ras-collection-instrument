@@ -29,12 +29,13 @@ def add_survey_response(case_id):
         if not is_valid_file:
             return make_response(msg, 400)
 
-        file_name = survey_response.generate_file_name(case_id, file_extension)
-        print(file_name)
+        file_name, survey_ref = survey_response.get_file_name_and_survey_ref(case_id, file_extension)
+
         if not file_name:
             return make_response(MISSING_DATA, 404)
 
-        upload_success = survey_response.add_survey_response(case_id, file, file_name)
+        upload_success = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
+
         if upload_success:
             return make_response(UPLOAD_SUCCESSFUL, 200)
         else:
