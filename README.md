@@ -11,10 +11,13 @@ The API is specified [here](./API.md).
 This requires pipenv and tox to be installed:
 ```
 pip install pipenv
-pip install tox
 ```
 
 ## Tests
+Tests require tox to be installed.
+```
+pip install tox
+```
 To run the tests with [tox], install tox, then simply run the command `pipenv run tox` in the root of the project.
 tox will create a unique virtualenv, run the unit tests with py.test, then run flake8 coverage.
 

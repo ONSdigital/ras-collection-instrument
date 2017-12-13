@@ -35,7 +35,6 @@ def add_survey_response(case_id):
             return make_response(MISSING_DATA, 404)
 
         upload_success = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
-        log.info("survey_responses/{0} ")
 
         if upload_success:
             return make_response(UPLOAD_SUCCESSFUL, 200)
