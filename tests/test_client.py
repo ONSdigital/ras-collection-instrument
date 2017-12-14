@@ -1,19 +1,22 @@
-from flask_testing import TestCase
-from ras_common_utils.ras_config import ras_config
-from ras_common_utils.ras_logger.ras_logger import configure_logger
-from run import create_app, initialise_db
+import logging
+import structlog
 import os
+from flask_testing import TestCase
+from run import create_app, initialise_db
+
+logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 class TestClient(TestCase):
 
     @staticmethod
     def create_app():
-        config_path = 'config/config.yaml'
-        config = ras_config.from_yaml_file(config_path)
-        app = create_app(config)
-        configure_logger(app.config)
-        initialise_db(app)
+        app = create_app()
+        try:
+            initialise_db(app)
+        except:
+            logger.exception('Failed to initialise database')
+            exit(1)
         return app
 
     @staticmethod

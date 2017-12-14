@@ -1,8 +1,7 @@
 import logging
 import structlog
-from flask import Flask
+from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
-from flask import _app_ctx_stack
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
