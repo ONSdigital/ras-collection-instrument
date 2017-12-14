@@ -38,4 +38,3 @@ class Config(object):
     RM_SURVEY_SERVICE = '{}://{}:{}/'.format(RM_SURVEY_SERVICE_PROTOCOL,
                                              RM_SURVEY_SERVICE_HOST,
                                              RM_SURVEY_SERVICE_PORT)
-

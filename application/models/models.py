@@ -9,6 +9,7 @@ from uuid import uuid4
 
 Base = declarative_base()
 
+
 class InstrumentModel(Base):
     """
     This models the 'instrument' table which keeps the stored collection instruments

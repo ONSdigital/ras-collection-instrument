@@ -8,6 +8,7 @@ from application.exceptions import RasDatabaseError, RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
+
 def with_db_session(f):
     """
     Wraps the supplied function, and introduces a correctly-scoped database session which is passed into the decorated
