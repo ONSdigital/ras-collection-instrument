@@ -9,6 +9,8 @@ class Config(object):
     PORT = os.getenv('PORT', 8002)
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
+    DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras-collection-instrument')
+    DATABASE_URI = os.getenv('DATABASE_URI', "sqlite:///:memory:")
     ONS_CRYPTOKEY = os.getenv('CRYPTOKEY')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'test_user_name')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'test_user_password')
