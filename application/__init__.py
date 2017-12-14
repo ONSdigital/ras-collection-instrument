@@ -11,7 +11,7 @@ app = Flask(__name__)
 app_config = 'config.{}'.format(os.environ.get('APP_SETTINGS', 'Config'))
 app.config.from_object(app_config)
 
-logger_initial_config(service_name='response-operations-ui', log_level=app.config['LOGGING_LEVEL'])
+logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
 
 # register view blueprints
 from application.views.survey_responses_view import survey_responses_view
