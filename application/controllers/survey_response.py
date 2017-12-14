@@ -10,8 +10,7 @@ from structlog import get_logger
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
 from application.controllers.json_encrypter import Encrypter
-from application.controllers.service_helper import (get_case_group, get_collection_exercise,
-                                                    get_survey_ref)
+from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
 
 
 log = get_logger()
@@ -88,7 +87,6 @@ class SurveyResponse(object):
             result = publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
                                                immediate=False, mandatory=True)
         except PublishMessageError:
-            log.error()
             return False
 
         if result:
