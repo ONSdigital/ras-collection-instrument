@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a94c4090140f5d2f593fc7f9176c9840cd6d6b8fa20148e2bb2627668cc56f51"
+            "sha256": "420ead22bdb8fd1b703caa42943af44a49d99897d540c8a027e7d62dad9d7f9f"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "16.4.0",
+            "platform_release": "16.7.0",
             "platform_system": "Darwin",
-            "platform_version": "Darwin Kernel Version 16.4.0: Thu Dec 22 22:53:21 PST 2016; root:xnu-3789.41.3~3/RELEASE_X86_64",
+            "platform_version": "Darwin Kernel Version 16.7.0: Thu Jun 15 17:36:27 PDT 2017; root:xnu-3789.70.16~2/RELEASE_X86_64",
             "python_full_version": "3.6.3",
             "python_version": "3.6",
             "sys_platform": "darwin"
@@ -31,10 +31,10 @@
     "default": {
         "asn1crypto": {
             "hashes": [
-                "sha256:654b7db3b120e23474e9a1e5e38d268c77e58a9e17d2cb595456c37309846494",
-                "sha256:0874981329cfebb366d6584c3d16e913f2a0eb026c9463efcc4aaf42a9d94d70"
+                "sha256:2f1adbb7546ed199e3c90ef23ec95c5cf3585bac7d11fb7eb562a3fe89c64e87",
+                "sha256:9d5c20441baf0cb60a4ac34cc447c6c189024b6b4c6cd7877034f4965c464e49"
             ],
-            "version": "==0.23.0"
+            "version": "==0.24.0"
         },
         "certifi": {
             "hashes": [
@@ -273,7 +273,11 @@
             "version": "==0.2.0"
         },
         "sdc-rabbit": {
-            "git": "git://github.com/ONSDigital/sdc-rabbit.git"
+            "hashes": [
+                "sha256:5887be5d0f03e0d1cbf975f6d0c021cc161c8ca83623ff3ef372060fea33becc",
+                "sha256:858259eace5d1db43281c233bac51a9d7d253121cd659995f3df1828e25cab66"
+            ],
+            "version": "==1.2.1"
         },
         "six": {
             "hashes": [
@@ -300,6 +304,16 @@
                 "sha256:6980001045abd235fa12582222627c19b89109e58b85eb77d5a5abc778df6e20"
             ],
             "version": "==17.2.0"
+        },
+        "tornado": {
+            "hashes": [
+                "sha256:2b4618010625bcf01f187eec3148c6a3db76a2a900f7dde416330fc413274df1",
+                "sha256:fb0883ae46da958d06fda2e3be6c033825a0b8603c493df8a69c0237055308d9",
+                "sha256:0a6894559e62a186d6cc20f1c0e7318f83ae8e28922d75c4b6f83d42cc91d8b1",
+                "sha256:c3f4456f0ab9e62dab7ede834dcf4c89082238e97b3e67a9196572c076e716aa",
+                "sha256:db0904a28253cfe53e7dedc765c71596f3c53bb8a866ae50123320ec1a7b73fd"
+            ],
+            "version": "==4.5.1"
         },
         "urllib3": {
             "hashes": [
