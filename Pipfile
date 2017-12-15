@@ -12,13 +12,13 @@ python_version = "3.6"
 
 [packages]
 
-ras_common_utils = "==1.0.2"
+ras-common-utils = "==1.0.2"
 flask = "==0.12.2"
-flask_Cors = "==3.0.3"
+flask-cors = "==3.0.3"
 gunicorn = "==19.7.1"
-sqlalchemy_Utils = "==0.32.14"
+sqlalchemy-utils = "==0.32.14"
 sqlalchemy = "==1.1.10"
-psycopg2 = "==2.7.1"
+"psycopg2" = "==2.7.1"
 pycrypto = "==2.6.1"
 structlog = "==17.2.0"
 werkzeug = "==0.12.2"
@@ -28,7 +28,8 @@ cryptography = "==1.9"
 flask-httpauth = "==3.2.3"
 six = "==1.10.0"
 requests = "==2.18.4"
-XlsxWriter = "==1.0.2"
+xlsxwriter = "==1.0.2"
+sdc_rabbit = {git = "git://github.com/ONSDigital/sdc-rabbit.git"}
 
 
 [dev-packages]
@@ -40,5 +41,3 @@ flask-testing = "*"
 pytest = "*"
 pytest-cov = "*"
 tox = "*"
-
-
