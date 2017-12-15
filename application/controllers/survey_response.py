@@ -84,15 +84,12 @@ class SurveyResponse(object):
         rabbitmq_amqp = current_app.config.get('RABBITMQ_AMQP')
         publisher = QueuePublisher([rabbitmq_amqp], QUEUE_NAME)
         try:
-            result = publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
-                                               immediate=False, mandatory=True)
-        except PublishMessageError:
-            return False
-
-        if result:
-            log.info('Collection instrument successfully send to rabbitmq with tx_id {}'.format(tx_id))
+            publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
+                                      immediate=False, mandatory=True)
+            log.info('Collection instrument successfully send to rabbitmq with tx_id {}'
+                     .format(tx_id))
             return True
-        else:
+        except PublishMessageError:
             return False
 
     @staticmethod
