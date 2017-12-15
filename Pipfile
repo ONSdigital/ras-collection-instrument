@@ -29,7 +29,7 @@ flask-httpauth = "==3.2.3"
 six = "==1.10.0"
 requests = "==2.18.4"
 xlsxwriter = "==1.0.2"
-sdc_rabbit = {git = "git://github.com/ONSDigital/sdc-rabbit.git"}
+sdc-rabbit = "==1.2.1"
 
 
 [dev-packages]
