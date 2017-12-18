@@ -1,3 +1,4 @@
+from os import getenv
 from flask_cors import CORS
 from ras_common_utils.ras_config import ras_config
 from ras_common_utils.ras_config.flask_extended import Flask
@@ -44,8 +45,7 @@ def initialise_db(app):
 
 
 if __name__ == '__main__':
-
-    config_path = 'config/config.yaml'
+    config_path = getenv('CONFIG_YML', 'config/config.yaml')
     config = ras_config.from_yaml_file(config_path)
     configure_logger(config.service)
 
