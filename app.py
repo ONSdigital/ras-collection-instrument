@@ -1,20 +1,30 @@
-# import structlog
-# import os
-# from ras_common_utils.ras_logger.ras_logger import configure_logger
-#
-# from run import create_app, initialise_db
-#
-# # This is a duplicate of run.py, with minor modifications to support gunicorn execution.
-#
-# logger = structlog.get_logger()
-#
-# config_path = 'config.py'
-# config = os.environ['APP_SETTINGS'] = 'Config'
-#
-# app = create_app()
-# configure_logger(app.config)
-# logger.debug("Created Flask application.")
-#
-# initialise_db(app)
-#
-# scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
+from json import loads
+import logging
+
+import structlog
+from retrying import RetryError
+
+from application.logger_config import logger_initial_config
+from run import create_app, initialise_db
+
+"""
+This is a duplicate of run.py, with minor modifications to support gunicorn execution.
+"""
+
+logger = structlog.wrap_logger(logging.getLogger(__name__))
+
+app = create_app()
+with open(app.config['COLLECTION_INSTRUMENT_SCHEMA']) as io:
+    app.config['COLLECTION_INSTRUMENT_SCHEMA'] = loads(io.read())
+
+logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOG_LEVEL'])
+
+logger.debug("Created Flask app.")
+
+try:
+    initialise_db(app)
+except RetryError:
+    logger.exception('Failed to initialise database')
+    exit(1)
+
+scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])

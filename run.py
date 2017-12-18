@@ -19,13 +19,10 @@ def create_app():
 
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view
-
     app.register_blueprint(survey_responses_view, url_prefix='/survey_response-api/v1')
     from application.views.collection_instrument_view import collection_instrument_view
-
     app.register_blueprint(collection_instrument_view, url_prefix='/collection-instrument-api/1.0.2')
     from application.views.info_view import info_view
-
     app.register_blueprint(info_view)
 
     CORS(app)
@@ -57,7 +54,8 @@ def create_database(db_connection, db_schema):
 
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
-    app.db = create_database(app.config['DATABASE_URI'], app.config['DATABASE_SCHEMA'])
+    app.db = create_database(app.config['RAS_COLLECTION_INSTRUMENT_DATABASE_URI'],
+                             app.config['RAS_COLLECTION_INSTRUMENT_DATABASE_SCHEMA'])
 
 
 if __name__ == '__main__':
