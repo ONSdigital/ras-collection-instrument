@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  db:
+    container_name: postgres
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "6432:5432"
+
+  ras-collection-instrument:
+    container_name: ras-collection-instrument
+    build: ./
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "8081:8081"

@@ -2,7 +2,7 @@ import json
 
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
-from application.exceptions import RasDatabaseError, RasError
+from application.exceptions import RasDatabaseError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
 from tests.test_client import TestClient
 
@@ -45,14 +45,6 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is returned
         self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
 
-    def test_get_instrument_by_invalid_search_string_classifier(self):
-
-        # Given that an invalid classifier is used in a search string
-        # When the function is called
-        # Than a RasError is raised
-        with self.assertRaises(RasError):
-            self.collection_instrument.get_instrument_by_search_string('{\"invalid_classifier\": \"999\"}')
-
     def test_get_instrument_by_search_string_invalid_search_value(self):
 
         # Given that a valid classifier is used but with an invalid value (should be uuid)
@@ -73,7 +65,7 @@ class TestCollectionInstrument(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel()
+        instrument = InstrumentModel(file_name='test_file')
         exercise = ExerciseModel(exercise_id='db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)

@@ -16,10 +16,12 @@ NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exerc
 
 
 @auth.login_required
+@collection_instrument_view.route('/upload/<exercise_id>', methods=['POST'])
 @collection_instrument_view.route('/upload/<exercise_id>/<ru_ref>', methods=['POST'])
-def upload_collection_instrument(exercise_id, ru_ref):
+def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files['file']
-    msg = CollectionInstrument().upload_instrument(exercise_id, ru_ref, file)
+    classifiers = request.args.get('classifiers')
+    msg = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
     return make_response(msg, 200)
 
 
@@ -42,7 +44,8 @@ def download_csv(exercise_id):
 @collection_instrument_view.route('/collectioninstrument', methods=['GET'])
 def collection_instrument_by_search_string():
     search_string = request.args.get('searchString')
-    instruments = CollectionInstrument().get_instrument_by_search_string(search_string)
+    limit = request.args.get('limit')
+    instruments = CollectionInstrument().get_instrument_by_search_string(search_string, limit)
     return make_response(jsonify(instruments), 200)
 
 

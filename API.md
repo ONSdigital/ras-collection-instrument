@@ -2,9 +2,27 @@
 
 This page documents the Collection Instrument service API endpoints.
 
-### Encrypt and upload a collection exercise
+### Encrypt and upload a collection exercise with RU
 
-* `POST /collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/test.xls` (with a file in the data of the POST)
+* `POST /collection-instrument-api/1.0.2/upload/<exercise_id>/<RU_id>` (with a file in the data of the POST)
+
+Example Response
+```
+The upload was successful
+```
+
+### Encrypt and upload a collection exercise without RU
+
+* `POST /collection-instrument-api/1.0.2/upload/<exercise_id>` (with a file in the data of the POST)
+
+Example Response
+```
+The upload was successful
+```
+
+### Encrypt and upload a collection exercise with classifiers
+
+* `POST /collection-instrument-api/1.0.2/upload/<exercise_id>?classifiers={"FORM_TYPE":%20"001"}` (with a file in the data of the POST)
 
 Example Response
 ```
@@ -13,7 +31,7 @@ The upload was successful
 
 ### Find all collection instruments associated with an exercise (CSV)
 
-* `GET /collection-instrument-api/1.0.2/download_csv/8f078c99-2843-47c6-9c57-13e5966fbc9e`
+* `GET /collection-instrument-api/1.0.2/download_csv/<exercise_id>`
 
 Example CSV Response
 ```csv
@@ -41,7 +59,7 @@ Example Response
 
 ### Get collection instrument by search string
 
-* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}`
+* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}`
 
 Example JSON Response
 ```json
@@ -58,9 +76,30 @@ Example JSON Response
   "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 }]
 ```
+
+### Get collection instrument by search string with limit
+
+* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}&limit=1`
+
+Example JSON Response
+```json
+[{
+  "classifiers": {
+    "COLLECTION_EXERCISE": [
+      "8f078c99-2843-47c6-9c57-13e5966fbc9e"
+    ],
+    "RU_REF": [
+      "test_ru_ref"
+    ]
+  },
+  "id": "7574283a-d1fd-49df-b684-d7b201e5748a",
+  "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+}]
+```
+
 ### Get collection instrument by id
 
-* `GET /collection-instrument-api/1.0.2/collectioninstrument/id/7574283a-d1fd-49df-b684-d7b201e5748a`
+* `GET /collection-instrument-api/1.0.2/collectioninstrument/id/<instrument_id>`
 
 Example JSON Response
 ```json
@@ -79,7 +118,7 @@ Example JSON Response
 ```
 ### Encrypt and upload collection instrument
 
-* `POST /survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87` (with a file in the data of the POST)
+* `POST /survey_response-api/v1/survey_responses/<instrument_id>` (with a file in the data of the POST)
 
 Example Response
 ```

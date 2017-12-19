@@ -2,12 +2,15 @@ import logging
 import os
 import structlog
 
+from alembic.config import Config
+from alembic import command
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
 from json import loads
 from retrying import RetryError
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, column, text
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.sql import exists, select
 
 from application.logger_config import logger_initial_config
 
@@ -45,17 +48,33 @@ def create_database(db_connection, db_schema):
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
 
-    # fix-up the postgres schema:
     if db_connection.startswith('postgres'):
+        logger.info(f"Creating database with uri '{db_connection}'")
         for t in models.Base.metadata.sorted_tables:
             t.schema = db_schema
 
-    logger.info(f"Creating database with uri '{db_connection}'")
-    if db_connection.startswith('postgres'):
-        logger.info(f"Creating schema {db_schema}.")
-        engine.execute(f"CREATE SCHEMA IF NOT EXISTS {db_schema}")
-    logger.info("Creating database tables.")
-    models.Base.metadata.create_all(engine)
+        schemata_exists = exists(select([column('schema_name')])
+                                 .select_from(text("information_schema.schemata"))
+                                 .where(text(f"schema_name = '{db_schema}'")))
+
+        alembic_cfg = Config("alembic.ini")
+
+        if not session().query(schemata_exists).scalar():
+            logger.info(f"Creating schema {db_schema}.")
+            engine.execute(f"CREATE SCHEMA {db_schema}")
+            logger.info("Creating database tables.")
+            models.Base.metadata.create_all(engine)
+            # If the db is created from scratch we don't need to update with alembic,
+            # however we do need to record (stamp) the latest version for future migrations
+            command.stamp(alembic_cfg, "head")
+        else:
+            logger.info("Updating database with Alembic")
+            command.upgrade(alembic_cfg, "head")
+
+    else:
+        logger.info("Creating database tables.")
+        models.Base.metadata.create_all(engine)
+
     logger.info("Ok, database tables have been created.")
     return engine
 

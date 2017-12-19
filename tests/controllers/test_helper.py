@@ -154,7 +154,7 @@ class TestHelper(unittest.TestCase):
     def test_validate_uuid(self):
 
         # Given a valid uuid
-        uuid = ['6710e50e-224b-4918-9706-c6b28f7481cd']
+        uuid = '6710e50e-224b-4918-9706-c6b28f7481cd'
 
         # When a call is made to validate_uuid
         is_valid_uuid = validate_uuid(uuid)
@@ -165,7 +165,7 @@ class TestHelper(unittest.TestCase):
     def test_validate_uuid_error(self):
 
         # Given a invalid uuid
-        uuid = ['invalid_uuid']
+        uuid = 'invalid_uuid'
 
         # When a call is made to validate_uuid
         # Then an RasError is raised

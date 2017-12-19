@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
+from sqlalchemy.dialects.postgresql.json import JSONB
 from uuid import uuid4
 
 from application.models import GUID
@@ -27,28 +28,32 @@ class InstrumentModel(Base):
     __tablename__ = 'instrument'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
+    file_name = Column(String(32))
     instrument_id = Column(GUID, index=True)
     data = Column(LargeBinary)
     len = Column(Integer)
     stamp = Column(TIMESTAMP)
     survey_id = Column(Integer, ForeignKey('survey.id'))
+    classifiers = Column(JSONB)
     survey = relationship('SurveyModel', back_populates='instruments')
 
-    classifications = relationship('ClassificationModel', back_populates='instrument')
     exercises = relationship('ExerciseModel', secondary=instrument_exercise_table, back_populates='instruments')
     businesses = relationship('BusinessModel', secondary=instrument_business_table, back_populates='instruments')
 
-    def __init__(self, data=None, length=0):
+    def __init__(self, file_name, data=None, length=0, classifiers=None):
         """Initialise the class with optionally supplied defaults"""
+        self.file_name = file_name
         self.data = data
         self.len = length
         self.stamp = datetime.now()
         self.instrument_id = uuid4()
+        self.classifiers = classifiers
 
     @property
     def json(self):
         return {
             'id': self.instrument_id,
+            'file_name': self.file_name,
             'len': self.len,
             'stamp': self.stamp,
             'survey': self.survey.survey_id,
@@ -65,10 +70,6 @@ class InstrumentModel(Base):
     def exids(self):
         return [exercise.exercise_id for exercise in self.exercises]
 
-    @property
-    def classifiers(self):
-        return [{classifier.kind: classifier.value} for classifier in self.classifications]
-
 
 class BusinessModel(Base):
     """
@@ -80,29 +81,9 @@ class BusinessModel(Base):
     ru_ref = Column(String(32), index=True)
     instruments = relationship('InstrumentModel', secondary=instrument_business_table, back_populates='businesses')
 
-    def __init__(self, ru_ref=None, items=0, status='pending'):
+    def __init__(self, ru_ref=None):
         """Initialise the class with optionally supplied defaults"""
         self.ru_ref = ru_ref
-        self.items = items
-        self.status = status
-
-
-class ClassificationModel(Base):
-    """
-    This models the 'classifier' table which keeps tracks tags against an instrument
-    """
-    __tablename__ = 'classification'
-    classifications = ('LEGAL_STATUS', 'INDUSTRY', 'SIZE', 'GEOGRAPHY')
-    id = Column(Integer, primary_key=True)
-    instrument_id = Column(Integer, ForeignKey('instrument.id'))
-    instrument = relationship('InstrumentModel', back_populates='classifications')
-    kind = Column(Enum('LEGAL_STATUS', 'INDUSTRY', 'SIZE', 'GEOGRAPHY', 'COLLECTION_EXERCISE', 'RU_REF', name='kind'))
-    value = Column(String(64))
-
-    def __init__(self, kind=None, value=None):
-        """Initialise the class with optionally supplied defaults"""
-        self.kind = kind
-        self.value = value
 
 
 class ExerciseModel(Base):
@@ -134,8 +115,6 @@ class SurveyModel(Base):
     survey_id = Column(GUID, index=True)
     instruments = relationship('InstrumentModel', back_populates='survey')
 
-    def __init__(self, survey_id=None, items=0, status='pending'):
+    def __init__(self, survey_id=None):
         """Initialise the class with optionally supplied defaults"""
         self.survey_id = survey_id
-        self.items = items
-        self.status = status
