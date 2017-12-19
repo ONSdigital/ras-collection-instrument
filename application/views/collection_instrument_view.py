@@ -1,9 +1,11 @@
 import logging
-from application.controllers.basic_auth import auth
-from application.controllers.collection_instrument import CollectionInstrument
+import structlog
+
 from flask import Blueprint
 from flask import make_response, request, jsonify
-import structlog
+
+from application.controllers.basic_auth import auth
+from application.controllers.collection_instrument import CollectionInstrument
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

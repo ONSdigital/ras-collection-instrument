@@ -1,12 +1,13 @@
 import logging
 import os
+import structlog
+
+from flask import Blueprint
+from flask import make_response, request
+from werkzeug.utils import secure_filename
 
 from application.controllers.basic_auth import auth
 from application.controllers.survey_response import SurveyResponse
-from flask import Blueprint
-from flask import make_response, request
-import structlog
-from werkzeug.utils import secure_filename
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

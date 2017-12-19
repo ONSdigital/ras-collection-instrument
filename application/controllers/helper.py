@@ -1,7 +1,8 @@
 import base64
 
-from application.exceptions import RasError
 from uuid import UUID
+
+from application.exceptions import RasError
 
 
 def is_valid_file_extension(file_name, extensions):
