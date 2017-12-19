@@ -1,10 +1,10 @@
-import requests
 import logging
+import requests
 import structlog
 
 from flask import current_app
-from application.exceptions import RasError
 
+from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

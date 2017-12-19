@@ -1,8 +1,8 @@
+import logging
 import os
+import structlog
 import time
 import uuid
-import logging
-import structlog
 
 from flask import current_app
 from sdc.rabbit.exceptions import PublishMessageError

@@ -1,12 +1,14 @@
-import os
 import logging
+import os
 import structlog
-from application.logger_config import logger_initial_config
+
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
 from retrying import RetryError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+
+from application.logger_config import logger_initial_config
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 

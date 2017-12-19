@@ -2,8 +2,8 @@ import json
 
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
 from application.exceptions import RasDatabaseError, RasError
+from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
 from tests.test_client import TestClient
 
 
