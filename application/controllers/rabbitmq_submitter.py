@@ -1,9 +1,10 @@
+import logging
 from pika import BlockingConnection, BasicProperties, URLParameters
 from pika.exceptions import AMQPError
 from application.exceptions import RasError
-from structlog import get_logger
+import structlog
 
-log = get_logger()
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 class RabbitMQSubmitter:

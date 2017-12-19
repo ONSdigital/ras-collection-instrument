@@ -76,12 +76,15 @@ def service_request(service, endpoint, search_value):
     auth = (current_app.config.get('SECURITY_USER_NAME'), current_app.config.get('SECURITY_USER_PASSWORD'))
 
     try:
-        service = current_app.config.dependency[service]
-        service_url = '{}://{}:{}/{}/{}'.format(service['scheme'], service['host'],
-                                                service['port'], endpoint, search_value)
-        log.info('Making request to {}'.format(service_url))
+        service = {
+            'survey-service': current_app.config['RM_SURVEY_SERVICE'],
+            'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_SERVICE'],
+            'case-service': current_app.config['CASE_SERVICE'],
+        }[service]
+        service_url = f'{service}/{endpoint}/{search_value}'
+        log.info(f'Making request to {service_url}')
     except KeyError:
-        raise RasError('service not configured', 500)
+        raise RasError(f"service '{service}' not configured", 500)
 
     response = requests.get(service_url, auth=auth)
     response.raise_for_status()

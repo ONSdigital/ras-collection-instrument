@@ -1,12 +1,14 @@
+import logging
+import os
+
 from application.controllers.basic_auth import auth
 from application.controllers.survey_response import SurveyResponse
 from flask import Blueprint
 from flask import make_response, request
-from structlog import get_logger
-import os
+import structlog
 from werkzeug.utils import secure_filename
 
-log = get_logger()
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 survey_responses_view = Blueprint('survey_responses_view', __name__)
 INVALID_UPLOAD = 'The upload must have valid case_id and a file attached'

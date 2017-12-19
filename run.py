@@ -24,6 +24,8 @@ def create_app():
     app.register_blueprint(collection_instrument_view, url_prefix='/collection-instrument-api/1.0.2')
     from application.views.info_view import info_view
     app.register_blueprint(info_view)
+    from application.error_handlers import error_blueprint
+    app.register_blueprint(error_blueprint)
 
     CORS(app)
     return app
@@ -42,10 +44,10 @@ def create_database(db_connection, db_schema):
         for t in models.Base.metadata.sorted_tables:
             t.schema = db_schema
 
-    logger.info("Creating database with uri '{db_connection}'")
+    logger.info(f"Creating database with uri '{db_connection}'")
     if db_connection.startswith('postgres'):
-        logger.info("Creating schema {db_schema}.")
-        engine.execute("CREATE SCHEMA IF NOT EXISTS {db_schema}")
+        logger.info(f"Creating schema {db_schema}.")
+        engine.execute(f"CREATE SCHEMA IF NOT EXISTS {db_schema}")
     logger.info("Creating database tables.")
     models.Base.metadata.create_all(engine)
     logger.info("Ok, database tables have been created.")
@@ -54,8 +56,8 @@ def create_database(db_connection, db_schema):
 
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
-    app.db = create_database(app.config['RAS_COLLECTION_INSTRUMENT_DATABASE_URI'],
-                             app.config['RAS_COLLECTION_INSTRUMENT_DATABASE_SCHEMA'])
+    app.db = create_database(app.config['DATABASE_URI'],
+                             app.config['DATABASE_SCHEMA'])
 
 
 if __name__ == '__main__':
