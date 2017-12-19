@@ -4,11 +4,13 @@ import uuid
 import logging
 import structlog
 
-from application.controllers.helper import is_valid_file_extension, is_valid_file_name_length, \
-    convert_file_object_to_string_base64
-from application.controllers.json_encrypter import Encrypter
-from application.controllers.rabbitmq_submitter import RabbitMQSubmitter
 from flask import current_app
+from sdc.rabbit.exceptions import PublishMessageError
+from sdc.rabbit.publisher import QueuePublisher
+
+from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
+                                            convert_file_object_to_string_base64)
+from application.controllers.json_encrypter import Encrypter
 from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -80,12 +82,14 @@ class SurveyResponse(object):
 
         log.info('Getting environmental details for rabbit')
         rabbitmq_amqp = current_app.config.get('RABBITMQ_AMQP')
-        rabbit_mq = RabbitMQSubmitter(rabbitmq_amqp)
-
-        if rabbit_mq.send_message(encrypted_message, QUEUE_NAME, tx_id):
-            log.info('Collection instrument successfully send to rabbitmq with tx_id {}'.format(tx_id))
+        publisher = QueuePublisher([rabbitmq_amqp], QUEUE_NAME)
+        try:
+            publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
+                                      immediate=False, mandatory=True)
+            log.info('Collection instrument successfully send to rabbitmq with tx_id {}'
+                     .format(tx_id))
             return True
-        else:
+        except PublishMessageError:
             return False
 
     @staticmethod

@@ -1,7 +1,7 @@
 import logging
 import structlog
 from application.logger_config import logger_initial_config
-import os
+
 from flask_testing import TestCase
 from run import create_app, initialise_db
 

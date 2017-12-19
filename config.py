@@ -26,22 +26,22 @@ class Config(object):
     CASE_SERVICE_HOST = os.getenv('CASE_SERVICE_HOST', 'localhost')
     CASE_SERVICE_PORT = os.getenv('CASE_SERVICE_PORT', 8171)
     CASE_SERVICE = '{}://{}:{}'.format(CASE_SERVICE_PROTOCOL,
-                                        CASE_SERVICE_HOST,
-                                        CASE_SERVICE_PORT)
+                                       CASE_SERVICE_HOST,
+                                       CASE_SERVICE_PORT)
 
     COLLECTION_EXERCISE_PROTOCOL = os.getenv('COLLECTION_EXERCISE_PROTOCOL', 'http')
     COLLECTION_EXERCISE_HOST = os.getenv('COLLECTION_EXERCISE_HOST', 'localhost')
     COLLECTION_EXERCISE_PORT = os.getenv('COLLECTION_EXERCISE_PORT', 8145)
     COLLECTION_EXERCISE_SERVICE = '{}://{}:{}'.format(COLLECTION_EXERCISE_PROTOCOL,
-                                                       COLLECTION_EXERCISE_HOST,
-                                                       COLLECTION_EXERCISE_PORT)
+                                                      COLLECTION_EXERCISE_HOST,
+                                                      COLLECTION_EXERCISE_PORT)
 
     RM_SURVEY_SERVICE_PROTOCOL = os.getenv('RM_SURVEY_SERVICE_PROTOCOL', 'http')
     RM_SURVEY_SERVICE_HOST = os.getenv('RM_SURVEY_SERVICE_HOST', 'localhost')
     RM_SURVEY_SERVICE_PORT = os.getenv('RM_SURVEY_SERVICE_PORT', 8080)
     RM_SURVEY_SERVICE = '{}://{}:{}'.format(RM_SURVEY_SERVICE_PROTOCOL,
-                                             RM_SURVEY_SERVICE_HOST,
-                                             RM_SURVEY_SERVICE_PORT)
+                                            RM_SURVEY_SERVICE_HOST,
+                                            RM_SURVEY_SERVICE_PORT)
 
 
 class DevelopmentConfig(Config):

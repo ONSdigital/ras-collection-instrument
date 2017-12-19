@@ -5,6 +5,7 @@ from six import BytesIO
 from tests.test_client import TestClient
 from requests.models import Response
 from unittest.mock import patch, Mock
+from sdc.rabbit.publisher import PublishMessageError
 
 
 class TestSurveyResponseView(TestClient):
@@ -30,7 +31,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -63,7 +64,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
             with self.assertLogs(level='INFO') as cm:
                 # When that file is post to the survey response end point
                 self.client.post(
@@ -84,7 +85,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -116,7 +117,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -144,7 +145,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service]),\
-                patch('application.controllers.survey_response.RabbitMQSubmitter'):
+                patch('application.controllers.survey_response.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -205,7 +206,7 @@ class TestSurveyResponseView(TestClient):
         self.assertStatus(response, 400)
         self.assertEquals(response.data.decode(), FILE_NAME_LENGTH_ERROR)
 
-    def test_add_survey_response_rabbit_failure(self):
+    def test_add_survey_response_rabbit_exception(self):
         # Given a file with mocked services and failing rabbitmq
         data = dict(file=(BytesIO(b'upload_test'), 'upload_test.xls'))
 
@@ -223,17 +224,19 @@ class TestSurveyResponseView(TestClient):
         mock_survey_service._content = b'{"surveyRef": "123456"}'
 
         rabbit = Mock()
-        rabbit.send_message = Mock(return_value=False)
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
         with patch('application.controllers.service_helper.service_request',
-                   side_effect=[mock_case_service, mock_collection_service, mock_survey_service]), \
-                patch('application.controllers.survey_response.RabbitMQSubmitter', return_value=rabbit):
+                   side_effect=[mock_case_service, mock_collection_service,
+                                mock_survey_service]), \
+            patch('application.controllers.survey_response.QueuePublisher',
+                  return_value=rabbit):
             # When that file is post to the survey response end point
             response = self.client.post(
-                '/survey_response-api/v1/survey_responses/{case_id}'.
-                format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+                '/survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
                 data=data,
-                content_type='multipart/form-data')
+                content_type='multipart/form-data'
+            )
 
             # Then the file does not upload successfully
             self.assertStatus(response, 500)
