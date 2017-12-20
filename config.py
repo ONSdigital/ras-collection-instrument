@@ -19,6 +19,8 @@ class Config(object):
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'test_user_password')
     RABBITMQ_AMQP = 'rabbit_amqp'
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
+    COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
+                                           'application/schemas/collection_instrument_schema.json')
 
     if cf.detected:
         DATABASE_SCHEMA = 'ras_ci'

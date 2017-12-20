@@ -12,8 +12,8 @@ from run import create_app, initialise_db
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 app = create_app()
-with open(app.config['DATABASE_SCHEMA']) as io:
-    app.config['DATABASE_SCHEMA'] = loads(io.read())
+with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
+    app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
 
 logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
 
