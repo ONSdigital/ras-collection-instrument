@@ -4,6 +4,7 @@ import structlog
 
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
+from json import loads
 from retrying import RetryError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -67,6 +68,9 @@ def initialise_db(app):
 
 if __name__ == '__main__':
     app = create_app()
+    with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
+        app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
+
     logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
 
     try:

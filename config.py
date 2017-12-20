@@ -1,5 +1,10 @@
 import os
 
+from application.cloud.cloudfoundry import ONSCloudFoundry
+
+
+cf = ONSCloudFoundry()
+
 
 class Config(object):
     NAME = os.getenv('RAS-COLLECTION-INSTRUMENT', 'ras-collection-instrument')
@@ -14,13 +19,19 @@ class Config(object):
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'test_user_password')
     RABBITMQ_AMQP = 'rabbit_amqp'
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
+    COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
+                                           'application/schemas/collection_instrument_schema.json')
+
+    if cf.detected:
+        DATABASE_SCHEMA = 'ras_ci'
+        DATABASE_URI = cf.db.credentials['uri']
+    else:
+        DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
+        DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///ras-ci')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
     # dependencies
-
-    DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
-    DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///ras-ci')
 
     CASE_SERVICE_PROTOCOL = os.getenv('CASE_SERVICE_PROTOCOL', 'http')
     CASE_SERVICE_HOST = os.getenv('CASE_SERVICE_HOST', 'localhost')

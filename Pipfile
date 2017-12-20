@@ -12,6 +12,7 @@ python_version = "3.6"
 
 [packages]
 
+cfenv = "==0.5.3"
 ras_common_utils = "==1.0.2"
 flask = "==0.12.2"
 flask_Cors = "==3.0.3"
