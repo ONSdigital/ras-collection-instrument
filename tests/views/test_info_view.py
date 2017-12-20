@@ -1,4 +1,5 @@
 from tests.test_client import TestClient
+from unittest.mock import patch, mock_open
 
 
 class TestInfoView(TestClient):
@@ -6,10 +7,13 @@ class TestInfoView(TestClient):
 
     def test_info(self):
 
-        # Given the application is running
-        # When a get is made to the info end point
-        response = self.client.get('/info')
+        # Given the application is running and the git path is mocked
+        with patch('os.path.exists', return_value=True),\
+             patch("builtins.open", mock_open(read_data='{\"origin\": \"test\"}')):
+                # When a call to the info end point is made
+                response = self.client.get('/info')
 
-        # Then the info returns a 200
-        self.assertStatus(response, 200)
-        self.assertIn('ras-collection-instrument', response.data.decode())
+                # Then it returns details from git and the app
+                self.assertIn('origin', response.data.decode())
+                self.assertIn('name', response.data.decode())
+                self.assertIn('version', response.data.decode())
