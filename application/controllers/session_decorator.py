@@ -1,10 +1,12 @@
-from functools import wraps
+import logging
+import structlog
 
 from flask import current_app
-from ras_common_utils.ras_error.ras_error import RasDatabaseError, RasError
-from structlog import get_logger
+from functools import wraps
 
-log = get_logger()
+from application.exceptions import RasDatabaseError, RasError
+
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 def with_db_session(f):

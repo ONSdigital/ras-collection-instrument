@@ -1,7 +1,8 @@
 import base64
 
-from ras_common_utils.ras_error.ras_error import RasError
 from uuid import UUID
+
+from application.exceptions import RasError
 
 
 def is_valid_file_extension(file_name, extensions):
@@ -11,7 +12,7 @@ def is_valid_file_extension(file_name, extensions):
     :param extensions: The list of extensions that are valid
     :return: boolean
     """
-    return file_name.endswith(tuple(extensions.split(",")))
+    return file_name.endswith(tuple(ext.strip() for ext in extensions.split(",")))
 
 
 def is_valid_file_name_length(file_name, length):

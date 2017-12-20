@@ -1,11 +1,23 @@
-from .associations import instrument_exercise_table, instrument_business_table
 from datetime import datetime
-from ras_common_utils.ras_database.base import Base
-from ras_common_utils.ras_database.guid import GUID
-from sqlalchemy import Column, Integer, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
 from uuid import uuid4
+
+from application.models import GUID
+
+
+Base = declarative_base()
+
+
+instrument_exercise_table = Table('instrument_exercise', Base.metadata,
+                                  Column('instrument_id', Integer, ForeignKey('instrument.id')),
+                                  Column('exercise_id', Integer, ForeignKey('exercise.id')))
+
+instrument_business_table = Table('instrument_business', Base.metadata,
+                                  Column('instrument_id', Integer, ForeignKey('instrument.id')),
+                                  Column('business_id', Integer, ForeignKey('business.id')))
 
 
 class InstrumentModel(Base):

@@ -1,10 +1,13 @@
-from application.controllers.basic_auth import auth
-from application.controllers.collection_instrument import CollectionInstrument
+import logging
+import structlog
+
 from flask import Blueprint
 from flask import make_response, request, jsonify
-from structlog import get_logger
 
-log = get_logger()
+from application.controllers.basic_auth import auth
+from application.controllers.collection_instrument import CollectionInstrument
+
+log = structlog.wrap_logger(logging.getLogger(__name__))
 
 collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 

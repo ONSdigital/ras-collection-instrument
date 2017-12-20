@@ -1,21 +1,20 @@
+import logging
+import structlog
+
 from flask_testing import TestCase
-from ras_common_utils.ras_config import ras_config
-from ras_common_utils.ras_logger.ras_logger import configure_logger
-from run import create_app, initialise_db
-import os
+
+from application.logger_config import logger_initial_config
+from run import create_app, create_database
+
+logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 class TestClient(TestCase):
 
     @staticmethod
     def create_app():
-        config_path = 'config/config.yaml'
-        config = ras_config.from_yaml_file(config_path)
-        app = create_app(config)
-        configure_logger(app.config)
-        initialise_db(app)
+        app = create_app()
+        logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
+        app.config.from_object('config.TestingConfig')
+        app.db = create_database(app.config['DATABASE_URI'], app.config['DATABASE_SCHEMA'])
         return app
-
-    @staticmethod
-    def tearDown():
-        os.remove('ras-ci')
