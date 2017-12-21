@@ -17,7 +17,7 @@ class Config(object):
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'test_user_name')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'test_user_password')
-    RABBITMQ_AMQP = 'rabbit_amqp'
+    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'rabbit_amqp')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
