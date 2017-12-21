@@ -21,6 +21,25 @@ Example CSV Response
 "1","test_ru_ref","999","2017-10-13 11:25:27.020468"
 ```
 
+### Download a collection instrument
+
+* `GET /collection-instrument-api/1.0.2/download/adc8dcc1-c35f-4caf-8f5d-93e6287d4872`
+
+Example File Returned
+```
+adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx
+```
+
+### Get the size of a collection instrumnet
+
+* `GET /collection-instrument-api/1.0.2/instrument_size/adc8dcc1-c35f-4caf-8f5d-93e6287d4872`
+
+Example Response
+```
+52224
+```
+
+
 ### Get collection instrument by search string
 
 * `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}`
