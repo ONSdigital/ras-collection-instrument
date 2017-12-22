@@ -30,7 +30,7 @@ Example File Returned
 adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx
 ```
 
-### Get the size of a collection instrumnet
+### Get the size of a collection instrument
 
 * `GET /collection-instrument-api/1.0.2/instrument_size/adc8dcc1-c35f-4caf-8f5d-93e6287d4872`
 
@@ -38,7 +38,6 @@ Example Response
 ```
 52224
 ```
-
 
 ### Get collection instrument by search string
 
@@ -82,7 +81,7 @@ Example JSON Response
 
 * `POST /survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87` (with a file in the data of the POST)
 
-Example  Response
+Example Response
 ```
 Upload successful
 ```
