@@ -15,8 +15,8 @@ class Config(object):
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
-    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'test_user_name')
-    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'test_user_password')
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
     RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'rabbit_amqp')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
@@ -63,8 +63,8 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     DEBUG = True
     LOGGING_LEVEL = 'ERROR'
-    SECURITY_USER_NAME = 'test_user_name'
-    SECURITY_USER_PASSWORD = 'test_user_password'
+    SECURITY_USER_NAME = 'admin'
+    SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = "sqlite:///:memory:"
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
