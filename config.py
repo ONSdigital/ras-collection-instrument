@@ -27,7 +27,7 @@ class Config(object):
         DATABASE_URI = cf.db.credentials['uri']
     else:
         DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
-        DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///ras-ci')
+        DATABASE_URI = os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
