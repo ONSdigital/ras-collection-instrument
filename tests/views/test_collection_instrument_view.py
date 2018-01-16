@@ -258,6 +258,32 @@ class TestCollectionInstrumentView(TestClient):
             'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
         }
 
+    def test_instrument_by_search_string_ru_missing_auth_details(self):
+
+        # Given an instrument which is in the db
+        self.add_instrument_data()
+        # When the collection instrument end point is called without auth details
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}')
+
+        # Then a 401 unauthorised is return
+        self.assertStatus(response, 401)
+
+    def test_instrument_by_search_string_ru_incorrect_auth_details(self):
+
+        # Given a file and incorrect auth details
+        self.add_instrument_data()
+        auth = "{}:{}".format('incorrect_user_name', 'incorrect_password').encode('utf-8')
+        header = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
+
+        # When the collection instrument end point is called with incorrect auth details
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}',
+            headers=header)
+
+        # Then a 401 unauthorised is return
+        self.assertStatus(response, 401)
+
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):

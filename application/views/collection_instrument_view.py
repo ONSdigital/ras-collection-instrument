@@ -15,7 +15,12 @@ COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
 
 
+@collection_instrument_view.before_request
 @auth.login_required
+def before_collection_instrument_view():
+    pass
+
+
 @collection_instrument_view.route('/upload/<exercise_id>', methods=['POST'])
 @collection_instrument_view.route('/upload/<exercise_id>/<ru_ref>', methods=['POST'])
 def upload_collection_instrument(exercise_id, ru_ref=None):
@@ -25,7 +30,6 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
     return make_response(msg, 200)
 
 
-@auth.login_required
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])
 def download_csv(exercise_id):
     csv = CollectionInstrument().get_instruments_by_exercise_id_csv(exercise_id)
@@ -40,7 +44,6 @@ def download_csv(exercise_id):
     return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
 
 
-@auth.login_required
 @collection_instrument_view.route('/collectioninstrument', methods=['GET'])
 def collection_instrument_by_search_string():
     search_string = request.args.get('searchString')
@@ -49,7 +52,6 @@ def collection_instrument_by_search_string():
     return make_response(jsonify(instruments), 200)
 
 
-@auth.login_required
 @collection_instrument_view.route('/collectioninstrument/id/<instrument_id>', methods=['GET'])
 def collection_instrument_by_id(instrument_id):
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
@@ -60,7 +62,6 @@ def collection_instrument_by_id(instrument_id):
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
 
 
-@auth.login_required
 @collection_instrument_view.route('/download/<instrument_id>', methods=['GET'])
 def instrument_data(instrument_id):
     data, ru_ref = CollectionInstrument().get_instrument_data(instrument_id)
@@ -75,7 +76,6 @@ def instrument_data(instrument_id):
     return response
 
 
-@auth.login_required
 @collection_instrument_view.route('/instrument_size/<instrument_id>', methods=['GET'])
 def instrument_size(instrument_id):
     instrument = CollectionInstrument().get_instrument_json(instrument_id)
