@@ -68,10 +68,12 @@ Example JSON Response
     "COLLECTION_EXERCISE": [
       "8f078c99-2843-47c6-9c57-13e5966fbc9e"
     ],
+    "FORM_TYPE": "001",
     "RU_REF": [
       "test_ru_ref"
     ]
   },
+  "file_name": "file_name",
   "id": "7574283a-d1fd-49df-b684-d7b201e5748a",
   "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 }]
@@ -92,6 +94,7 @@ Example JSON Response
       "test_ru_ref"
     ]
   },
+  "file_name": "file_name",
   "id": "7574283a-d1fd-49df-b684-d7b201e5748a",
   "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 }]
@@ -112,6 +115,7 @@ Example JSON Response
       "test_ru_ref"
     ]
   },
+  "file_name": "file_name",
   "id": "7574283a-d1fd-49df-b684-d7b201e5748a",
   "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 }
