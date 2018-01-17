@@ -71,7 +71,7 @@ def to_str(bytes_or_str):
     return value
 
 
-def validate_uuid(values):
+def validate_uuid(*values):
     """
     validate value is a uuid
     :param values: array of values to check

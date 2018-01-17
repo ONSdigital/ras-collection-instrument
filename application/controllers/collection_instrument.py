@@ -2,30 +2,28 @@ import logging
 import structlog
 
 from json import loads
-
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
-from application.exceptions import RasError
-from application.models.models import BusinessModel, ClassificationModel, ExerciseModel, InstrumentModel, SurveyModel
+from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel
+
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 UPLOAD_SUCCESSFUL = 'The upload was successful'
-INVALID_CLASSIFIER = "{} is an invalid classifier, you can't search on it"
-DEFAULT_SURVEY_ID = 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
 
 
 class CollectionInstrument(object):
 
     @with_db_session
-    def get_instrument_by_search_string(self, search_string=None, session=None):
+    def get_instrument_by_search_string(self, search_string=None, limit=None, session=None):
         """
         Get Instrument from the db using the search string passed
         :param search_string: Classifiers to filter on
+        :param limit: the amount of records to return
         :param session: database session
         :return: matching records
         """
@@ -37,72 +35,127 @@ class CollectionInstrument(object):
         else:
             json_search_parameters = {}
 
-        results = self._get_instruments_by_classifier(json_search_parameters, session)
+        results = self._get_instruments_by_classifier(json_search_parameters, limit, session)
+
         instruments = []
         for result in results:
+
             query = session.query(InstrumentModel).get(result.id)
-            classifiers = {'RU_REF': [], 'COLLECTION_EXERCISE': []}
+            classifiers = query.classifiers or {}
+            ru = {'RU_REF': []}
+            collection_exercise = {'COLLECTION_EXERCISE': []}
+
             for business in query.businesses:
-                classifiers['RU_REF'].append(business.ru_ref)
+                ru['RU_REF'].append(business.ru_ref)
+
             for exercise in query.exercises:
-                classifiers['COLLECTION_EXERCISE'].append(exercise.exercise_id)
+                collection_exercise['COLLECTION_EXERCISE'].append(exercise.exercise_id)
+
             result = {
                 'id': query.instrument_id,
-                'classifiers': classifiers,
+                'file_name': query.file_name,
+                'classifiers': {**classifiers, **ru, **collection_exercise},
                 'surveyId': query.survey.survey_id
             }
             instruments.append(result)
         return instruments
 
-    @staticmethod
     @with_db_session
-    def upload_instrument(exercise_id, ru_ref, file, survey_id=DEFAULT_SURVEY_ID, session=None):
+    def upload_instrument(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
         """
         Encrypt and upload a collection instrument to the db
         :param exercise_id: An exercise id (UUID)
         :param ru_ref: The name of the file we're receiving
+        :param classifiers: Classifiers associated with the instrument
         :param file: A file object from which we can read the file contents
-        :param survey_id: The survey identifier (UUID)
         :param session: database session
-        :return Returns 'UPLOAD_SUCCESSFUL' if the upload completed
+        :return 'UPLOAD_SUCCESSFUL' if the upload completed
         """
 
-        log.info('Upload Ru-Ref: {}'.format(ru_ref))
+        log.info('Upload exercise: {}'.format(exercise_id))
 
-        validate_uuid([exercise_id, survey_id])
+        validate_uuid(exercise_id)
+        instrument = self._create_instrument(file)
 
-        file_contents = file.read()
-        file_size = len(file_contents)
-        classifier = ClassificationModel(kind='SIZE', value=file_size)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+        instrument.exercises.append(exercise)
+
+        survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
+        instrument.survey = survey
+
+        if ru_ref:
+            business = self._find_or_create_business(ru_ref, session)
+            instrument.businesses.append(business)
+
+        if classifiers:
+            instrument.classifiers = loads(classifiers)
+
+        session.add(instrument)
+        return UPLOAD_SUCCESSFUL
+
+    @staticmethod
+    def _find_or_create_survey_from_exercise_id(exercise_id, session):
+        """
+        Makes a request to the collection exercise service for the survey ID,
+        reuses the survey if it exists in this service or create if it doesn't
+        :param exercise_id: An exercise id (UUID)
+        :param session: database session
+        :return survey
+        """
+        response = service_request(service='collectionexercise-service',
+                                   endpoint='collectionexercises',
+                                   search_value=exercise_id)
+        survey_id = response.json().get('surveyId')
+
+        survey = query_survey_by_id(survey_id, session)
+        if not survey:
+            log.info('creating survey: {}'.format(survey_id))
+            survey = SurveyModel(survey_id=survey_id)
+        return survey
+
+    @staticmethod
+    def _find_or_create_exercise(exercise_id, session):
+        """
+        Creates a exercise in the db if it doesn't exist, or reuses if it does
+        :param exercise_id: An exercise id (UUID)
+        :param session: database session
+        :return exercise
+        """
 
         exercise = query_exercise_by_id(exercise_id, session)
         if not exercise:
+            log.info('creating exercise: {}'.format(exercise_id))
             exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+        return exercise
 
+    @staticmethod
+    def _find_or_create_business(ru_ref, session):
+        """
+        Creates a business in the db if it doesn't exist, or reuses if it does
+        :param ru_ref: The name of the file we're receiving
+        :param session: database session
+        :return  business
+        """
         business = query_business_by_ru(ru_ref, session)
         if not business:
+            log.info('creating business: {}'.format(ru_ref))
             business = BusinessModel(ru_ref=ru_ref)
+        return business
 
+    @staticmethod
+    def _create_instrument(file):
+        """
+        Creates a Instrument with an encrypted version of the file
+        :param file: A file object from which we can read the file contents
+        :return instrument
+        """
+        log.info('creating instrument')
+        file_contents = file.read()
+        file_size = len(file_contents)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
-        instrument = InstrumentModel(length=file_size, data=encrypted_file)
-        instrument.exercises.append(exercise)
-        instrument.businesses.append(business)
-        instrument.classifications.append(classifier)
-
-        survey = query_survey_by_id(survey_id, session)
-
-        if not survey:
-            response = service_request(service='collectionexercise-service',
-                                       endpoint='collectionexercises',
-                                       search_value=exercise_id)
-            survey_id = response.json().get('surveyId')
-            survey = SurveyModel(survey_id=survey_id)
-            session.add(survey)
-
-        instrument.survey = survey
-        session.add(instrument)
-        return UPLOAD_SUCCESSFUL
+        instrument = InstrumentModel(file_name=file.filename, length=file_size, data=encrypted_file)
+        return instrument
 
     @staticmethod
     @with_db_session
@@ -115,7 +168,7 @@ class CollectionInstrument(object):
         """
         log.info('Getting csv for instruments using exercise id {}'.format(exercise_id))
 
-        validate_uuid([exercise_id])
+        validate_uuid(exercise_id)
         csv_format = '"{count}","{ru_ref}","{length}","{date_stamp}"\n'
         count = 1
         csv = csv_format.format(count='Count',
@@ -177,14 +230,15 @@ class CollectionInstrument(object):
         :return: instrument
         """
         log.info('Searching for instrument using id {}'.format(instrument_id))
-        validate_uuid([instrument_id])
+        validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
         return instrument
 
-    def _get_instruments_by_classifier(self, json_search_parameters, session):
+    def _get_instruments_by_classifier(self, json_search_parameters, limit, session):
         """
         Search collection instrument by classifiers.
         :param json_search_parameters: dict of (key, value) pairs to search on
+        :param limit: the amount of records to return
         :param session: database session
         :return: query results
         """
@@ -198,7 +252,13 @@ class CollectionInstrument(object):
                 query = query.filter(ExerciseModel.exercise_id == value)
             elif classifier == 'SURVEY_ID':
                 query = query.filter(SurveyModel.survey_id == value)
-        return query.all()
+            else:
+                query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
+        result = query.order_by(InstrumentModel.stamp.desc())
+
+        if limit:
+            return result.limit(limit)
+        return result.all()
 
     @staticmethod
     def _build_model_joins(json_search_parameters, session):
@@ -216,15 +276,10 @@ class CollectionInstrument(object):
             if classifier == 'RU_REF' and BusinessModel not in already_joined:
                 query = query.join((BusinessModel, InstrumentModel.businesses))
                 already_joined.append(BusinessModel)
-
             elif classifier == 'COLLECTION_EXERCISE' and ExerciseModel not in already_joined:
                 query = query.join((ExerciseModel, InstrumentModel.exercises))
                 already_joined.append(ExerciseModel)
-
             elif classifier == 'SURVEY_ID' and SurveyModel not in already_joined:
                 query = query.join(SurveyModel, InstrumentModel.survey)
                 already_joined.append(SurveyModel)
-            else:
-                raise RasError(INVALID_CLASSIFIER.format(classifier), 500)
-
         return query

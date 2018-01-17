@@ -65,6 +65,6 @@ class TestingConfig(Config):
     LOGGING_LEVEL = 'ERROR'
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
-    DATABASE_URI = "sqlite:///:memory:"
+    DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
