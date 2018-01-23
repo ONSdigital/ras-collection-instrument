@@ -18,7 +18,12 @@ UPLOAD_SUCCESSFUL = 'Upload successful'
 UPLOAD_UNSUCCESSFUL = 'Upload failed'
 
 
+@survey_responses_view.before_request
 @auth.login_required
+def before_survey_responses_view():
+    pass
+
+
 @survey_responses_view.route('/survey_responses/<case_id>', methods=['POST'])
 def add_survey_response(case_id):
 

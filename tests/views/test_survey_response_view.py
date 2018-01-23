@@ -1,6 +1,9 @@
+import base64
+
 from application.views.survey_responses_view import UPLOAD_SUCCESSFUL, UPLOAD_UNSUCCESSFUL
 from application.views.survey_responses_view import INVALID_UPLOAD, MISSING_DATA
 from application.controllers.survey_response import FILE_EXTENSION_ERROR, FILE_NAME_LENGTH_ERROR
+from flask import current_app
 from six import BytesIO
 from tests.test_client import TestClient
 from requests.models import Response
@@ -38,6 +41,7 @@ class TestSurveyResponseView(TestClient):
                 '/survey_response-api/v1/survey_responses/{case_id}'.
                 format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
                 data=data,
+                headers=self.get_auth_headers(),
                 content_type='multipart/form-data')
 
             # Then the file uploads successfully
@@ -71,6 +75,7 @@ class TestSurveyResponseView(TestClient):
                     '/survey_response-api/v1/survey_responses/{case_id}'.
                     format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
                     data=data,
+                    headers=self.get_auth_headers(),
                     content_type='multipart/form-data')
 
                 self.assertTrue('survey_id:123456' in cm[1][4])
@@ -92,6 +97,7 @@ class TestSurveyResponseView(TestClient):
                 '/survey_response-api/v1/survey_responses/{case_id}'.
                 format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
                 data=data,
+                headers=self.get_auth_headers(),
                 content_type='multipart/form-data')
 
             # Then the the missing data response is returned
@@ -124,6 +130,7 @@ class TestSurveyResponseView(TestClient):
                 '/survey_response-api/v1/survey_responses/{case_id}'.
                 format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
                 data=data,
+                headers=self.get_auth_headers(),
                 content_type='multipart/form-data')
 
             # Then the the missing data response is returned
@@ -152,6 +159,7 @@ class TestSurveyResponseView(TestClient):
                 '/survey_response-api/v1/survey_responses/{case_id}'.
                 format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
                 data=data,
+                headers=self.get_auth_headers(),
                 content_type='multipart/form-data')
 
             # Then the the missing data response is returned
@@ -168,6 +176,7 @@ class TestSurveyResponseView(TestClient):
             '/survey_response-api/v1/survey_responses/{case_id}'.
             format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
             data=data,
+            headers=self.get_auth_headers(),
             content_type='multipart/form-data')
 
         # Then an invalid upload is returned
@@ -184,6 +193,7 @@ class TestSurveyResponseView(TestClient):
             '/survey_response-api/v1/survey_responses/{case_id}'.
             format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
             data=data,
+            headers=self.get_auth_headers(),
             content_type='multipart/form-data')
 
         # Then the file uploads successfully
@@ -200,6 +210,7 @@ class TestSurveyResponseView(TestClient):
             '/survey_response-api/v1/survey_responses/{case_id}'.
             format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
             data=data,
+            headers=self.get_auth_headers(),
             content_type='multipart/form-data')
 
         # Then the file uploads successfully
@@ -235,9 +246,51 @@ class TestSurveyResponseView(TestClient):
             response = self.client.post(
                 '/survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
                 data=data,
+                headers=self.get_auth_headers(),
                 content_type='multipart/form-data'
             )
 
             # Then the file does not upload successfully
             self.assertStatus(response, 500)
             self.assertEquals(response.data.decode(), UPLOAD_UNSUCCESSFUL)
+
+    def test_add_survey_response_missing_auth_details(self):
+
+        # Given a file
+        data = dict(file=(BytesIO(b'upload_test'), 'upload_test.xls'))
+
+        # When that file is post to the survey response end point without the auth header
+        response = self.client.post(
+            '/survey_response-api/v1/survey_responses/{case_id}'.
+            format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+            data=data,
+            content_type='multipart/form-data')
+
+        # Then a 401 unauthorised is return
+        self.assertStatus(response, 401)
+
+    def test_add_survey_response_incorrect_auth_details(self):
+
+        # Given a file and incorrect auth details
+        data = dict(file=(BytesIO(b'upload_test'), 'upload_test.xls'))
+        auth = "{}:{}".format('incorrect_user_name', 'incorrect_password').encode('utf-8')
+        header = {'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")}
+
+        # When that file is post to the survey response end point
+        response = self.client.post(
+            '/survey_response-api/v1/survey_responses/{case_id}'.
+            format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+            data=data,
+            headers=header,
+            content_type='multipart/form-data')
+
+        # Then a 401 unauthorised is return
+        self.assertStatus(response, 401)
+
+    @staticmethod
+    def get_auth_headers():
+        auth = "{}:{}".format(current_app.config.get('SECURITY_USER_NAME'),
+                              current_app.config.get('SECURITY_USER_PASSWORD')).encode('utf-8')
+        return {
+            'Authorization': 'Basic %s' % base64.b64encode(bytes(auth)).decode("ascii")
+        }
