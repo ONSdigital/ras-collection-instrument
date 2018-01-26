@@ -166,7 +166,7 @@ class CollectionInstrument(object):
         :param session: database session
         :return: collection instruments in csv
         """
-        log.info('Getting csv for instruments using exercise id', exercise_id=exercise_id)
+        log.info('Getting csv for instruments', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         csv_format = '"{count}","{ru_ref}","{length}","{date_stamp}"\n'
@@ -216,7 +216,7 @@ class CollectionInstrument(object):
         data = None
         ru_ref = None
         if instrument:
-            log.info('Decrypting collection instrument data for', instrument_id=instrument_id)
+            log.info('Decrypting collection instrument data', instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.data)
             ru_ref = instrument.businesses[0].ru_ref
@@ -229,7 +229,7 @@ class CollectionInstrument(object):
         :param instrument_id: The id of the instrument we want
         :return: instrument
         """
-        log.info('Searching for instrument using id', instrument_id=instrument_id)
+        log.info('Searching for instrument', instrument_id=instrument_id)
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
         return instrument

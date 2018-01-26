@@ -23,7 +23,7 @@ def get_case_group(case_id):
         case = response.json()
         case_group = case.get('caseGroup')
     else:
-        log.error("Case not found for", case_id=case_id)
+        log.error("Case not found", case_id=case_id)
     return case_group
 
 
@@ -42,7 +42,7 @@ def get_collection_exercise(collection_exercise_id):
     if response.status_code == 200:
         collection_exercise = response.json()
     else:
-        log.info('Collection Exercise not found for', collection_exercise_id=collection_exercise_id)
+        log.info('Collection Exercise not found', collection_exercise_id=collection_exercise_id)
     return collection_exercise
 
 
