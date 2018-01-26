@@ -72,7 +72,7 @@ class CollectionInstrument(object):
         :return 'UPLOAD_SUCCESSFUL' if the upload completed
         """
 
-        log.info('Upload exercise: ', exercise_id=exercise_id.format)
+        log.info('Upload exercise', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         instrument = self._create_instrument(file)
@@ -109,7 +109,7 @@ class CollectionInstrument(object):
 
         survey = query_survey_by_id(survey_id, session)
         if not survey:
-            log.info('creating survey: ', survey_id=survey_id)
+            log.info('creating survey', survey_id=survey_id)
             survey = SurveyModel(survey_id=survey_id)
         return survey
 
@@ -124,7 +124,7 @@ class CollectionInstrument(object):
 
         exercise = query_exercise_by_id(exercise_id, session)
         if not exercise:
-            log.info('creating exercise: ', exercise_id=exercise_id)
+            log.info('creating exercise', exercise_id=exercise_id)
             exercise = ExerciseModel(exercise_id=exercise_id, items=1)
         return exercise
 
@@ -138,7 +138,7 @@ class CollectionInstrument(object):
         """
         business = query_business_by_ru(ru_ref, session)
         if not business:
-            log.info('creating business: ', ru_ref=ru_ref)
+            log.info('creating business', ru_ref=ru_ref)
             business = BusinessModel(ru_ref=ru_ref)
         return business
 
@@ -166,7 +166,7 @@ class CollectionInstrument(object):
         :param session: database session
         :return: collection instruments in csv
         """
-        log.info('Getting csv for instruments using exercise id: ', exercise_id=exercise_id)
+        log.info('Getting csv for instruments using exercise id', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         csv_format = '"{count}","{ru_ref}","{length}","{date_stamp}"\n'
@@ -216,7 +216,7 @@ class CollectionInstrument(object):
         data = None
         ru_ref = None
         if instrument:
-            log.info('Decrypting collection instrument data for: ', instrument_id=instrument_id)
+            log.info('Decrypting collection instrument data for', instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.data)
             ru_ref = instrument.businesses[0].ru_ref
@@ -229,7 +229,7 @@ class CollectionInstrument(object):
         :param instrument_id: The id of the instrument we want
         :return: instrument
         """
-        log.info('Searching for instrument using id: ', instrument_id=instrument_id)
+        log.info('Searching for instrument using id', instrument_id=instrument_id)
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
         return instrument
