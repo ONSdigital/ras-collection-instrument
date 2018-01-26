@@ -7,8 +7,9 @@ from alembic import command
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
 from json import loads
-from retrying import RetryError
+from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text
+from sqlalchemy.exc import ProgrammingError, DatabaseError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import exists, select
 
@@ -79,6 +80,12 @@ def create_database(db_connection, db_schema):
     return engine
 
 
+def retry_if_database_error(exception):
+    logger.error(exception)
+    return isinstance(exception, DatabaseError) and not isinstance(exception, ProgrammingError)
+
+
+@retry(retry_on_exception=retry_if_database_error, wait_fixed=2000, stop_max_delay=30000, wrap_exception=True)
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
     app.db = create_database(app.config['DATABASE_URI'],
