@@ -12,4 +12,4 @@ class ONSCloudFoundry(object):
 
     @property
     def db(self):
-        return self._cf_env.get_service(label='rds')
+        return self._cf_env.get_service(name='ras-ci-db')
