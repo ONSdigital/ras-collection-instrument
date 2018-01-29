@@ -54,7 +54,7 @@ class CollectionInstrument(object):
                 'id': instrument.instrument_id,
                 'file_name': instrument.file_name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
-                'surveyId': instrument.survey.survey_id
+                'surveyId': [instrument.survey.survey_id]
             }
             result.append(instrument_json)
         return result
