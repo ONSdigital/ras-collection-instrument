@@ -61,7 +61,7 @@ def create_database(db_connection, db_schema):
         alembic_cfg = Config("alembic.ini")
 
         if not session().query(schemata_exists).scalar():
-            logger.info(f"Creating schema {db_schema}.")
+            logger.info("Creating schema ", db_schema=db_schema)
             engine.execute(f"CREATE SCHEMA {db_schema}")
             logger.info("Creating database tables.")
             models.Base.metadata.create_all(engine)
