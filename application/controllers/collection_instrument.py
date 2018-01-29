@@ -35,30 +35,29 @@ class CollectionInstrument(object):
         else:
             json_search_parameters = {}
 
-        results = self._get_instruments_by_classifier(json_search_parameters, limit, session)
+        instruments = self._get_instruments_by_classifier(json_search_parameters, limit, session)
 
-        instruments = []
-        for result in results:
+        result = []
+        for instrument in instruments:
 
-            query = session.query(InstrumentModel).get(result.id)
-            classifiers = query.classifiers or {}
+            classifiers = instrument.classifiers or {}
             ru = {'RU_REF': []}
             collection_exercise = {'COLLECTION_EXERCISE': []}
 
-            for business in query.businesses:
+            for business in instrument.businesses:
                 ru['RU_REF'].append(business.ru_ref)
 
-            for exercise in query.exercises:
+            for exercise in instrument.exercises:
                 collection_exercise['COLLECTION_EXERCISE'].append(exercise.exercise_id)
 
-            result = {
-                'id': query.instrument_id,
-                'file_name': query.file_name,
+            instrument_json = {
+                'id': instrument.instrument_id,
+                'file_name': instrument.file_name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
-                'surveyId': query.survey.survey_id
+                'surveyId': instrument.survey.survey_id
             }
-            instruments.append(result)
-        return instruments
+            result.append(instrument_json)
+        return result
 
     @with_db_session
     def upload_instrument(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
