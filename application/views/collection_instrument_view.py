@@ -68,7 +68,7 @@ def instrument_data(instrument_id):
 
     if data and file_name:
         response = make_response(data, 200)
-        response.headers["Content-Disposition"] = "attachment; filename={}.xlsx".format(file_name)
+        response.headers["Content-Disposition"] = "attachment; filename={}".format(file_name)
         response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     else:
         response = make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
