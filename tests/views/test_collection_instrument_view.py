@@ -77,8 +77,8 @@ class TestCollectionInstrumentView(TestClient):
 
             # Then the response contains the correct data
             self.assertStatus(response, 200)
-            self.assertIn('"Count","RU Code","Length","Time Stamp"', response.data.decode())
-            self.assertIn('"1","test_ru_ref","999"', response.data.decode())
+            self.assertIn('"Count","File Name","Length","Time Stamp"', response.data.decode())
+            self.assertIn('"1","file_name","999"', response.data.decode())
 
     def test_get_instrument_by_search_string_ru(self):
 
