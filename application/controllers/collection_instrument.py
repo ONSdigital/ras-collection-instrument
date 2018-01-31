@@ -168,10 +168,10 @@ class CollectionInstrument(object):
         log.info('Getting csv for instruments', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-        csv_format = '"{count}","{ru_ref}","{length}","{date_stamp}"\n'
+        csv_format = '"{count}","{file_name}","{length}","{date_stamp}"\n'
         count = 1
         csv = csv_format.format(count='Count',
-                                ru_ref='RU Code',
+                                file_name='File Name',
                                 length='Length',
                                 date_stamp='Time Stamp')
         exercise = query_exercise_by_id(exercise_id, session)
@@ -180,12 +180,11 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-            for business in instrument.businesses:
-                csv += csv_format.format(count=count,
-                                         ru_ref=business.ru_ref,
-                                         length=instrument.len,
-                                         date_stamp=instrument.stamp)
-                count += 1
+            csv += csv_format.format(count=count,
+                                     file_name=instrument.file_name,
+                                     length=instrument.len,
+                                     date_stamp=instrument.stamp)
+            count += 1
         return csv
 
     @staticmethod
@@ -207,19 +206,19 @@ class CollectionInstrument(object):
         """
         Get the instrument data from the db using the id
         :param instrument_id: The id of the instrument we want
-        :return: data and ru_ref
+        :return: data and file_name
         """
 
         instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
 
         data = None
-        ru_ref = None
+        file_name = None
         if instrument:
             log.info('Decrypting collection instrument data', instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.data)
-            ru_ref = instrument.businesses[0].ru_ref
-        return data, ru_ref
+            file_name = instrument.file_name
+        return data, file_name
 
     @staticmethod
     def get_instrument_by_id(instrument_id, session):

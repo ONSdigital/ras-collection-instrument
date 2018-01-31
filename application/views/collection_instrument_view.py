@@ -64,11 +64,11 @@ def collection_instrument_by_id(instrument_id):
 
 @collection_instrument_view.route('/download/<instrument_id>', methods=['GET'])
 def instrument_data(instrument_id):
-    data, ru_ref = CollectionInstrument().get_instrument_data(instrument_id)
+    data, file_name = CollectionInstrument().get_instrument_data(instrument_id)
 
-    if data and ru_ref:
+    if data and file_name:
         response = make_response(data, 200)
-        response.headers["Content-Disposition"] = "attachment; filename={}.xlsx".format(ru_ref)
+        response.headers["Content-Disposition"] = "attachment; filename={}".format(file_name)
         response.headers["Content-type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     else:
         response = make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
