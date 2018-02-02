@@ -5,6 +5,8 @@ pipeline {
         pollSCM('* * * * *')
     }
 
+    stages {
+
         stage('dev') {
             agent {
                 docker {
