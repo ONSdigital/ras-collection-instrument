@@ -5,24 +5,6 @@ pipeline {
         pollSCM('* * * * *')
     }
 
-    stages {
-        stage('build') {
-            agent {
-                docker {
-                    image 'kennethreitz/pipenv:latest'
-                    args '-u root'
-                }
-
-            }
-            steps {
-                git(url: 'https://github.com/ONSdigital/ras-collection-instrument.git')
-                sh 'pipenv install --dev --deploy'
-                sh 'pipenv check'
-                sh 'pipenv run flake8 .'
-                sh 'pipenv run py.test --cov=application --cov-report html --cov-report term-missing []'
-            }
-        }
-
         stage('dev') {
             agent {
                 docker {
