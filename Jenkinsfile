@@ -18,7 +18,8 @@ pipeline {
                 git(url: 'https://github.com/ONSdigital/ras-collection-instrument.git')
                 sh 'pipenv install --dev --deploy'
                 sh 'pipenv check'
-                sh 'pipenv run tox'
+                sh 'flake8 .'
+                sh 'py.test --cov=application --cov-report html --cov-report term-missing []'
             }
         }
 
