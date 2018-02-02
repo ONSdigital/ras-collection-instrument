@@ -10,6 +10,7 @@ pipeline {
             agent {
                 docker {
                     image 'kennethreitz/pipenv:latest'
+                    args '-u root'
                 }
 
             }
