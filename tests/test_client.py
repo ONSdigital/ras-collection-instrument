@@ -4,7 +4,6 @@ import structlog
 from flask_testing import TestCase
 
 from application.logger_config import logger_initial_config
-from application.models import models
 from run import create_app, create_database
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
