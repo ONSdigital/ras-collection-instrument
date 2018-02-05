@@ -29,15 +29,12 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_NAME ${env.DEV_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_PASSWORD ${env.DEV_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_HOST casesvc-dev.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_HOST collectionexercisesvc-dev.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_HOST surveysvc-dev.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-dev'
@@ -87,15 +84,12 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_NAME ${env.CI_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_PASSWORD ${env.CI_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_HOST casesvc-ci.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_HOST collectionexercisesvc-ci.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_HOST surveysvc-ci.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-ci'
@@ -145,15 +139,12 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_NAME ${env.TEST_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_PASSWORD ${env.TEST_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-test CASE_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-test CASE_SERVICE_HOST casesvc-test.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-test CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_HOST collectionexertestsesvc-test.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_PROTOCOL https"
                 sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_HOST surveysvc-test.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-test'
