@@ -22,29 +22,27 @@ pipeline {
                 CF_USER = credentials('CF_USER')
             }
             steps {
-
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s dev"
-                sh 'cf push --no-start ras-collection-instrument-dev-jenkins'
-                sh 'cf set-env ras-collection-instrument-dev-jenkins ONS_ENV dev'
-                sh 'cf set-env ras-collection-instrument-dev-jenkins RABBITMQ_AMQP CHANGEME'
-                sh "cf set-env ras-collection-instrument-dev-jenkins SECURITY_USER_NAME ${env.DEV_SECURITY_USR}"
-                sh "cf set-env ras-collection-instrument-dev-jenkins SECURITY_USER_PASSWORD ${env.DEV_SECURITY_PSW}"
+                sh 'cf push --no-start ras-collection-instrument-dev'
+                sh 'cf set-env ras-collection-instrument-dev ONS_ENV dev'
+                sh 'cf set-env ras-collection-instrument-dev RABBITMQ_AMQP CHANGEME'
+                sh "cf set-env ras-collection-instrument-dev SECURITY_USER_NAME ${env.DEV_SECURITY_USR}"
+                sh "cf set-env ras-collection-instrument-dev SECURITY_USER_PASSWORD ${env.DEV_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-dev-jenkins CASE_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-dev-jenkins CASE_SERVICE_HOST casesvc-dev.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-dev-jenkins CASE_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_HOST casesvc-dev.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-dev CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-dev-jenkins COLLECTION_EXERCISE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-dev-jenkins COLLECTION_EXERCISE_HOST collectionexercisesvc-dev.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-dev-jenkins COLLECTION_EXERCISE_PORT 80"
+                sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_HOST collectionexercisesvc-dev.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-dev-jenkins RM_SURVEY_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-dev-jenkins RM_SURVEY_SERVICE_HOST surveysvc-dev.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-dev-jenkins RM_SURVEY_SERVICE_PORT 80"
-                sh 'cf start ras-collection-instrument-dev-jenkins'
+                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_HOST surveysvc-dev.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_PORT 80"
+                sh 'cf start ras-collection-instrument-dev'
             }
         }
-
 
         stage('ci?') {
             agent none
@@ -83,24 +81,24 @@ pipeline {
             }
             steps {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s ci"
-                sh 'cf push --no-start ras-collection-instrument-ci-jenkins'
-                sh 'cf set-env ras-collection-instrument-ci-jenkins ONS_ENV ci'
-                sh 'cf set-env ras-collection-instrument-ci-jenkins RABBITMQ_AMQP CHANGEME'
-                sh "cf set-env ras-collection-instrument-ci-jenkins SECURITY_USER_NAME ${env.CI_SECURITY_USR}"
-                sh "cf set-env ras-collection-instrument-ci-jenkins SECURITY_USER_PASSWORD ${env.CI_SECURITY_PSW}"
+                sh 'cf push --no-start ras-collection-instrument-ci'
+                sh 'cf set-env ras-collection-instrument-ci ONS_ENV ci'
+                sh 'cf set-env ras-collection-instrument-ci RABBITMQ_AMQP CHANGEME'
+                sh "cf set-env ras-collection-instrument-ci SECURITY_USER_NAME ${env.CI_SECURITY_USR}"
+                sh "cf set-env ras-collection-instrument-ci SECURITY_USER_PASSWORD ${env.CI_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-ci-jenkins CASE_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-ci-jenkins CASE_SERVICE_HOST casesvc-ci.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-ci-jenkins CASE_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_HOST casesvc-ci.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-ci CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-ci-jenkins COLLECTION_EXERCISE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-ci-jenkins COLLECTION_EXERCISE_HOST collectionexercisesvc-ci.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-ci-jenkins COLLECTION_EXERCISE_PORT 80"
+                sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_HOST collectionexercisesvc-ci.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-ci-jenkins RM_SURVEY_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-ci-jenkins RM_SURVEY_SERVICE_HOST surveysvc-ci.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-ci-jenkins RM_SURVEY_SERVICE_PORT 80"
-                sh 'cf start ras-collection-instrument-ci-jenkins'
+                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_HOST surveysvc-ci.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_PORT 80"
+                sh 'cf start ras-collection-instrument-ci'
             }
         }
 
@@ -141,24 +139,24 @@ pipeline {
             }
             steps {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s test"
-                sh 'cf push --no-start ras-collection-instrument-test-jenkins'
-                sh 'cf set-env ras-collection-instrument-test-jenkins ONS_ENV test'
-                sh 'cf set-env ras-collection-instrument-test-jenkins RABBITMQ_AMQP CHANGEME'
-                sh "cf set-env ras-collection-instrument-test-jenkins SECURITY_USER_NAME ${env.TEST_SECURITY_USR}"
-                sh "cf set-env ras-collection-instrument-test-jenkins SECURITY_USER_PASSWORD ${env.TEST_SECURITY_PSW}"
+                sh 'cf push --no-start ras-collection-instrument-test'
+                sh 'cf set-env ras-collection-instrument-test ONS_ENV test'
+                sh 'cf set-env ras-collection-instrument-test RABBITMQ_AMQP CHANGEME'
+                sh "cf set-env ras-collection-instrument-test SECURITY_USER_NAME ${env.TEST_SECURITY_USR}"
+                sh "cf set-env ras-collection-instrument-test SECURITY_USER_PASSWORD ${env.TEST_SECURITY_PSW}"
 
-                sh "cf set-env ras-collection-instrument-test-jenkins CASE_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-test-jenkins CASE_SERVICE_HOST casesvc-test.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-test-jenkins CASE_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-test CASE_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-test CASE_SERVICE_HOST casesvc-test.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-test CASE_SERVICE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-test-jenkins COLLECTION_EXERCISE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-test-jenkins COLLECTION_EXERCISE_HOST collectionexertestsesvc-test.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-test-jenkins COLLECTION_EXERCISE_PORT 80"
+                sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_HOST collectionexertestsesvc-test.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-test-jenkins RM_SURVEY_SERVICE_PROTOCOL https"
-                sh "cf set-env ras-collection-instrument-test-jenkins RM_SURVEY_SERVICE_HOST surveysvc-test.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-test-jenkins RM_SURVEY_SERVICE_PORT 80"
-                sh 'cf start ras-collection-instrument-test-jenkins'
+                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_PROTOCOL https"
+                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_HOST surveysvc-test.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_PORT 80"
+                sh 'cf start ras-collection-instrument-test'
             }
         }
     }
