@@ -16,6 +16,11 @@ from application.views.collection_instrument_view import (
 from tests.test_client import TestClient
 
 
+@with_db_session
+def collection_instruments(session):
+    return session.query(InstrumentModel).all()
+
+
 class TestCollectionInstrumentView(TestClient):
     """ Collection Instrument view unit tests"""
 
@@ -43,6 +48,8 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 200)
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
+        self.assertEqual(len(collection_instruments()), 2)
+
     def test_collection_instrument_upload_with_ru(self):
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
@@ -63,6 +70,8 @@ class TestCollectionInstrumentView(TestClient):
         # Then the file uploads successfully
         self.assertStatus(response, 200)
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
 
     def test_collection_instrument_upload_rabbit_exception(self):
         # Given an upload file and a patched survey_id response
@@ -89,6 +98,8 @@ class TestCollectionInstrumentView(TestClient):
         # Then the file does not upload successfully
         self.assertStatus(response, 500)
         self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
+        self.assertEqual(len(collection_instruments()), 1)
 
     def test_download_exercise_csv(self):
 
