@@ -13,6 +13,7 @@ collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 
 COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
+UPLOAD_SUCCESSFUL = 'The upload was successful'
 
 
 @collection_instrument_view.before_request
@@ -26,8 +27,8 @@ def before_collection_instrument_view():
 def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files['file']
     classifiers = request.args.get('classifiers')
-    msg = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
-    return make_response(msg, 200)
+    CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])

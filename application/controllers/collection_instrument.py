@@ -1,19 +1,22 @@
 import logging
 import structlog
+import uuid
 
 from json import loads
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
+from application.controllers.rabbit_helper import send_message_to_rabbitmq
 from application.controllers.service_helper import service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
+from application.exceptions import RasError
 from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel
 
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
-UPLOAD_SUCCESSFUL = 'The upload was successful'
+RABBIT_QUEUE_NAME = 'Seft.Instruments'
 
 
 class CollectionInstrument(object):
@@ -90,7 +93,20 @@ class CollectionInstrument(object):
             instrument.classifiers = loads(classifiers)
 
         session.add(instrument)
-        return UPLOAD_SUCCESSFUL
+        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
+        return instrument
+
+    @staticmethod
+    def publish_uploaded_collection_instrument(exercise_id, instrument_id):
+        log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
+
+        tx_id = str(uuid.uuid4())
+        json_message = {
+            'exercise_id': exercise_id,
+            'instrument_id': instrument_id
+        }
+        return send_message_to_rabbitmq(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
 
     @staticmethod
     def _find_or_create_survey_from_exercise_id(exercise_id, session):
