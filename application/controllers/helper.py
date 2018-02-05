@@ -28,7 +28,7 @@ def is_valid_file_name_length(file_name, length):
 def convert_file_object_to_string_base64(file):
     """
     Convert a file object to a string
-    :param file: The file to conver
+    :param file: The file to convert
     :return: String
     """
     return base64.b64encode(file).decode()

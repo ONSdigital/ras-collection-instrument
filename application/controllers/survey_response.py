@@ -1,23 +1,20 @@
 import logging
-import os
 import structlog
 import time
 import uuid
 
 from flask import current_app
-from sdc.rabbit.exceptions import PublishMessageError
-from sdc.rabbit.publisher import QueuePublisher
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
-from application.controllers.json_encrypter import Encrypter
+from application.controllers.rabbit_helper import send_message_to_rabbitmq
 from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls or .xlsx format'
 FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'
-QUEUE_NAME = 'Seft.Responses'
+RABBIT_QUEUE_NAME = 'Seft.Responses'
 
 
 class SurveyResponse(object):
@@ -35,31 +32,28 @@ class SurveyResponse(object):
         """
 
         tx_id = str(uuid.uuid4())
-        log.info('Adding survey response file {} for case {} survey {} with tx_id {}'.format(file, case_id,
-                                                                                             survey_ref, tx_id))
+        log.info('Adding survey response file', filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
 
         file_contents = file.read()
         json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
-        encrypted_message = self._encrypt_message(json_message)
-        return self._send_message_to_rabbitmq(encrypted_message, tx_id)
+        return send_message_to_rabbitmq(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=True)
 
     @staticmethod
     def _create_json_message_for_file(generated_file_name, file, case_id, survey_ref):
         """
-          Create json message from file
-          :param generated_file_name: The generated file name
-          :param file: The file uploaded
-          :param case_id: The case UUID
-          :param survey_ref : The survey reference e.g 134 MWSS
-          :return: Returns json message
-          ..note:: the confusing use of survey_id and survey ref . collection_exercise returns uses survey_id as a
-          guid which is the guid as defined in the survey_service . The survey service holds a survey_ref
-          which is a 3 character string holding defining an integer which other (older) services refer to as survey_id
-          therefore when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
+        Create json message from file
+        :param generated_file_name: The generated file name
+        :param file: The file uploaded
+        :param case_id: The case UUID
+        :param survey_ref : The survey reference e.g 134 MWSS
+        :return: Returns json message
+        ..note:: the confusing use of survey_id and survey_ref. collection_exercise returns uses survey_id as a
+            GUID, which is the GUID as defined in the survey_service. The survey service holds a survey_ref,
+            a 3 character string holding defining an integer, which other (older) services refer to as survey_id.
+            Therefore, when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
         """
 
-        log.info('Creating json message filename:{0} case_id:{1} survey_id:{2}'.format(generated_file_name, case_id,
-                                                                                       survey_ref))
+        log.info('Creating json message', filename=generated_file_name, case_id=case_id, survey_id=survey_ref)
         file_as_string = convert_file_object_to_string_base64(file)
 
         message_json = {
@@ -72,33 +66,12 @@ class SurveyResponse(object):
         return message_json
 
     @staticmethod
-    def _send_message_to_rabbitmq(encrypted_message, tx_id):
-        """
-          Get details from environment credentials and send to rabbitmq
-          :param encrypted_message: The encrypted message
-          :param tx_id: The transaction id
-          :return: Returns status code and message
-        """
-
-        log.info('Getting environmental details for rabbit')
-        rabbitmq_amqp = current_app.config.get('RABBITMQ_AMQP')
-        publisher = QueuePublisher([rabbitmq_amqp], QUEUE_NAME)
-        try:
-            publisher.publish_message(encrypted_message, headers={"tx_id": tx_id},
-                                      immediate=False, mandatory=True)
-            log.info('Collection instrument successfully send to rabbitmq with tx_id {}'
-                     .format(tx_id))
-            return True
-        except PublishMessageError:
-            return False
-
-    @staticmethod
     def is_valid_file(file_name, file_extension):
         """
         Check a file is valid
         :param file_name: The file_name to check
         :param file_extension: The file extension
-        :return: boolean
+        :return: (boolean, String)
         """
 
         log.info('Checking if file is valid')
@@ -113,19 +86,6 @@ class SurveyResponse(object):
 
         return True, ""
 
-    @staticmethod
-    def _encrypt_message(message_json):
-        """
-        encrypt the JSON message
-        :param message_json: The file in json format
-        :return: a jwe
-        """
-
-        log.info('Encrypting json')
-        json_secret_keys = os.getenv('JSON_SECRET_KEYS')
-        encrypter = Encrypter(json_secret_keys)
-        return encrypter.encrypt(message_json)
-
     def get_file_name_and_survey_ref(self, case_id, file_extension):
         """
         Generate the file name for the upload, if an external service can't find the relevant information
@@ -139,7 +99,7 @@ class SurveyResponse(object):
             survey which returns it as surveyRef which is the 3 digit id that other services refer to as survey_id
         """
 
-        log.info('Generating file name for {case_id}'.format(case_id=case_id))
+        log.info('Generating file name', case_id=case_id)
 
         case_group = get_case_group(case_id)
         if not case_group:
@@ -169,7 +129,7 @@ class SurveyResponse(object):
                                                                          time_date_stamp=time_date_stamp,
                                                                          file_format=file_extension)
 
-        log.info('Generated file name for upload. file name is: {}'.format(file_name))
+        log.info('Generated file name for upload', filename=file_name)
 
         return file_name, survey_ref
 

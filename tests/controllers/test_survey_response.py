@@ -33,7 +33,7 @@ class TestSurveyResponse(TestClient):
             service = Mock()
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
-            with patch('application.controllers.survey_response.QueuePublisher'):
+            with patch('application.controllers.rabbit_helper.QueuePublisher'):
                 status = self.survey_response.add_survey_response(case_id, file, filename, '023')
 
         # Then the file uploads successfully
