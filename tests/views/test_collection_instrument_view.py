@@ -17,7 +17,7 @@ from tests.test_client import TestClient
 
 
 @with_db_session
-def collection_instruments(session):
+def collection_instruments(session=None):
     return session.query(InstrumentModel).all()
 
 
