@@ -147,7 +147,7 @@ pipeline {
 
             }
             when {
-                environment name: 'deploy_test', value: 'yes'
+                environment name: 'do_release', value: 'yes'
             }
 
             environment {
