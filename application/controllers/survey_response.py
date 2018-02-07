@@ -6,7 +6,7 @@ import uuid
 
 from flask import current_app
 from sdc.rabbit.exceptions import PublishMessageError
-from sdc.rabbit.publisher import QueuePublisher
+from sdc.rabbit import QueuePublisher
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
