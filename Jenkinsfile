@@ -26,7 +26,7 @@ pipeline {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s dev"
                 sh 'cf push --no-start ras-collection-instrument-dev'
                 sh 'cf set-env ras-collection-instrument-dev ONS_ENV dev'
-                sh 'cf set-env ras-collection-instrument-dev RABBITMQ_AMQP ${env.RABBITMQ_AMQP}'
+                sh "cf set-env ras-collection-instrument-dev RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_NAME ${env.DEV_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_PASSWORD ${env.DEV_SECURITY_PSW}"
 
