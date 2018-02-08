@@ -82,7 +82,7 @@ pipeline {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s ci"
                 sh 'cf push --no-start ras-collection-instrument-ci'
                 sh 'cf set-env ras-collection-instrument-ci ONS_ENV ci'
-                sh 'cf set-env ras-collection-instrument-ci RABBITMQ_AMQP ${env.RABBITMQ_AMQP}'
+                sh "cf set-env ras-collection-instrument-ci RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_NAME ${env.CI_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_PASSWORD ${env.CI_SECURITY_PSW}"
 
@@ -161,7 +161,7 @@ pipeline {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s test"
                 sh 'cf push --no-start ras-collection-instrument-test'
                 sh 'cf set-env ras-collection-instrument-test ONS_ENV test'
-                sh 'cf set-env ras-collection-instrument-test RABBITMQ_AMQP ${env.RABBITMQ_AMQP}'
+                sh "cf set-env ras-collection-instrument-test RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_NAME ${env.TEST_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_PASSWORD ${env.TEST_SECURITY_PSW}"
 
