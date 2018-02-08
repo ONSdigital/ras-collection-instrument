@@ -12,7 +12,7 @@ from application.controllers.json_encrypter import Encrypter
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def encrypt_message(message_json):
+def _encrypt_message(message_json):
     """
     Encrypts a JSON message
     :param message_json: The file in JSON format
@@ -24,7 +24,7 @@ def encrypt_message(message_json):
     return encrypter.encrypt(message_json)
 
 
-def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exchange=False):
+def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exchange=False):
     """
     Get details from environment credentials and send message to rabbitmq
     :param message: The message to send to the queue in JSON format
@@ -37,7 +37,7 @@ def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_excha
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher_type = ExchangePublisher if use_exchange else QueuePublisher
     publisher = publisher_type([rabbitmq_amqp], queue_name)
-    message = encrypt_message(message) if encrypt else message
+    message = _encrypt_message(message) if encrypt else message
     try:
         result = publisher.publish_message(message, headers={"tx_id": tx_id}, immediate=False, mandatory=True)
         log.info('Message successfully sent to rabbitmq', tx_id=tx_id, queue=queue_name)
@@ -47,5 +47,5 @@ def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_excha
         return False
 
 
-send_message_to_rabbitmq_queue = functools.partial(send_message_to_rabbitmq, use_exchange=False)
-send_message_to_rabbitmq_exchange = functools.partial(send_message_to_rabbitmq, use_exchange=True)
+send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, use_exchange=False)
+send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, use_exchange=True)
