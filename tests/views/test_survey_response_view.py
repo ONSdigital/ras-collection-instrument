@@ -1,14 +1,15 @@
 import base64
+from unittest.mock import patch, Mock
+
+from flask import current_app
+from six import BytesIO
+from requests.models import Response
+from sdc.rabbit.exceptions import PublishMessageError
 
 from application.views.survey_responses_view import UPLOAD_SUCCESSFUL, UPLOAD_UNSUCCESSFUL
 from application.views.survey_responses_view import INVALID_UPLOAD, MISSING_DATA
 from application.controllers.survey_response import FILE_EXTENSION_ERROR, FILE_NAME_LENGTH_ERROR
-from flask import current_app
-from six import BytesIO
 from tests.test_client import TestClient
-from requests.models import Response
-from unittest.mock import patch, Mock
-from sdc.rabbit.publisher import PublishMessageError
 
 
 class TestSurveyResponseView(TestClient):

@@ -14,6 +14,7 @@ class Config(object):
     PORT = os.getenv('PORT', 8002)
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
+    JSON_SECRET_KEYS = os.getenv('JSON_SECRET_KEYS')
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
@@ -66,5 +67,7 @@ class TestingConfig(Config):
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
+    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
+    JSON_SECRET_KEYS = open("./tests/files/keys.json").read()

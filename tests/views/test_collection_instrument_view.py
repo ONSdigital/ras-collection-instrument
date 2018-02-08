@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 
 from flask import current_app
 from requests.models import Response
-from sdc.rabbit.publisher import PublishMessageError
+from sdc.rabbit.exceptions import PublishMessageError
 from six import BytesIO
 
 from application.controllers.cryptographer import Cryptographer
@@ -35,7 +35,7 @@ class TestCollectionInstrumentView(TestClient):
         data = {'file': (BytesIO(b'test data'), 'test.xls')}
 
         with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('application.controllers.rabbit_helper.QueuePublisher'):
+                patch('pika.BlockingConnection'):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
@@ -58,7 +58,7 @@ class TestCollectionInstrumentView(TestClient):
         data = {'file': (BytesIO(b'test data'), 'test.xls')}
 
         with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('application.controllers.rabbit_helper.QueuePublisher'):
+                patch('pika.BlockingConnection'):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/9999'
@@ -84,7 +84,7 @@ class TestCollectionInstrumentView(TestClient):
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
         with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('application.controllers.rabbit_helper.QueuePublisher', return_value=rabbit):
+                patch('application.controllers.rabbit_helper.ExchangePublisher', return_value=rabbit):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'

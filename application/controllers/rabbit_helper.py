@@ -1,10 +1,10 @@
+import functools
 import logging
-import os
 import structlog
 
 from flask import current_app
 from sdc.rabbit.exceptions import PublishMessageError
-from sdc.rabbit.publisher import QueuePublisher
+from sdc.rabbit import ExchangePublisher, QueuePublisher
 
 from application.controllers.json_encrypter import Encrypter
 
@@ -19,12 +19,12 @@ def encrypt_message(message_json):
     :return: jwe as String
     """
     log.info('Encrypting JSON message')
-    json_secret_keys = os.getenv('JSON_SECRET_KEYS')
+    json_secret_keys = current_app.config['JSON_SECRET_KEYS']
     encrypter = Encrypter(json_secret_keys)
     return encrypter.encrypt(message_json)
 
 
-def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True):
+def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exchange=False):
     """
     Get details from environment credentials and send message to rabbitmq
     :param message: The message to send to the queue in JSON format
@@ -34,13 +34,18 @@ def send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True):
     :return: boolean
     """
     rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
-    publisher = QueuePublisher([rabbitmq_amqp], queue_name)
+    log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
+    publisher_type = ExchangePublisher if use_exchange else QueuePublisher
+    publisher = publisher_type([rabbitmq_amqp], queue_name)
     message = encrypt_message(message) if encrypt else message
     try:
-        publisher.publish_message(message, headers={"tx_id": tx_id},
-                                  immediate=False, mandatory=True)
+        result = publisher.publish_message(message, headers={"tx_id": tx_id}, immediate=False, mandatory=True)
         log.info('Message successfully sent to rabbitmq', tx_id=tx_id, queue=queue_name)
-        return True
+        return result
     except PublishMessageError:
-        log.error('Message failed to send to rabbitmq', tx_id=tx_id)
+        log.exception('Message failed to send to rabbitmq', tx_id=tx_id)
         return False
+
+
+send_message_to_rabbitmq_queue = functools.partial(send_message_to_rabbitmq, use_exchange=False)
+send_message_to_rabbitmq_exchange = functools.partial(send_message_to_rabbitmq, use_exchange=True)
