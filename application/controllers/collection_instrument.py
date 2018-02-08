@@ -2,7 +2,7 @@ import logging
 import structlog
 import uuid
 
-from json import loads
+from json import dumps, loads
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.rabbit_helper import send_message_to_rabbitmq_exchange
@@ -108,11 +108,11 @@ class CollectionInstrument(object):
         log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
 
         tx_id = str(uuid.uuid4())
-        json_message = {
+        json_message = dumps({
             'exercise_id': str(exercise_id),
             'instrument_id': str(instrument_id)
-        }
-        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME)
+        })
+        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
 
     @staticmethod
     def _find_or_create_survey_from_exercise_id(exercise_id, session):
