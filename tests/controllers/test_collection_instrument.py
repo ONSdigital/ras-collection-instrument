@@ -76,7 +76,7 @@ class TestCollectionInstrument(TestClient):
         rabbit = Mock()
         rabbit._connect = Mock(side_effect=AMQPConnectionError)
 
-        with patch('application.controllers.rabbit_helper.ExchangePublisher', return_value=rabbit):
+        with patch('application.controllers.rabbit_helper.DurableExchangePublisher', return_value=rabbit):
             result = self.collection_instrument.initialise_messaging()
 
         self.assertFalse(result)
@@ -100,7 +100,7 @@ class TestCollectionInstrument(TestClient):
         rabbit = Mock()
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
-        with patch('application.controllers.rabbit_helper.ExchangePublisher', return_value=rabbit):
+        with patch('application.controllers.rabbit_helper.DurableExchangePublisher', return_value=rabbit):
             result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
         # Then the message is not successfully published

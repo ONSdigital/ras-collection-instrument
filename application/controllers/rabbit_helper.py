@@ -5,7 +5,7 @@ import structlog
 from flask import current_app
 from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
-from sdc.rabbit import ExchangePublisher, QueuePublisher
+from sdc.rabbit import DurableExchangePublisher, QueuePublisher
 
 from application.controllers.json_encrypter import Encrypter
 
@@ -25,16 +25,15 @@ def _encrypt_message(message_json):
     return encrypter.encrypt(message_json)
 
 
-def _initialise_rabbitmq(queue_name, use_exchange=False):
+def _initialise_rabbitmq(queue_name, publisher_type=QueuePublisher):
     """
     Initialise a rabbit queue or exchange is created ahead of use
     :param queue_name: The rabbit queue or exchange to initialise
-    :param use_exchange: Flag whether a fan-out exchange should be used
+    :param publisher_type: Publisher class from sdc-rabbit to use
     :return: boolean
     """
     rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
-    publisher_type = ExchangePublisher if use_exchange else QueuePublisher
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     try:
         # NB: _connect declares a queue or exchange
@@ -46,19 +45,18 @@ def _initialise_rabbitmq(queue_name, use_exchange=False):
         return False
 
 
-def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exchange=False):
+def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, publisher_type=QueuePublisher):
     """
     Send message to rabbitmq
     :param message: The message to send to the queue in JSON format
     :param tx_id: The transaction ID for the message
     :param queue_name: The rabbit queue or exchange to publish to
     :param encrypt: Flag whether message should be encrypted before publication
-    :param use_exchange: Flag whether a fan-out exchange should be used
+    :param publisher_type: Publisher class from sdc-rabbit to use
     :return: boolean
     """
     rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
-    publisher_type = ExchangePublisher if use_exchange else QueuePublisher
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     message = _encrypt_message(message) if encrypt else message
     try:
@@ -70,7 +68,7 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exch
         return False
 
 
-initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, use_exchange=False)
-initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, use_exchange=True)
-send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, use_exchange=False)
-send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, use_exchange=True)
+initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher)
+initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher)
+send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher)
+send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, publisher_type=DurableExchangePublisher) # NOQA
