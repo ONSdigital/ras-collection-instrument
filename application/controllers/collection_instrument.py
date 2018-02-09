@@ -109,6 +109,7 @@ class CollectionInstrument(object):
 
         tx_id = str(uuid.uuid4())
         json_message = dumps({
+            'action': 'ADD',
             'exercise_id': str(exercise_id),
             'instrument_id': str(instrument_id)
         })
