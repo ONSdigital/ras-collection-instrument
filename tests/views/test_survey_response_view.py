@@ -1,14 +1,15 @@
 import base64
+from unittest.mock import patch, Mock
+
+from flask import current_app
+from six import BytesIO
+from requests.models import Response
+from sdc.rabbit.exceptions import PublishMessageError
 
 from application.views.survey_responses_view import UPLOAD_SUCCESSFUL, UPLOAD_UNSUCCESSFUL
 from application.views.survey_responses_view import INVALID_UPLOAD, MISSING_DATA
 from application.controllers.survey_response import FILE_EXTENSION_ERROR, FILE_NAME_LENGTH_ERROR
-from flask import current_app
-from six import BytesIO
 from tests.test_client import TestClient
-from requests.models import Response
-from unittest.mock import patch, Mock
-from sdc.rabbit.publisher import PublishMessageError
 
 
 class TestSurveyResponseView(TestClient):
@@ -34,7 +35,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.QueuePublisher'):
+                patch('application.controllers.rabbit_helper.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -68,7 +69,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.QueuePublisher'):
+                patch('application.controllers.rabbit_helper.QueuePublisher'):
             with self.assertLogs(level='INFO') as cm:
                 # When that file is post to the survey response end point
                 self.client.post(
@@ -78,7 +79,7 @@ class TestSurveyResponseView(TestClient):
                     headers=self.get_auth_headers(),
                     content_type='multipart/form-data')
 
-                self.assertTrue('survey_id:123456' in cm[1][4])
+                self.assertIn('123456', cm[1][4])
 
     def test_add_survey_response_missing_case_data(self):
 
@@ -90,7 +91,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service]),\
-                patch('application.controllers.survey_response.QueuePublisher'):
+                patch('application.controllers.rabbit_helper.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -123,7 +124,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.survey_response.QueuePublisher'):
+                patch('application.controllers.rabbit_helper.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -152,7 +153,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service]),\
-                patch('application.controllers.survey_response.QueuePublisher'):
+                patch('application.controllers.rabbit_helper.QueuePublisher'):
 
             # When that file is post to the survey response end point
             response = self.client.post(
@@ -240,7 +241,7 @@ class TestSurveyResponseView(TestClient):
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service,
                                 mock_survey_service]), \
-            patch('application.controllers.survey_response.QueuePublisher',
+            patch('application.controllers.rabbit_helper.QueuePublisher',
                   return_value=rabbit):
             # When that file is post to the survey response end point
             response = self.client.post(
