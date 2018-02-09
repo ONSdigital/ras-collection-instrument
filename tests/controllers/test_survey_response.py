@@ -30,10 +30,7 @@ class TestSurveyResponse(TestClient):
         self.assertTrue(result)
 
     def test_initialise_messaging_rabbit_fails(self):
-        rabbit = Mock()
-        rabbit._connect = Mock(side_effect=AMQPConnectionError)
-
-        with patch('application.controllers.rabbit_helper.QueuePublisher', return_value=rabbit):
+        with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
             result = self.survey_response.initialise_messaging()
 
         self.assertFalse(result)
@@ -51,7 +48,7 @@ class TestSurveyResponse(TestClient):
             service = Mock()
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
-            with patch('application.controllers.rabbit_helper.QueuePublisher'):
+            with patch('pika.BlockingConnection'):
                 status = self.survey_response.add_survey_response(case_id, file, filename, '023')
 
         # Then the file uploads successfully

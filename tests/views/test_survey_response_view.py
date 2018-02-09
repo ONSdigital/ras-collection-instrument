@@ -35,7 +35,7 @@ class TestSurveyResponseView(TestClient):
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
-                patch('application.controllers.rabbit_helper.QueuePublisher'):
+                patch('pika.BlockingConnection'):
 
             # When that file is post to the survey response end point
             response = self.client.post(

@@ -25,7 +25,7 @@ def _encrypt_message(message_json):
     return encrypter.encrypt(message_json)
 
 
-def _initialise_rabbitmq(queue_name, publisher_type=QueuePublisher):
+def _initialise_rabbitmq(queue_name, publisher_type):
     """
     Initialise a rabbit queue or exchange is created ahead of use
     :param queue_name: The rabbit queue or exchange to initialise
@@ -45,7 +45,7 @@ def _initialise_rabbitmq(queue_name, publisher_type=QueuePublisher):
         return False
 
 
-def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, publisher_type=QueuePublisher):
+def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, encrypt=True):
     """
     Send message to rabbitmq
     :param message: The message to send to the queue in JSON format
