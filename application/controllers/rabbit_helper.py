@@ -3,6 +3,7 @@ import logging
 import structlog
 
 from flask import current_app
+from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
 from sdc.rabbit import ExchangePublisher, QueuePublisher
 
@@ -24,13 +25,35 @@ def _encrypt_message(message_json):
     return encrypter.encrypt(message_json)
 
 
+def _initialise_rabbitmq(queue_name, use_exchange=False):
+    """
+    Initialise a rabbit queue or exchange is created ahead of use
+    :param queue_name: The rabbit queue or exchange to initialise
+    :param use_exchange: Flag whether a fan-out exchange should be used
+    :return: boolean
+    """
+    rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
+    log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
+    publisher_type = ExchangePublisher if use_exchange else QueuePublisher
+    publisher = publisher_type([rabbitmq_amqp], queue_name)
+    try:
+        # NB: _connect declares a queue or exchange
+        publisher._connect()
+        log.info('Successfully initialised rabbitmq', queue=queue_name)
+        return True
+    except AMQPConnectionError:
+        log.exception('Failed to initialise rabbitmq', queue=queue_name)
+        return False
+
+
 def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exchange=False):
     """
-    Get details from environment credentials and send message to rabbitmq
+    Send message to rabbitmq
     :param message: The message to send to the queue in JSON format
     :param tx_id: The transaction ID for the message
-    :param queue_name: The rabbit queue to publish to
+    :param queue_name: The rabbit queue or exchange to publish to
     :param encrypt: Flag whether message should be encrypted before publication
+    :param use_exchange: Flag whether a fan-out exchange should be used
     :return: boolean
     """
     rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
@@ -47,5 +70,7 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, encrypt=True, use_exch
         return False
 
 
+initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, use_exchange=False)
+initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, use_exchange=True)
 send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, use_exchange=False)
 send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, use_exchange=True)

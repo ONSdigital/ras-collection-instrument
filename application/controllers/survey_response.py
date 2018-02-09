@@ -7,7 +7,7 @@ from flask import current_app
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
-from application.controllers.rabbit_helper import send_message_to_rabbitmq_queue
+from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
 from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -37,6 +37,11 @@ class SurveyResponse(object):
         file_contents = file.read()
         json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
         return send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
+
+    @staticmethod
+    def initialise_messaging():
+        log.info('Initialising rabbitmq queue for Survey Responses', queue=RABBIT_QUEUE_NAME)
+        return initialise_rabbitmq_queue(RABBIT_QUEUE_NAME)
 
     @staticmethod
     def _create_json_message_for_file(generated_file_name, file, case_id, survey_ref):

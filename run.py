@@ -92,6 +92,15 @@ def initialise_db(app):
                              app.config['DATABASE_SCHEMA'])
 
 
+def initialise_rabbit(app):
+    from application.controllers import collection_instrument
+    from application.controllers import survey_response
+
+    with app.app_context():
+        collection_instrument.CollectionInstrument.initialise_messaging()
+        survey_response.SurveyResponse.initialise_messaging()
+
+
 if __name__ == '__main__':
     app = create_app()
     with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
@@ -104,6 +113,8 @@ if __name__ == '__main__':
     except RetryError:
         logger.exception('Failed to initialise database')
         exit(1)
+
+    initialise_rabbit(app)
 
     scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
 

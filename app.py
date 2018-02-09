@@ -5,7 +5,7 @@ from json import loads
 from retrying import RetryError
 
 from application.logger_config import logger_initial_config
-from run import create_app, initialise_db
+from run import create_app, initialise_db, initialise_rabbit
 
 """This is a duplicate of run.py, with minor modifications to support gunicorn execution."""
 
@@ -24,5 +24,7 @@ try:
 except RetryError:
     logger.exception('Failed to initialise database')
     exit(1)
+
+initialise_rabbit(app)
 
 scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
