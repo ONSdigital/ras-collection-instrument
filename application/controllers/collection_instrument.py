@@ -5,7 +5,7 @@ import uuid
 from json import dumps, loads
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
-from application.controllers.rabbit_helper import send_message_to_rabbitmq_exchange
+from application.controllers.rabbit_helper import initialise_rabbitmq_exchange, send_message_to_rabbitmq_exchange
 from application.controllers.service_helper import service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
@@ -96,6 +96,11 @@ class CollectionInstrument(object):
         if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
             raise RasError('Failed to publish upload message', 500)
         return instrument
+
+    @staticmethod
+    def initialise_messaging():
+        log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
+        return initialise_rabbitmq_exchange(RABBIT_QUEUE_NAME)
 
     @staticmethod
     def publish_uploaded_collection_instrument(exercise_id, instrument_id):

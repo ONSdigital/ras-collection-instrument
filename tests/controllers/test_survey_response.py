@@ -1,8 +1,11 @@
-from application.controllers.survey_response import SurveyResponse
 from os import putenv, environ
 from unittest.mock import patch, Mock
-from tests.test_client import TestClient
+
+from pika.exceptions import AMQPConnectionError
 from werkzeug.datastructures import FileStorage
+
+from application.controllers.survey_response import SurveyResponse
+from tests.test_client import TestClient
 
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
@@ -20,6 +23,18 @@ class TestSurveyResponse(TestClient):
         putenv('COLLECTION_EXERCISE_URL', 'tests')
         putenv('RABBITMQ_LABEL', 'tests')
 
+    def test_initialise_messaging(self):
+        with patch('pika.BlockingConnection'):
+            result = self.survey_response.initialise_messaging()
+
+        self.assertTrue(result)
+
+    def test_initialise_messaging_rabbit_fails(self):
+        with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
+            result = self.survey_response.initialise_messaging()
+
+        self.assertFalse(result)
+
     def test_add_survey_response_success(self):
 
         # Given a survey response
@@ -33,7 +48,7 @@ class TestSurveyResponse(TestClient):
             service = Mock()
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
-            with patch('application.controllers.rabbit_helper.QueuePublisher'):
+            with patch('pika.BlockingConnection'):
                 status = self.survey_response.add_survey_response(case_id, file, filename, '023')
 
         # Then the file uploads successfully

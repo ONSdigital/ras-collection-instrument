@@ -84,7 +84,7 @@ class TestCollectionInstrumentView(TestClient):
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
         with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('application.controllers.rabbit_helper.ExchangePublisher', return_value=rabbit):
+                patch('application.controllers.rabbit_helper.DurableExchangePublisher', return_value=rabbit):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'

@@ -1,6 +1,7 @@
 import json
 from unittest.mock import Mock, patch
 
+from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.collection_instrument import CollectionInstrument
@@ -65,6 +66,18 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is not found
         self.assertEquals(instrument, None)
 
+    def test_initialise_messaging(self):
+        with patch('pika.BlockingConnection'):
+            result = self.collection_instrument.initialise_messaging()
+
+        self.assertTrue(result)
+
+    def test_initialise_messaging_rabbit_fails(self):
+        with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
+            result = self.collection_instrument.initialise_messaging()
+
+        self.assertFalse(result)
+
     def test_publish_uploaded_collection_instrument(self):
 
         # Given there is an instrument in the db
@@ -84,7 +97,7 @@ class TestCollectionInstrument(TestClient):
         rabbit = Mock()
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
-        with patch('application.controllers.rabbit_helper.ExchangePublisher', return_value=rabbit):
+        with patch('sdc.rabbit.DurableExchangePublisher', return_value=rabbit):
             result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
         # Then the message is not successfully published
