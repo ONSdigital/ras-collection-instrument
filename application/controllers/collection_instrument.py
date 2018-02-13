@@ -100,7 +100,7 @@ class CollectionInstrument(object):
     @staticmethod
     def initialise_messaging():
         log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
-        return initialise_rabbitmq_exchange(RABBIT_QUEUE_NAME)
+        initialise_rabbitmq_exchange(RABBIT_QUEUE_NAME)
 
     @staticmethod
     def publish_uploaded_collection_instrument(exercise_id, instrument_id):

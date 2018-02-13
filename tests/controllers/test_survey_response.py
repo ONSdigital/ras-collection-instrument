@@ -25,15 +25,12 @@ class TestSurveyResponse(TestClient):
 
     def test_initialise_messaging(self):
         with patch('pika.BlockingConnection'):
-            result = self.survey_response.initialise_messaging()
-
-        self.assertTrue(result)
+            self.survey_response.initialise_messaging()
 
     def test_initialise_messaging_rabbit_fails(self):
-        with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
-            result = self.survey_response.initialise_messaging()
-
-        self.assertFalse(result)
+        with self.assertRaises(AMQPConnectionError):
+            with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
+                self.survey_response.initialise_messaging()
 
     def test_add_survey_response_success(self):
 

@@ -25,6 +25,10 @@ except RetryError:
     logger.exception('Failed to initialise database')
     exit(1)
 
-initialise_rabbit(app)
+try:
+    initialise_rabbit(app)
+except RetryError:
+    logger.exception('Failed to initialise rabbitmq')
+    exit(1)
 
 scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])

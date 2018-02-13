@@ -68,15 +68,12 @@ class TestCollectionInstrument(TestClient):
 
     def test_initialise_messaging(self):
         with patch('pika.BlockingConnection'):
-            result = self.collection_instrument.initialise_messaging()
-
-        self.assertTrue(result)
+            self.collection_instrument.initialise_messaging()
 
     def test_initialise_messaging_rabbit_fails(self):
-        with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
-            result = self.collection_instrument.initialise_messaging()
-
-        self.assertFalse(result)
+        with self.assertRaises(AMQPConnectionError):
+            with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
+                self.collection_instrument.initialise_messaging()
 
     def test_publish_uploaded_collection_instrument(self):
 
