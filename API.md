@@ -57,6 +57,15 @@ Example Response
 52224
 ```
 
+### Get count of collection instruments by search string
+
+* `GET /collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"COLLECTION_EXERCISE":%20"<exercise_id>"}`
+
+Example Response
+```
+123
+```
+
 ### Get collection instrument by search string
 
 * `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}`
