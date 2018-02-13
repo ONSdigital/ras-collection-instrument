@@ -53,6 +53,13 @@ def collection_instrument_by_search_string():
     return make_response(jsonify(instruments), 200)
 
 
+@collection_instrument_view.route('/collectioninstrument/count', methods=['GET'])
+def count_collection_instruments_by_search_string():
+    search_string = request.args.get('searchString')
+    instruments = CollectionInstrument().get_instrument_by_search_string(search_string)
+    return make_response(str(len(instruments)), 200)
+
+
 @collection_instrument_view.route('/collectioninstrument/id/<instrument_id>', methods=['GET'])
 def collection_instrument_by_id(instrument_id):
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)

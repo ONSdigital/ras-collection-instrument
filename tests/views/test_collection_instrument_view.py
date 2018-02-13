@@ -193,6 +193,86 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn('test_ru_ref', response.data.decode())
         self.assertEqual(response.data.decode().count('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'), 2)
 
+    def test_count_instrument_by_search_string_ru(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"RU_REF":%20"test_ru_ref"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_single_count_instrument(self):
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_multiple_count_instrument(self):
+
+        # Given a second instrument in the db
+        self.add_instrument_data()
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 2)
+
+    def test_count_instrument_by_search_classifier(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search classifier
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"FORM_TYPE":%20"001"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_count_instrument_by_search_multiple_classifiers(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a multiple search classifiers
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?'
+            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_count_instrument_by_search_multiple_bad_classifiers(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a multiple search classifiers
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?'
+            'searchString={"FORM_TYPE":%20"666","GEOGRAPHY":%20"GB"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 0)
+
     def test_get_instrument_by_id(self):
 
         # Given an instrument which is in the db

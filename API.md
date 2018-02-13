@@ -41,7 +41,7 @@ Example CSV Response
 
 ### Download a collection instrument
 
-* `GET /collection-instrument-api/1.0.2/download/adc8dcc1-c35f-4caf-8f5d-93e6287d4872`
+* `GET /collection-instrument-api/1.0.2/download/<instrument_id>`
 
 Example File Returned
 ```
@@ -50,11 +50,29 @@ adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx
 
 ### Get the size of a collection instrument
 
-* `GET /collection-instrument-api/1.0.2/instrument_size/adc8dcc1-c35f-4caf-8f5d-93e6287d4872`
+* `GET /collection-instrument-api/1.0.2/instrument_size/<instrument_id>`
 
 Example Response
 ```
 52224
+```
+
+### Get count of collection instruments
+
+* `GET /collection-instrument-api/1.0.2/collectioninstrument/count`
+
+Example Response
+```
+555
+```
+
+### Get count of collection instruments by search string
+
+* `GET /collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"COLLECTION_EXERCISE":%20"<exercise_id>"}`
+
+Example Response
+```
+123
 ```
 
 ### Get collection instrument by search string
