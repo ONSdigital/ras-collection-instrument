@@ -7,6 +7,7 @@ from alembic import command
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
 from json import loads
+from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import ProgrammingError, DatabaseError
@@ -92,6 +93,11 @@ def initialise_db(app):
                              app.config['DATABASE_SCHEMA'])
 
 
+def retry_if_rabbit_connection_error(exception):
+    return isinstance(exception, AMQPConnectionError)
+
+
+@retry(retry_on_exception=retry_if_rabbit_connection_error, wait_fixed=2000, stop_max_delay=60000, wrap_exception=True)
 def initialise_rabbit(app):
     from application.controllers import collection_instrument
     from application.controllers import survey_response
@@ -114,7 +120,11 @@ if __name__ == '__main__':
         logger.exception('Failed to initialise database')
         exit(1)
 
-    initialise_rabbit(app)
+    try:
+        initialise_rabbit(app)
+    except RetryError:
+        logger.exception('Failed to initialise rabbitmq')
+        exit(1)
 
     scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
 

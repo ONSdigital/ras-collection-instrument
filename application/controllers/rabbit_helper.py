@@ -3,7 +3,6 @@ import logging
 import structlog
 
 from flask import current_app
-from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
 from sdc.rabbit import DurableExchangePublisher, QueuePublisher
 
@@ -35,14 +34,9 @@ def _initialise_rabbitmq(queue_name, publisher_type):
     rabbitmq_amqp = current_app.config['RABBITMQ_AMQP']
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher = publisher_type([rabbitmq_amqp], queue_name)
-    try:
-        # NB: _connect declares a queue or exchange
-        publisher._connect()
-        log.info('Successfully initialised rabbitmq', queue=queue_name)
-        return True
-    except AMQPConnectionError:
-        log.exception('Failed to initialise rabbitmq', queue=queue_name)
-        return False
+    # NB: _connect declares a queue or exchange
+    publisher._connect()
+    log.info('Successfully initialised rabbitmq', queue=queue_name)
 
 
 def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, encrypt=True):
