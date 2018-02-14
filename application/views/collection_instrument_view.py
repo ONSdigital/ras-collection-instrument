@@ -13,6 +13,7 @@ collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 
 COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
+UPLOAD_SUCCESSFUL = 'The upload was successful'
 
 
 @collection_instrument_view.before_request
@@ -26,8 +27,8 @@ def before_collection_instrument_view():
 def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files['file']
     classifiers = request.args.get('classifiers')
-    msg = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
-    return make_response(msg, 200)
+    CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])
@@ -50,6 +51,13 @@ def collection_instrument_by_search_string():
     limit = request.args.get('limit')
     instruments = CollectionInstrument().get_instrument_by_search_string(search_string, limit)
     return make_response(jsonify(instruments), 200)
+
+
+@collection_instrument_view.route('/collectioninstrument/count', methods=['GET'])
+def count_collection_instruments_by_search_string():
+    search_string = request.args.get('searchString')
+    instruments = CollectionInstrument().get_instrument_by_search_string(search_string)
+    return make_response(str(len(instruments)), 200)
 
 
 @collection_instrument_view.route('/collectioninstrument/id/<instrument_id>', methods=['GET'])

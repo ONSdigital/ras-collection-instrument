@@ -7,6 +7,7 @@ from alembic import command
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
 from json import loads
+from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import ProgrammingError, DatabaseError
@@ -18,10 +19,10 @@ from application.logger_config import logger_initial_config
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app():
+def create_app(config=None):
     # create and configure the Flask application
     app = Flask(__name__)
-    app_config = 'config.{}'.format(os.environ.get('APP_SETTINGS', 'Config'))
+    app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
 
     # register view blueprints
@@ -73,10 +74,10 @@ def create_database(db_connection, db_schema):
             command.upgrade(alembic_cfg, "head")
 
     else:
-        logger.info("Creating database tables.")
+        logger.info("Creating database tables")
         models.Base.metadata.create_all(engine)
 
-    logger.info("Ok, database tables have been created.")
+    logger.info("Ok, database tables have been created")
     return engine
 
 
@@ -92,6 +93,20 @@ def initialise_db(app):
                              app.config['DATABASE_SCHEMA'])
 
 
+def retry_if_rabbit_connection_error(exception):
+    return isinstance(exception, AMQPConnectionError)
+
+
+@retry(retry_on_exception=retry_if_rabbit_connection_error, wait_fixed=2000, stop_max_delay=60000, wrap_exception=True)
+def initialise_rabbit(app):
+    from application.controllers import collection_instrument
+    from application.controllers import survey_response
+
+    with app.app_context():
+        collection_instrument.CollectionInstrument.initialise_messaging()
+        survey_response.SurveyResponse.initialise_messaging()
+
+
 if __name__ == '__main__':
     app = create_app()
     with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
@@ -103,6 +118,12 @@ if __name__ == '__main__':
         initialise_db(app)
     except RetryError:
         logger.exception('Failed to initialise database')
+        exit(1)
+
+    try:
+        initialise_rabbit(app)
+    except RetryError:
+        logger.exception('Failed to initialise rabbitmq')
         exit(1)
 
     scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])

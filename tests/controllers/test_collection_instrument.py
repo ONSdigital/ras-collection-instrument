@@ -1,4 +1,8 @@
 import json
+from unittest.mock import Mock, patch
+
+from pika.exceptions import AMQPConnectionError
+from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
@@ -61,6 +65,40 @@ class TestCollectionInstrument(TestClient):
 
         # Then that instrument is not found
         self.assertEquals(instrument, None)
+
+    def test_initialise_messaging(self):
+        with patch('pika.BlockingConnection'):
+            self.collection_instrument.initialise_messaging()
+
+    def test_initialise_messaging_rabbit_fails(self):
+        with self.assertRaises(AMQPConnectionError):
+            with patch('pika.BlockingConnection', side_effect=AMQPConnectionError):
+                self.collection_instrument.initialise_messaging()
+
+    def test_publish_uploaded_collection_instrument(self):
+
+        # Given there is an instrument in the db
+        # When publishing to a rabbit exchange that a collection instrument has been uploaded
+        c_id = 'db0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+        with patch('pika.BlockingConnection'):
+            result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
+
+        # Then the message is successfully published
+        self.assertTrue(result)
+
+    def test_publish_uploaded_collection_instrument_rabbit_fails(self):
+
+        # Given there is an instrument in the db
+        # When publishing to a rabbit exchange that a collection instrument has been uploaded
+        c_id = 'db0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+        rabbit = Mock()
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
+
+        with patch('sdc.rabbit.DurableExchangePublisher', return_value=rabbit):
+            result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
+
+        # Then the message is not successfully published
+        self.assertFalse(result)
 
     @staticmethod
     @with_db_session

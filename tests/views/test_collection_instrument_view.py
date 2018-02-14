@@ -1,16 +1,24 @@
 import base64
+import json
+from unittest.mock import patch, Mock
 
-from application.controllers.collection_instrument import UPLOAD_SUCCESSFUL
-from application.controllers.session_decorator import with_db_session
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
-from application.views.collection_instrument_view import COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE
 from flask import current_app
 from requests.models import Response
+from sdc.rabbit.exceptions import PublishMessageError
 from six import BytesIO
-from tests.test_client import TestClient
-from unittest.mock import patch
+
 from application.controllers.cryptographer import Cryptographer
+from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
+from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
+from application.views.collection_instrument_view import (
+    UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
+from tests.test_client import TestClient
+
+
+@with_db_session
+def collection_instruments(session=None):
+    return session.query(InstrumentModel).all()
 
 
 class TestCollectionInstrumentView(TestClient):
@@ -26,7 +34,8 @@ class TestCollectionInstrumentView(TestClient):
         mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {'file': (BytesIO(b'test data'), 'test.xls')}
 
-        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service):
+        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
+                patch('pika.BlockingConnection'):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
@@ -35,9 +44,11 @@ class TestCollectionInstrumentView(TestClient):
                 data=data,
                 content_type='multipart/form-data')
 
-            # Then the file uploads successfully
-            self.assertStatus(response, 200)
-            self.assertEquals(response.data.decode(), UPLOAD_SUCCESSFUL)
+        # Then the file uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
 
     def test_collection_instrument_upload_with_ru(self):
         # Given an upload file and a patched survey_id response
@@ -46,7 +57,8 @@ class TestCollectionInstrumentView(TestClient):
         mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {'file': (BytesIO(b'test data'), 'test.xls')}
 
-        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service):
+        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
+                patch('pika.BlockingConnection'):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/9999'
@@ -55,9 +67,39 @@ class TestCollectionInstrumentView(TestClient):
                 data=data,
                 content_type='multipart/form-data')
 
-            # Then the file uploads successfully
-            self.assertStatus(response, 200)
-            self.assertEquals(response.data.decode(), UPLOAD_SUCCESSFUL)
+        # Then the file uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
+
+    def test_collection_instrument_upload_rabbit_exception(self):
+        # Given an upload file and a patched survey_id response
+        mock_survey_service = Response()
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        data = {'file': (BytesIO(b'test data'), 'test.xls')}
+
+        rabbit = Mock()
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
+
+        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
+                patch('application.controllers.rabbit_helper.DurableExchangePublisher', return_value=rabbit):
+            # When a post is made to the upload end point
+            response = self.client.post(
+                '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+                '?classifiers={"FORM_TYPE": "001"}',
+                headers=self.get_auth_headers(),
+                data=data,
+                content_type='multipart/form-data')
+
+        response_data = json.loads(response.data)
+
+        # Then the file does not upload successfully
+        self.assertStatus(response, 500)
+        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
+        self.assertEqual(len(collection_instruments()), 1)
 
     def test_download_exercise_csv(self):
 
@@ -135,7 +177,7 @@ class TestCollectionInstrumentView(TestClient):
         # Then 1 response is returned
         self.assertStatus(response, 200)
         self.assertIn('test_file', response.data.decode())
-        self.assertEquals(response.data.decode().count('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'), 1)
+        self.assertEqual(response.data.decode().count('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'), 1)
 
     def test_get_instrument_by_search_limit_2(self):
 
@@ -149,7 +191,87 @@ class TestCollectionInstrumentView(TestClient):
         # Then 2 responses are returned
         self.assertStatus(response, 200)
         self.assertIn('test_ru_ref', response.data.decode())
-        self.assertEquals(response.data.decode().count('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'), 2)
+        self.assertEqual(response.data.decode().count('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'), 2)
+
+    def test_count_instrument_by_search_string_ru(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"RU_REF":%20"test_ru_ref"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_single_count_instrument(self):
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_multiple_count_instrument(self):
+
+        # Given a second instrument in the db
+        self.add_instrument_data()
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 2)
+
+    def test_count_instrument_by_search_classifier(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a search classifier
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"FORM_TYPE":%20"001"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_count_instrument_by_search_multiple_classifiers(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a multiple search classifiers
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?'
+            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 1)
+
+    def test_count_instrument_by_search_multiple_bad_classifiers(self):
+
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with a multiple search classifiers
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?'
+            'searchString={"FORM_TYPE":%20"666","GEOGRAPHY":%20"GB"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        json_data = json.loads(response.data)
+        self.assertEqual(json_data, 0)
 
     def test_get_instrument_by_id(self):
 
@@ -175,7 +297,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then the response returns no data
         self.assertStatus(response, 404)
-        self.assertEquals(response.data.decode(), COLLECTION_INSTRUMENT_NOT_FOUND)
+        self.assertEqual(response.data.decode(), COLLECTION_INSTRUMENT_NOT_FOUND)
 
     def test_download_exercise_csv_missing(self):
         # Given a incorrect exercise id
@@ -185,7 +307,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then a collection exercise is not found
         self.assertStatus(response, 404)
-        self.assertEquals(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
+        self.assertEqual(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
 
     def test_get_instrument_size(self):
 
