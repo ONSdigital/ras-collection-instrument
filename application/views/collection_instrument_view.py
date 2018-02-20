@@ -33,7 +33,7 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
 
 
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
-def upload_collection_instrument(instrument_id, exercise_id):
+def link_collection_instrument(instrument_id, exercise_id):
     CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
     return make_response(LINK_SUCCESSFUL, 200)
 

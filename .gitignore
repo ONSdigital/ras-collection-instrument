@@ -52,3 +52,6 @@ ras-ci
 .idea/
 onsdb
 *~
+
+# dotenv
+*.env
