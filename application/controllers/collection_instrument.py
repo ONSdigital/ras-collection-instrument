@@ -97,6 +97,26 @@ class CollectionInstrument(object):
             raise RasError('Failed to publish upload message', 500)
         return instrument
 
+    @with_db_session
+    def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
+        """
+        Link a collection instrument to a collection exercise
+        :param instrument_id: A collection instrument id (UUID)
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        :return True if instrument has been successfully linked to exercise
+        """
+        log.info('Linking instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        validate_uuid(instrument_id)
+        validate_uuid(exercise_id)
+
+        instrument = self.get_instrument_by_id(instrument_id, session)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+        instrument.exercises.append(exercise)
+
+        log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        return True
+
     @staticmethod
     def initialise_messaging():
         log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
