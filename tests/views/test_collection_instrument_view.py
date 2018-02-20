@@ -21,6 +21,11 @@ def collection_instruments(session=None):
     return session.query(InstrumentModel).all()
 
 
+@with_db_session
+def collection_exercises(session=None):
+    return session.query(ExerciseModel).all()
+
+
 class TestCollectionInstrumentView(TestClient):
     """ Collection Instrument view unit tests"""
 
@@ -405,6 +410,41 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then a 401 unauthorised is return
         self.assertStatus(response, 401)
+
+    def test_link_collection_instrument(self):
+
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        # When the instrument is linked to an exercise
+        response = self.client.post(
+            f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+            headers=self.get_auth_headers())
+
+        # Then that instrument is successfully linked to the given collection exercise
+        self.assertStatus(response, 200)
+        all_collection_exercises = collection_exercises()
+        matching_exercises = [collection_exercise
+                              for collection_exercise in all_collection_exercises
+                              if str(collection_exercise.exercise_id) == exercise_id]
+        self.assertEquals(matching_exercises[0].items, 1)
+
+    @staticmethod
+    @with_db_session
+    def add_instrument_without_exercise(session=None):
+        instrument = InstrumentModel(file_name='test_file',
+                                     classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"},
+                                     length='999')
+        crypto = Cryptographer()
+        data = BytesIO(b'test data')
+        instrument.data = crypto.encrypt(data.read())
+        survey = SurveyModel(survey_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
+        instrument.survey = survey
+        business = BusinessModel(ru_ref='test_ru_ref')
+        instrument.businesses.append(business)
+        session.add(instrument)
+        return instrument.instrument_id
 
     @staticmethod
     @with_db_session
