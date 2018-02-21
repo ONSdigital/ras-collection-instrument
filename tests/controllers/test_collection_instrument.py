@@ -40,6 +40,15 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is returned
         self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
 
+    def test_get_instrument_by_search_string_type(self):
+        # Given there is an instrument in the db
+        # When the type is used to find that instrument
+        instrument = self.collection_instrument.get_instrument_by_search_string(
+            '{\"TYPE\": \"SEFT\"}')
+
+        # Then that instrument is returned
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
+
     def test_get_instrument_by_search_string_empty_search(self):
 
         # Given there is an instrument in the db

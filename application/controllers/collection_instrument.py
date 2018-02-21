@@ -301,6 +301,8 @@ class CollectionInstrument(object):
                 query = query.filter(ExerciseModel.exercise_id == value)
             elif classifier == 'SURVEY_ID':
                 query = query.filter(SurveyModel.survey_id == value)
+            elif classifier == 'TYPE':
+                query = query.filter(InstrumentModel.type == value)
             else:
                 query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
         result = query.order_by(InstrumentModel.stamp.desc())
