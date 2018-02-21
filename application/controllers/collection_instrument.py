@@ -172,7 +172,7 @@ class CollectionInstrument(object):
         return business
 
     @staticmethod
-    def _create_seft_file(insturment_id, file):
+    def _create_seft_file(instrument_id, file):
         """
         Creates a seft_file with an encrypted version of the file
         :param file: A file object from which we can read the file contents
@@ -183,7 +183,7 @@ class CollectionInstrument(object):
         file_size = len(file_contents)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
-        seft_file = SEFTModel(instrument_id=insturment_id, file_name=file.filename,
+        seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename,
                               length=file_size, data=encrypted_file)
         return seft_file
 
