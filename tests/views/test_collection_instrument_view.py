@@ -10,7 +10,7 @@ from six import BytesIO
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
+from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import (
     UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
 from tests.test_client import TestClient
@@ -123,7 +123,10 @@ class TestCollectionInstrumentView(TestClient):
     def test_download_exercise_csv(self):
 
         # Given a patched exercise
-        instrument = InstrumentModel(file_name='file_name', data='test_data', length=999)
+        instrument = InstrumentModel()
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='file_name',
+                              data='test_data', length=999)
+        instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)
@@ -428,12 +431,12 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(file_name='test_file',
-                                     classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"},
-                                     length='999')
+        instrument = InstrumentModel(classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"}, ci_type='SEFT')
         crypto = Cryptographer()
         data = BytesIO(b'test data')
-        instrument.data = crypto.encrypt(data.read())
+        data = crypto.encrypt(data.read())
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file', length='999', data=data)
+        instrument.seft_file = seft_file
         exercise = ExerciseModel()
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)

@@ -7,7 +7,7 @@ from sdc.rabbit.exceptions import PublishMessageError
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasDatabaseError
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
+from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from tests.test_client import TestClient
 
 
@@ -103,9 +103,11 @@ class TestCollectionInstrument(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(file_name='test_file')
+        instrument = InstrumentModel(ci_type='SEFT')
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file')
         exercise = ExerciseModel(exercise_id='db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         business = BusinessModel(ru_ref='test_ru_ref')
+        instrument.seft_file = seft_file
         instrument.exercises.append(exercise)
         instrument.businesses.append(business)
         survey = SurveyModel(survey_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')

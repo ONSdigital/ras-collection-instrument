@@ -28,33 +28,30 @@ class InstrumentModel(Base):
     __tablename__ = 'instrument'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    file_name = Column(String(32))
-    instrument_id = Column(GUID, index=True)
-    data = Column(LargeBinary)
-    len = Column(Integer)
+    type = Column(String(8))
+    instrument_id = Column(GUID, unique=True, index=True)
     stamp = Column(TIMESTAMP)
     survey_id = Column(Integer, ForeignKey('survey.id'))
     classifiers = Column(JSONB)
     survey = relationship('SurveyModel', back_populates='instruments')
+    seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
 
     exercises = relationship('ExerciseModel', secondary=instrument_exercise_table, back_populates='instruments')
     businesses = relationship('BusinessModel', secondary=instrument_business_table, back_populates='instruments')
 
-    def __init__(self, file_name, data=None, length=0, classifiers=None):
+    def __init__(self, classifiers=None, ci_type=None):
         """Initialise the class with optionally supplied defaults"""
-        self.file_name = file_name
-        self.data = data
-        self.len = length
         self.stamp = datetime.now()
         self.instrument_id = uuid4()
         self.classifiers = classifiers
+        self.type = ci_type
 
     @property
     def json(self):
         return {
             'id': self.instrument_id,
-            'file_name': self.file_name,
-            'len': self.len,
+            'file_name': self.seft_file.file_name,
+            'len': self.seft_file.len,
             'stamp': self.stamp,
             'survey': self.survey.survey_id,
             'businesses': self.rurefs,
@@ -118,3 +115,25 @@ class SurveyModel(Base):
     def __init__(self, survey_id=None):
         """Initialise the class with optionally supplied defaults"""
         self.survey_id = survey_id
+
+
+class SEFTModel(Base):
+    """
+    This models the 'seft_instrument' table which keeps the stored seft collection instruments
+    """
+    __tablename__ = 'seft_instrument'
+
+    id = Column(Integer, primary_key=True)
+    file_name = Column(String(32))
+    data = Column(LargeBinary)
+    len = Column(Integer)
+    instrument_id = Column(GUID, ForeignKey('instrument.instrument_id'))
+
+    instrument = relationship("InstrumentModel", back_populates="seft_file")
+
+    def __init__(self, instrument_id=None, file_name=None, length=None, data=None):
+        """Initialise the class with optionally supplied defaults"""
+        self.instrument_id = instrument_id
+        self.file_name = file_name
+        self.len = length
+        self.data = data
