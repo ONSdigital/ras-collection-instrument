@@ -436,12 +436,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_without_exercise(session=None):
-        instrument = InstrumentModel(file_name='test_file',
-                                     classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"},
-                                     length='999')
-        crypto = Cryptographer()
-        data = BytesIO(b'test data')
-        instrument.data = crypto.encrypt(data.read())
+        instrument = InstrumentModel(ci_type='EQ', classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"})
         survey = SurveyModel(survey_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         instrument.survey = survey
         business = BusinessModel(ru_ref='test_ru_ref')
@@ -452,7 +447,12 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"}, ci_type='EQ')
+        instrument = InstrumentModel(classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"}, ci_type='SEFT')
+        crypto = Cryptographer()
+        data = BytesIO(b'test data')
+        data = crypto.encrypt(data.read())
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file', length='999', data=data)
+        instrument.seft_file = seft_file
         exercise = ExerciseModel()
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)
