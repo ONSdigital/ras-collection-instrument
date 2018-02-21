@@ -452,12 +452,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"}, ci_type='SEFT')
-        crypto = Cryptographer()
-        data = BytesIO(b'test data')
-        data = crypto.encrypt(data.read())
-        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file', length='999', data=data)
-        instrument.seft_file = seft_file
+        instrument = InstrumentModel(classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"}, ci_type='EQ')
         exercise = ExerciseModel()
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)
