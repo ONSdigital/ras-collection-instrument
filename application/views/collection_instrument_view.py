@@ -31,6 +31,13 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
+@collection_instrument_view.route('/upload/', methods=['POST'])
+def upload_collection_instrument_without_collection_exercise():
+    classifiers = request.args.get('classifiers')
+    CollectionInstrument().upload_instrument_with_no_collection_exercise(classifiers=classifiers)
+    return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])
 def download_csv(exercise_id):
     csv = CollectionInstrument().get_instruments_by_exercise_id_csv(exercise_id)

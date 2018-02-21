@@ -50,6 +50,25 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 2)
 
+    def test_upload_collection_instrument_without_collection_exercise(self):
+        mock_survey_service = Response()
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+
+        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
+                patch('pika.BlockingConnection'):
+            # When a post is made to the upload end point
+            response = self.client.post(
+                '/collection-instrument-api/1.0.2/upload/',
+                headers=self.get_auth_headers(),
+                content_type='multipart/form-data')
+
+            # Then CI uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
+
     def test_collection_instrument_upload_with_ru(self):
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()

@@ -97,6 +97,28 @@ class CollectionInstrument(object):
             raise RasError('Failed to publish upload message', 500)
         return instrument
 
+    @with_db_session
+    def upload_instrument_with_no_collection_exercise(self, classifiers=None, session=None):
+        """
+        Encrypt and upload a collection instrument to the db
+        :param classifiers: Classifiers associated with the instrument
+        :param session: database session
+        :return a collection instrument instance
+        """
+
+        instrument = self._create_instrument()
+
+        survey = self._find_or_create_survey_from_exercise_id(session)
+        instrument.survey = survey
+
+        if classifiers:
+            instrument.classifiers = loads(classifiers)
+
+        session.add(instrument)
+        if not self.publish_uploaded_collection_instrument(instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
+        return instrument
+
     @staticmethod
     def initialise_messaging():
         log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
