@@ -11,8 +11,7 @@ from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
 from application.exceptions import RasError
-from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel
-
+from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel, SEFTModel
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -55,7 +54,7 @@ class CollectionInstrument(object):
 
             instrument_json = {
                 'id': instrument.instrument_id,
-                'file_name': instrument.file_name,
+                'file_name': instrument.seft_file.file_name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
                 'surveyId': instrument.survey.survey_id
             }
@@ -77,7 +76,10 @@ class CollectionInstrument(object):
         log.info('Upload exercise', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-        instrument = self._create_instrument(file)
+        instrument = InstrumentModel(ci_type='SEFT')
+
+        seft_file = self._create_seft_file(instrument.instrument_id, file)
+        instrument.seft_file = seft_file
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
@@ -170,19 +172,20 @@ class CollectionInstrument(object):
         return business
 
     @staticmethod
-    def _create_instrument(file):
+    def _create_seft_file(insturment_id, file):
         """
-        Creates a Instrument with an encrypted version of the file
+        Creates a seft_file with an encrypted version of the file
         :param file: A file object from which we can read the file contents
         :return instrument
         """
-        log.info('creating instrument')
+        log.info('creating instrument seft file')
         file_contents = file.read()
         file_size = len(file_contents)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
-        instrument = InstrumentModel(file_name=file.filename, length=file_size, data=encrypted_file)
-        return instrument
+        seft_file = SEFTModel(instrument_id=insturment_id, file_name=file.filename,
+                              length=file_size, data=encrypted_file)
+        return seft_file
 
     @staticmethod
     @with_db_session
@@ -209,8 +212,8 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             csv += csv_format.format(count=count,
-                                     file_name=instrument.file_name,
-                                     length=instrument.len,
+                                     file_name=instrument.seft_file.file_name,
+                                     length=instrument.seft_file.len,
                                      date_stamp=instrument.stamp)
             count += 1
         return csv
@@ -244,8 +247,8 @@ class CollectionInstrument(object):
         if instrument:
             log.info('Decrypting collection instrument data', instrument_id=instrument_id)
             cryptographer = Cryptographer()
-            data = cryptographer.decrypt(instrument.data)
-            file_name = instrument.file_name
+            data = cryptographer.decrypt(instrument.seft_file.data)
+            file_name = instrument.seft_file.file_name
         return data, file_name
 
     @staticmethod
