@@ -29,6 +29,15 @@ Example Response
 The upload was successful
 ```
 
+### Link a collection instrument to a collection exercise
+
+* `POST /collection-instrument-api/1.0.2/link/<instrument_id>/<exercise_id>`
+
+Example Response
+```
+Linked collection instrument to collection exercise
+```
+
 ### Find all collection instruments associated with an exercise (CSV)
 
 * `GET /collection-instrument-api/1.0.2/download_csv/<exercise_id>`

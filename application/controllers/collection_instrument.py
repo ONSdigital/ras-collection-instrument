@@ -100,26 +100,52 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
-    def upload_instrument_with_no_collection_exercise(self, classifiers=None, session=None):
+    def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
         """
         Encrypt and upload a collection instrument to the db
         :param classifiers: Classifiers associated with the instrument
         :param session: database session
+        :param survey_id: database session
         :return a collection instrument instance
         """
 
-        instrument = self._create_instrument()
+        log.info('Upload instrument', survey_id=survey_id)
 
-        survey = self._find_or_create_survey_from_exercise_id(session)
+        validate_uuid(survey_id)
+        instrument = InstrumentModel(ci_type='EQ')
+
+        exercise = self._find_or_create_exercise(survey_id, session)
+        instrument.exercises.append(exercise)
+
+        survey = self._find_or_create_survey_from_exercise_id(survey_id, session)
         instrument.survey = survey
 
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
         session.add(instrument)
-        if not self.publish_uploaded_collection_instrument(instrument.instrument_id):
+        if not self.publish_uploaded_eq_collection_instrument(instrument.instrument_id, survey_id):
             raise RasError('Failed to publish upload message', 500)
         return instrument
+
+    def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
+        """
+        Link a collection instrument to a collection exercise
+        :param instrument_id: A collection instrument id (UUID)
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        :return True if instrument has been successfully linked to exercise
+        """
+        log.info('Linking instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        validate_uuid(instrument_id)
+        validate_uuid(exercise_id)
+
+        instrument = self.get_instrument_by_id(instrument_id, session)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+        instrument.exercises.append(exercise)
+
+        log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        return True
 
     @staticmethod
     def initialise_messaging():
@@ -141,6 +167,24 @@ class CollectionInstrument(object):
             'action': 'ADD',
             'exercise_id': str(exercise_id),
             'instrument_id': str(instrument_id)
+        })
+        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
+
+    @staticmethod
+    def publish_uploaded_eq_collection_instrument(instrument_id, survey_id):
+        """
+        Publish message to a rabbitmq exchange with details of collection instrument
+        :param survey_id: A survey id (UUID)
+        :param instrument_id: The id (UUID) for the newly created collection instrument
+        :return True if message successfully published to RABBIT_QUEUE_NAME
+        """
+        log.info('Publishing upload message', instrument_id=instrument_id, survey_id=survey_id)
+
+        tx_id = str(uuid.uuid4())
+        json_message = dumps({
+            'action': 'ADD',
+            'instrument_id': str(instrument_id),
+            'survey_id': str(survey_id)
         })
         return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
 

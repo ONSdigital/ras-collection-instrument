@@ -14,6 +14,7 @@ collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
 UPLOAD_SUCCESSFUL = 'The upload was successful'
+LINK_SUCCESSFUL = 'Linked collection instrument to collection exercise'
 
 
 @collection_instrument_view.before_request
@@ -32,10 +33,16 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
 
 
 @collection_instrument_view.route('/upload/', methods=['POST'])
-def upload_collection_instrument_without_collection_exercise():
+def upload_collection_instrument_without_collection_exercise(survey_id):
     classifiers = request.args.get('classifiers')
-    CollectionInstrument().upload_instrument_with_no_collection_exercise(classifiers=classifiers)
+    CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
+@collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
+def link_collection_instrument(instrument_id, exercise_id):
+    CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
+    return make_response(LINK_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])
