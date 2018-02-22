@@ -50,8 +50,8 @@ class InstrumentModel(Base):
     def json(self):
         return {
             'id': self.instrument_id,
-            'file_name': self.seft_file.file_name,
-            'len': self.seft_file.len,
+            'file_name': self.seft_file.file_name if self.seft_file else None,
+            'len': self.seft_file.len if self.seft_file else None,
             'stamp': self.stamp,
             'survey': self.survey.survey_id,
             'businesses': self.rurefs,

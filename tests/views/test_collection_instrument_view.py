@@ -156,7 +156,7 @@ class TestCollectionInstrumentView(TestClient):
         # Then the response returns the correct data
         self.assertStatus(response, 200)
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
-        self.assertIn(instrument_id, response.data.decode())
+        self.assertIn(str(instrument_id), response.data.decode())
 
     def test_get_instrument_by_search_classifier(self):
 
