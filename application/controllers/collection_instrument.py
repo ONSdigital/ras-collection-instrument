@@ -54,7 +54,7 @@ class CollectionInstrument(object):
 
             instrument_json = {
                 'id': instrument.instrument_id,
-                'file_name': instrument.seft_file.file_name if instrument.seft_file else None,
+                'file_name': instrument.name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
                 'surveyId': instrument.survey.survey_id
             }
@@ -232,7 +232,7 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             csv += csv_format.format(count=count,
-                                     file_name=instrument.seft_file.file_name if instrument.seft_file else None,
+                                     file_name=instrument.name,
                                      length=instrument.seft_file.len if instrument.seft_file else None,
                                      date_stamp=instrument.stamp)
             count += 1
