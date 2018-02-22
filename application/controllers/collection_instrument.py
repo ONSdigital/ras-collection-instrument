@@ -124,6 +124,7 @@ class CollectionInstrument(object):
 
         return instrument
 
+    @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
@@ -140,7 +141,6 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        session.add(instrument)
         if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
             raise RasError('Failed to publish upload message', 500)
 

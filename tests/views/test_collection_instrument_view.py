@@ -12,7 +12,7 @@ from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import (
-    UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
+    UPLOAD_SUCCESSFUL, UPLOAD_BAD_REQUEST, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
 from tests.test_client import TestClient
 
 

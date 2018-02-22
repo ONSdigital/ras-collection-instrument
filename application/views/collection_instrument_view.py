@@ -3,9 +3,11 @@ import structlog
 
 from flask import Blueprint
 from flask import make_response, request, jsonify
+from uuid import UUID
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
+
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -14,6 +16,7 @@ collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
 UPLOAD_SUCCESSFUL = 'The upload was successful'
+UPLOAD_BAD_REQUEST = 'Upload bad request'
 LINK_SUCCESSFUL = 'Linked collection instrument to collection exercise'
 LINK_UNSUCCESSFUL = 'Unable to link collection instrument to collection exercise'
 
@@ -43,12 +46,8 @@ def upload_collection_instrument_without_collection_exercise():
 
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
 def link_collection_instrument(instrument_id, exercise_id):
-    link = CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
-
-    if link:
-        return make_response(LINK_SUCCESSFUL, 200)
-
-    return make_response(LINK_UNSUCCESSFUL, 400)
+    CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
+    return make_response(LINK_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])
