@@ -36,6 +36,7 @@ class InstrumentModel(Base):
     survey = relationship('SurveyModel', back_populates='instruments')
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
 
+
     exercises = relationship('ExerciseModel', secondary=instrument_exercise_table, back_populates='instruments')
     businesses = relationship('BusinessModel', secondary=instrument_business_table, back_populates='instruments')
 
@@ -56,7 +57,8 @@ class InstrumentModel(Base):
             'survey': self.survey.survey_id,
             'businesses': self.rurefs,
             'exercises': self.exids,
-            'classifiers': self.classifiers
+            'classifiers': self.classifiers,
+            'type': self.type
         }
 
     @property

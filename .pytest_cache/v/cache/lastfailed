@@ -1,0 +1,5 @@
+{
+  "tests/controllers/test_collection_instrument.py::TestCollectionInstrument::test_publish_uploaded_collection_instrument_rabbit_fails": true,
+  "tests/views/test_collection_instrument_view.py::TestCollectionInstrumentView::test_collection_instrument_upload_rabbit_exception": true,
+  "tests/views/test_survey_response_view.py::TestSurveyResponseView::test_add_survey_response_rabbit_exception": true
+}
