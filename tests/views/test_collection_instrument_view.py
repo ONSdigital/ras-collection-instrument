@@ -56,19 +56,14 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(len(collection_instruments()), 2)
 
     def test_upload_collection_instrument_without_collection_exercise(self):
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
 
-        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('pika.BlockingConnection'):
-            # When a post is made to the upload end point
-            response = self.client.post(
-                '/collection-instrument-api/1.0.2/upload/',
-                headers=self.get_auth_headers(),
-                content_type='multipart/form-data')
+        # When a post is made to the upload end point
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
 
-            # Then CI uploads successfully
+        # Then CI uploads successfully
         self.assertStatus(response, 200)
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
@@ -439,10 +434,10 @@ class TestCollectionInstrumentView(TestClient):
         instrument_id = self.add_instrument_without_exercise()
         exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
 
-        # When the instrument is linked to an exercise
-        response = self.client.post(
-            f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
-            headers=self.get_auth_headers())
+        with patch('pika.BlockingConnection'):
+            # When the instrument is linked to an exercise
+            response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+                                        headers=self.get_auth_headers())
 
         # Then that instrument is successfully linked to the given collection exercise
         self.assertStatus(response, 200)

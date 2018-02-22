@@ -15,6 +15,7 @@ COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
 UPLOAD_SUCCESSFUL = 'The upload was successful'
 LINK_SUCCESSFUL = 'Linked collection instrument to collection exercise'
+LINK_UNSUCCESSFUL = 'Unable to link collection instrument to collection exercise'
 
 
 @collection_instrument_view.before_request
@@ -32,17 +33,22 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
-@collection_instrument_view.route('/upload/', methods=['POST'])
-def upload_collection_instrument_without_collection_exercise(survey_id):
+@collection_instrument_view.route('/upload', methods=['POST'])
+def upload_collection_instrument_without_collection_exercise():
     classifiers = request.args.get('classifiers')
+    survey_id = request.args.get('survey_id')
     CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
 def link_collection_instrument(instrument_id, exercise_id):
-    CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
-    return make_response(LINK_SUCCESSFUL, 200)
+    link = CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
+
+    if link:
+        return make_response(LINK_SUCCESSFUL, 200)
+
+    return make_response(LINK_UNSUCCESSFUL, 400)
 
 
 @collection_instrument_view.route('/download_csv/<exercise_id>', methods=['GET'])

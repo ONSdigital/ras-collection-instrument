@@ -114,18 +114,14 @@ class CollectionInstrument(object):
         validate_uuid(survey_id)
         instrument = InstrumentModel(ci_type='EQ')
 
-        exercise = self._find_or_create_exercise(survey_id, session)
-        instrument.exercises.append(exercise)
-
-        survey = self._find_or_create_survey_from_exercise_id(survey_id, session)
+        survey = self._find_or_create_survey_from_survey_id(survey_id, session)
         instrument.survey = survey
 
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
         session.add(instrument)
-        if not self.publish_uploaded_eq_collection_instrument(instrument.instrument_id, survey_id):
-            raise RasError('Failed to publish upload message', 500)
+
         return instrument
 
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
@@ -143,6 +139,10 @@ class CollectionInstrument(object):
         instrument = self.get_instrument_by_id(instrument_id, session)
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
+
+        session.add(instrument)
+        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
 
         log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
         return True
@@ -171,24 +171,6 @@ class CollectionInstrument(object):
         return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
 
     @staticmethod
-    def publish_uploaded_eq_collection_instrument(instrument_id, survey_id):
-        """
-        Publish message to a rabbitmq exchange with details of collection instrument
-        :param survey_id: A survey id (UUID)
-        :param instrument_id: The id (UUID) for the newly created collection instrument
-        :return True if message successfully published to RABBIT_QUEUE_NAME
-        """
-        log.info('Publishing upload message', instrument_id=instrument_id, survey_id=survey_id)
-
-        tx_id = str(uuid.uuid4())
-        json_message = dumps({
-            'action': 'ADD',
-            'instrument_id': str(instrument_id),
-            'survey_id': str(survey_id)
-        })
-        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
-
-    @staticmethod
     def _find_or_create_survey_from_exercise_id(exercise_id, session):
         """
         Makes a request to the collection exercise service for the survey ID,
@@ -201,6 +183,21 @@ class CollectionInstrument(object):
                                    endpoint='collectionexercises',
                                    search_value=exercise_id)
         survey_id = response.json().get('surveyId')
+
+        survey = query_survey_by_id(survey_id, session)
+        if not survey:
+            log.info('creating survey', survey_id=survey_id)
+            survey = SurveyModel(survey_id=survey_id)
+        return survey
+
+    @staticmethod
+    def _find_or_create_survey_from_survey_id(survey_id, session):
+        """
+        reuses the survey if it exists in this service or create if it doesn't
+        :param survey_id: A survey id (UUID)
+        :param session: database session
+        :return survey
+        """
 
         survey = query_survey_by_id(survey_id, session)
         if not survey:
@@ -303,6 +300,7 @@ class CollectionInstrument(object):
         """
         Get the instrument data from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: data and file_name
         """
 
@@ -322,6 +320,7 @@ class CollectionInstrument(object):
         """
         Get the collection instrument from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: instrument
         """
         log.info('Searching for instrument', instrument_id=instrument_id)
