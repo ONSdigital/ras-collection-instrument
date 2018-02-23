@@ -476,6 +476,24 @@ class TestCollectionInstrumentView(TestClient):
                               if str(collection_exercise.exercise_id) == exercise_id]
         self.assertEquals(matching_exercises[0].items, 1)
 
+    def test_link_collection_instrument_rabbit_exception(self):
+
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        rabbit = Mock()
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
+
+        # When the instrument is linked to an exercise
+        response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+                                    headers=self.get_auth_headers())
+
+        response_data = json.loads(response.data)
+
+        self.assertStatus(response, 500)
+        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
     @staticmethod
     @with_db_session
     def add_instrument_without_exercise(session=None):
