@@ -12,7 +12,7 @@ from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import (
-    UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
+    UPLOAD_SUCCESSFUL, UPLOAD_BAD_REQUEST, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
 from tests.test_client import TestClient
 
 
@@ -68,6 +68,18 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
         self.assertEqual(len(collection_instruments()), 2)
+
+    def test_upload_collection_instrument_if_survey_does_not_exist(self):
+
+        # When a post is made to the upload end point
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then CI uploads successfully
+        self.assertStatus(response, 400)
+        self.assertEqual(response.data.decode(), UPLOAD_BAD_REQUEST)
 
     def test_collection_instrument_upload_with_ru(self):
         # Given an upload file and a patched survey_id response

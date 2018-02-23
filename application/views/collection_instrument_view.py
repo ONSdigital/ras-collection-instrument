@@ -38,8 +38,11 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
 def upload_collection_instrument_without_collection_exercise():
     classifiers = request.args.get('classifiers')
     survey_id = request.args.get('survey_id')
-    CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
-    return make_response(UPLOAD_SUCCESSFUL, 200)
+    if survey_id:
+        CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
+        return make_response(UPLOAD_SUCCESSFUL, 200)
+    else:
+        return make_response(UPLOAD_BAD_REQUEST, 400)
 
 
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
