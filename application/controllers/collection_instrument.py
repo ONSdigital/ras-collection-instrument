@@ -54,7 +54,7 @@ class CollectionInstrument(object):
 
             instrument_json = {
                 'id': instrument.instrument_id,
-                'file_name': instrument.seft_file.file_name,
+                'file_name': instrument.name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
                 'surveyId': instrument.survey.survey_id
             }
@@ -275,8 +275,8 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             csv += csv_format.format(count=count,
-                                     file_name=instrument.seft_file.file_name,
-                                     length=instrument.seft_file.len,
+                                     file_name=instrument.name,
+                                     length=instrument.seft_file.len if instrument.seft_file else None,
                                      date_stamp=instrument.stamp)
             count += 1
         return csv
@@ -346,6 +346,8 @@ class CollectionInstrument(object):
                 query = query.filter(ExerciseModel.exercise_id == value)
             elif classifier == 'SURVEY_ID':
                 query = query.filter(SurveyModel.survey_id == value)
+            elif classifier == 'TYPE':
+                query = query.filter(InstrumentModel.type == value)
             else:
                 query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
         result = query.order_by(InstrumentModel.stamp.desc())

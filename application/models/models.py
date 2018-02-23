@@ -50,8 +50,8 @@ class InstrumentModel(Base):
     def json(self):
         return {
             'id': self.instrument_id,
-            'file_name': self.seft_file.file_name,
-            'len': self.seft_file.len,
+            'file_name': self.name,
+            'len': self.seft_file.len if self.seft_file else None,
             'stamp': self.stamp,
             'survey': self.survey.survey_id,
             'businesses': self.rurefs,
@@ -66,6 +66,13 @@ class InstrumentModel(Base):
     @property
     def exids(self):
         return [exercise.exercise_id for exercise in self.exercises]
+
+    @property
+    def name(self):
+        if self.seft_file:
+            return self.seft_file.file_name
+
+        return self.classifiers.get('FORM_TYPE')
 
 
 class BusinessModel(Base):
