@@ -143,6 +143,21 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn('test_ru_ref', response.data.decode())
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
 
+    def test_get_instrument_by_search_string_type(self):
+
+        # Given an instrument which is in the db
+        instrument_id = self.add_instrument_without_exercise()
+
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"TYPE":%20"EQ"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
+        self.assertIn(str(instrument_id), response.data.decode())
+
     def test_get_instrument_by_search_classifier(self):
 
         # Given an instrument which is in the db
