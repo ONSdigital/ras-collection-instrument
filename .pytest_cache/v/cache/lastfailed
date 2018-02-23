@@ -1,3 +1,0 @@
-{
-  "tests/views/test_collection_instrument_view.py::TestCollectionInstrumentView::test_upload_collection_instrument_without_collection_exercise_bad_request": true
-}

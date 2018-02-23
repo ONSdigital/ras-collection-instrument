@@ -102,7 +102,7 @@ class CollectionInstrument(object):
     @with_db_session
     def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
         """
-        Encrypt and upload a collection instrument to the db
+        Upload a collection instrument to the db without a collection exercise
         :param classifiers: Classifiers associated with the instrument
         :param session: database session
         :param survey_id: database session

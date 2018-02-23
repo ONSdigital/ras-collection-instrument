@@ -17,7 +17,6 @@ NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exerc
 UPLOAD_SUCCESSFUL = 'The upload was successful'
 UPLOAD_BAD_REQUEST = 'Upload bad request'
 LINK_SUCCESSFUL = 'Linked collection instrument to collection exercise'
-LINK_UNSUCCESSFUL = 'Unable to link collection instrument to collection exercise'
 
 
 @collection_instrument_view.before_request
