@@ -11,14 +11,14 @@ class Config(object):
     VERSION = os.getenv('VERSION', '1.0.4')
     SCHEME = os.getenv('http')
     HOST = os.getenv('HOST', '0.0.0.0')
-    PORT = os.getenv('PORT', 8002)
+    PORT = os.getenv('PORT', 8004)
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
     JSON_SECRET_KEYS = os.getenv('JSON_SECRET_KEYS')
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
-    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
-    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
-    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'rabbit_amqp')
+    SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'sdc.sit')
+    SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'despise.sputa.airmail.cove.oxcart')
+    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'amqp://guest:guest@0.0.0.0:5672/')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
@@ -28,7 +28,7 @@ class Config(object):
         DATABASE_URI = cf.db.credentials['uri']
     else:
         DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
-        DATABASE_URI = os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
+        DATABASE_URI = os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:5432/postgres')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
@@ -66,7 +66,7 @@ class TestingConfig(Config):
     LOGGING_LEVEL = 'ERROR'
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
-    DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
+    DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:5432/postgres')
     RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
