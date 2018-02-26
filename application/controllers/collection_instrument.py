@@ -100,6 +100,31 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
+    def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
+        """
+        Upload a collection instrument to the db without a collection exercise
+        :param classifiers: Classifiers associated with the instrument
+        :param session: database session
+        :param survey_id: database session
+        :return a collection instrument instance
+        """
+
+        log.info('Upload instrument', survey_id=survey_id)
+
+        validate_uuid(survey_id)
+        instrument = InstrumentModel(ci_type='EQ')
+
+        survey = self._find_or_create_survey_from_survey_id(survey_id, session)
+        instrument.survey = survey
+
+        if classifiers:
+            instrument.classifiers = loads(classifiers)
+
+        session.add(instrument)
+
+        return instrument
+
+    @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
@@ -115,6 +140,9 @@ class CollectionInstrument(object):
         instrument = self.get_instrument_by_id(instrument_id, session)
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
+
+        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
 
         log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
         return True
@@ -155,6 +183,21 @@ class CollectionInstrument(object):
                                    endpoint='collectionexercises',
                                    search_value=exercise_id)
         survey_id = response.json().get('surveyId')
+
+        survey = query_survey_by_id(survey_id, session)
+        if not survey:
+            log.info('creating survey', survey_id=survey_id)
+            survey = SurveyModel(survey_id=survey_id)
+        return survey
+
+    @staticmethod
+    def _find_or_create_survey_from_survey_id(survey_id, session):
+        """
+        reuses the survey if it exists in this service or create if it doesn't
+        :param survey_id: A survey id (UUID)
+        :param session: database session
+        :return survey
+        """
 
         survey = query_survey_by_id(survey_id, session)
         if not survey:
@@ -257,6 +300,7 @@ class CollectionInstrument(object):
         """
         Get the instrument data from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: data and file_name
         """
 
@@ -276,6 +320,7 @@ class CollectionInstrument(object):
         """
         Get the collection instrument from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: instrument
         """
         log.info('Searching for instrument', instrument_id=instrument_id)

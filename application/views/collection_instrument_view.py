@@ -7,6 +7,7 @@ from flask import make_response, request, jsonify
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
 
+
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 collection_instrument_view = Blueprint('collection_instrument_view', __name__)
@@ -29,6 +30,14 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files['file']
     classifiers = request.args.get('classifiers')
     CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
+@collection_instrument_view.route('/upload', methods=['POST'])
+def upload_collection_instrument_without_collection_exercise():
+    classifiers = request.args.get('classifiers')
+    survey_id = request.args.get('survey_id')
+    CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
