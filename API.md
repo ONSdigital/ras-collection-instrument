@@ -2,7 +2,7 @@
 
 This page documents the Collection Instrument service API endpoints.
 
-### Encrypt and upload a collection exercise with RU
+### Encrypt and upload a collection instrument associated to collection exercise and RU
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>/<RU_id>` (with a file in the data of the POST)
 
@@ -11,7 +11,7 @@ Example Response
 The upload was successful
 ```
 
-### Encrypt and upload a collection exercise without RU
+### Encrypt and upload a collection instrument associated to collection exercise without RU
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>` (with a file in the data of the POST)
 
@@ -20,9 +20,18 @@ Example Response
 The upload was successful
 ```
 
-### Encrypt and upload a collection exercise with classifiers
+### Encrypt and upload a collection instrument associated to collection exercise with classifiers
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>?classifiers={"FORM_TYPE":%20"001"}` (with a file in the data of the POST)
+
+Example Response
+```
+The upload was successful
+```
+
+### upload an eQ collection instrument associated to a survey with classifiers
+
+* `POST /collection-instrument-api/1.0.2/upload?classifiers={"FORM_TYPE":%20"001"}&survey_id=02b9c366-7397-42f7-942a-76dc5876d86d`
 
 Example Response
 ```
