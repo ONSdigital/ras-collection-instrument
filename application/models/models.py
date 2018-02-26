@@ -56,7 +56,8 @@ class InstrumentModel(Base):
             'survey': self.survey.survey_id,
             'businesses': self.rurefs,
             'exercises': self.exids,
-            'classifiers': self.classifiers
+            'classifiers': self.classifiers,
+            'type': self.type
         }
 
     @property
