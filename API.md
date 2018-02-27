@@ -95,7 +95,7 @@ Example Response
 
 ### Get collection instrument by search string
 
-* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}`
+* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"form_type":%20"001"}`
 
 Example JSON Response
 ```json
@@ -104,7 +104,7 @@ Example JSON Response
     "COLLECTION_EXERCISE": [
       "8f078c99-2843-47c6-9c57-13e5966fbc9e"
     ],
-    "FORM_TYPE": "001",
+    "form_type": "001",
     "RU_REF": [
       "test_ru_ref"
     ]
