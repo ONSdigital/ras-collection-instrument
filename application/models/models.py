@@ -73,7 +73,7 @@ class InstrumentModel(Base):
         if self.seft_file:
             return self.seft_file.file_name
 
-        return self.classifiers.get('FORM_TYPE')
+        return self.classifiers.get('form_type')
 
 
 class BusinessModel(Base):
