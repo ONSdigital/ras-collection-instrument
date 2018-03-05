@@ -34,7 +34,7 @@ def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
     """
     rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
-    publisher = publisher_type([rabbitmq_amqp], queue_name)
+    publisher = publisher_type(rabbitmq_amqp, queue_name)
     # NB: _connect declares a queue or exchange
     publisher._connect()
     log.info('Successfully initialised rabbitmq', queue=queue_name)
@@ -53,7 +53,7 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
     """
     rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
-    publisher = publisher_type([rabbitmq_amqp], queue_name)
+    publisher = publisher_type(rabbitmq_amqp, queue_name)
     message = _encrypt_message(message) if encrypt else message
     try:
         result = publisher.publish_message(message, headers={"tx_id": tx_id}, immediate=False, mandatory=True)
