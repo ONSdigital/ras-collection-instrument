@@ -18,7 +18,8 @@ class Config(object):
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
-    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'rabbit_amqp')
+    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INTRUMENT', 'rabbit_amqp')
+    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
@@ -67,7 +68,8 @@ class TestingConfig(Config):
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
-    RABBITMQ_AMQP = os.getenv('RABBITMQ_AMQP', 'amqp://guest:guest@localhost:5672')
+    RABBITMQ_AMQP_COLLECTION_INTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INTRUMENT', 'amqp://guest:guest@localhost:5672')
+    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
     JSON_SECRET_KEYS = open("./tests/files/keys.json").read()
