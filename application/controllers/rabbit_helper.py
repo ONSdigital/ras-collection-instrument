@@ -24,14 +24,15 @@ def _encrypt_message(message_json):
     return encrypter.encrypt(message_json)
 
 
-def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp):
+def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
     """
     Initialise a rabbit queue or exchange is created ahead of use
     :param queue_name: The rabbit queue or exchange to initialise
     :param publisher_type: Publisher class from sdc-rabbit to use
-    :param rabbitmq_amqp: connection string for rabbitmq
+    :param rabbitmq_amqp_config: rabbitmq config item to refer to
     :return: boolean
     """
+    rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     # NB: _connect declares a queue or exchange
@@ -39,7 +40,7 @@ def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp):
     log.info('Successfully initialised rabbitmq', queue=queue_name)
 
 
-def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbitmq_amqp, encrypt=True):
+def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbitmq_amqp_config, encrypt=True):
     """
     Send message to rabbitmq
     :param message: The message to send to the queue in JSON format
@@ -47,9 +48,10 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
     :param queue_name: The rabbit queue or exchange to publish to
     :param encrypt: Flag whether message should be encrypted before publication
     :param publisher_type: Publisher class from sdc-rabbit to use
-    :param rabbitmq_amqp: connection string for rabbitmq
+    :param rabbitmq_amqp_config: rabbitmq config item to refer to
     :return: boolean
     """
+    rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
     log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     message = _encrypt_message(message) if encrypt else message
@@ -62,7 +64,7 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
         return False
 
 
-initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp = current_app.config['RABBITMQ_AMQP_SURVEY_RESPONSE'])
-initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp = current_app.config['RABBITMQ_AMQP_COLLECTION_INSTRUMENT'])
-send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp = current_app.config['RABBITMQ_AMQP_SURVEY_RESPONSE'])
-send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp = current_app.config['RABBITMQ_AMQP_COLLECTION_INSTRUMENT']) # NOQA
+initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_SURVEY_RESPONSE')
+initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
+send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_SURVEY_RESPONSE')
+send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_COLLECTION_INSTRUMENT') # NOQA
