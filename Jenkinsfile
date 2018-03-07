@@ -20,13 +20,15 @@ pipeline {
                 CF_DOMAIN = credentials('CF_DOMAIN')
                 DEV_SECURITY = credentials('DEV_SECURITY')
                 CF_USER = credentials('CF_USER')
-                RABBITMQ_AMQP = credentials('RABBITMQ_AMQP')
+                RABBITMQ_AMQP_SURVEY_RESPONSE = credentials('RABBITMQ_AMQP_SURVEY_RESPONSE')
+                RABBITMQ_AMQP_COLLECTION_INSTRUMENT = credentials('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
             }
             steps {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s dev"
                 sh 'cf push --no-start ras-collection-instrument-dev'
                 sh 'cf set-env ras-collection-instrument-dev ONS_ENV dev'
-                sh "cf set-env ras-collection-instrument-dev RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
+                sh "cf set-env ras-collection-instrument-dev RABBITMQ_AMQP_SURVEY_RESPONSE ${env.RABBITMQ_AMQP_SURVEY_RESPONSE}"
+                sh "cf set-env ras-collection-instrument-dev RABBITMQ_AMQP_COLLECTION_INSTRUMENT ${env.RABBITMQ_AMQP_COLLECTION_INSTRUMENT}"
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_NAME ${env.DEV_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-dev SECURITY_USER_PASSWORD ${env.DEV_SECURITY_PSW}"
 
@@ -76,13 +78,15 @@ pipeline {
                 CF_DOMAIN = credentials('CF_DOMAIN')
                 CI_SECURITY = credentials('CI_SECURITY')
                 CF_USER = credentials('CF_USER')
-                RABBITMQ_AMQP = credentials('RABBITMQ_AMQP')
+                RABBITMQ_AMQP_SURVEY_RESPONSE = credentials('RABBITMQ_AMQP_SURVEY_RESPONSE')
+                RABBITMQ_AMQP_COLLECTION_INSTRUMENT = credentials('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
             }
             steps {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s ci"
                 sh 'cf push --no-start ras-collection-instrument-ci'
                 sh 'cf set-env ras-collection-instrument-ci ONS_ENV ci'
-                sh "cf set-env ras-collection-instrument-ci RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
+                sh "cf set-env ras-collection-instrument-ci RABBITMQ_AMQP_SURVEY_RESPONSE ${env.RABBITMQ_AMQP_SURVEY_RESPONSE}"
+                sh "cf set-env ras-collection-instrument-ci RABBITMQ_AMQP_COLLECTION_INSTRUMENT ${env.RABBITMQ_AMQP_COLLECTION_INSTRUMENT}"
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_NAME ${env.CI_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-ci SECURITY_USER_PASSWORD ${env.CI_SECURITY_PSW}"
 
@@ -155,13 +159,15 @@ pipeline {
                 CF_DOMAIN = credentials('CF_DOMAIN')
                 TEST_SECURITY = credentials('TEST_SECURITY')
                 CF_USER = credentials('CF_USER')
-                RABBITMQ_AMQP = credentials('RABBITMQ_AMQP')
+                RABBITMQ_AMQP_SURVEY_RESPONSE = credentials('RABBITMQ_AMQP_SURVEY_RESPONSE')
+                RABBITMQ_AMQP_COLLECTION_INSTRUMENT = credentials('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
             }
             steps {
                 sh "cf login -a https://${env.CLOUDFOUNDRY_API} --skip-ssl-validation -u ${CF_USER_USR} -p ${CF_USER_PSW} -o rmras -s test"
                 sh 'cf push --no-start ras-collection-instrument-test'
                 sh 'cf set-env ras-collection-instrument-test ONS_ENV test'
-                sh "cf set-env ras-collection-instrument-test RABBITMQ_AMQP ${env.RABBITMQ_AMQP}"
+                sh "cf set-env ras-collection-instrument-test RABBITMQ_AMQP_SURVEY_RESPONSE ${env.RABBITMQ_AMQP_SURVEY_RESPONSE}"
+                sh "cf set-env ras-collection-instrument-test RABBITMQ_AMQP_COLLECTION_INSTRUMENT ${env.RABBITMQ_AMQP_COLLECTION_INSTRUMENT}"
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_NAME ${env.TEST_SECURITY_USR}"
                 sh "cf set-env ras-collection-instrument-test SECURITY_USER_PASSWORD ${env.TEST_SECURITY_PSW}"
 
