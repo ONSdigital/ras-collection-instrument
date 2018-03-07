@@ -33,7 +33,7 @@ def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
     :return: boolean
     """
     rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
-    log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
+    log.info('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     # NB: _connect declares a queue or exchange
     publisher._connect()
