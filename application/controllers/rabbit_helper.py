@@ -33,7 +33,7 @@ def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
     :return: boolean
     """
     rabbitmq_amqp = current_app.config[rabbitmq_amqp_config]
-    log.debug('Connecting to rabbitmq', url=rabbitmq_amqp)
+    log.debug ('Connecting to rabbitmq', url=rabbitmq_amqp)
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     # NB: _connect declares a queue or exchange
     publisher._connect()
@@ -64,7 +64,12 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
         return False
 
 
-initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_SURVEY_RESPONSE')
-initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
-send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_SURVEY_RESPONSE')
-send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq, publisher_type=DurableExchangePublisher, rabbitmq_amqp_config = 'RABBITMQ_AMQP_COLLECTION_INSTRUMENT') # NOQA
+initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher,
+                                              rabbitmq_amqp_config='RABBITMQ_AMQP_SURVEY_RESPONSE')
+initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher,
+                                                 rabbitmq_amqp_config='RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
+send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher,
+                                                   rabbitmq_amqp_config='RABBITMQ_AMQP_SURVEY_RESPONSE')
+send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq,
+                                                      publisher_type=DurableExchangePublisher,
+                                                      rabbitmq_amqp_config='RABBITMQ_AMQP_COLLECTION_INSTRUMENT') # NOQA
