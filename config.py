@@ -68,7 +68,8 @@ class TestingConfig(Config):
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
     DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'amqp://guest:guest@localhost:5672')
+    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT',
+                                                    'amqp://guest:guest@localhost:5672')
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
