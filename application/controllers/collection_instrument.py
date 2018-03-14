@@ -348,10 +348,8 @@ class CollectionInstrument(object):
                 query = query.filter(SurveyModel.survey_id == value)
             elif classifier == 'TYPE':
                 query = query.filter(InstrumentModel.type == value)
-            elif classifier == 'FORM_TYPE':
-                query = query.filter(InstrumentModel.classifiers.contains({"form_type": value}))
             else:
-                query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
+                query = query.filter(InstrumentModel.classifiers.contains({classifier.lower(): value}))
         result = query.order_by(InstrumentModel.stamp.desc())
 
         if limit:
