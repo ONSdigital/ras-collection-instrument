@@ -349,7 +349,7 @@ class CollectionInstrument(object):
             elif classifier == 'TYPE':
                 query = query.filter(InstrumentModel.type == value)
             else:
-                query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
+                query = query.filter(InstrumentModel.classifiers.contains({classifier.lower(): value}))
         result = query.order_by(InstrumentModel.stamp.desc())
 
         if limit:
