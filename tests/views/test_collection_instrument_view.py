@@ -10,7 +10,7 @@ from six import BytesIO
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel
+from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import (
     UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
 from tests.test_client import TestClient
@@ -19,6 +19,11 @@ from tests.test_client import TestClient
 @with_db_session
 def collection_instruments(session=None):
     return session.query(InstrumentModel).all()
+
+
+@with_db_session
+def collection_exercises(session=None):
+    return session.query(ExerciseModel).all()
 
 
 class TestCollectionInstrumentView(TestClient):
@@ -39,12 +44,40 @@ class TestCollectionInstrumentView(TestClient):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-                '?classifiers={"FORM_TYPE": "001"}',
+                '?classifiers={"form_type": "001"}',
                 headers=self.get_auth_headers(),
                 data=data,
                 content_type='multipart/form-data')
 
         # Then the file uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
+
+    def test_upload_collection_instrument_without_collection_exercise(self):
+
+        # When a post is made to the upload end point
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then CI uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
+
+    def test_upload_collection_instrument_if_survey_does_not_exist(self):
+
+        # When a post is made to the upload end point
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=98b711c3-0ac8-41d3-ae0e-567e5ea1ef87',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then CI uploads successfully
         self.assertStatus(response, 200)
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
@@ -62,7 +95,7 @@ class TestCollectionInstrumentView(TestClient):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/9999'
-                '?classifiers={"FORM_TYPE": "001"}',
+                '?classifiers={"form_type": "001"}',
                 headers=self.get_auth_headers(),
                 data=data,
                 content_type='multipart/form-data')
@@ -88,7 +121,7 @@ class TestCollectionInstrumentView(TestClient):
             # When a post is made to the upload end point
             response = self.client.post(
                 '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-                '?classifiers={"FORM_TYPE": "001"}',
+                '?classifiers={"form_type": "001"}',
                 headers=self.get_auth_headers(),
                 data=data,
                 content_type='multipart/form-data')
@@ -104,7 +137,10 @@ class TestCollectionInstrumentView(TestClient):
     def test_download_exercise_csv(self):
 
         # Given a patched exercise
-        instrument = InstrumentModel(file_name='file_name', data='test_data', length=999)
+        instrument = InstrumentModel()
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='file_name',
+                              data='test_data', length=999)
+        instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)
@@ -135,12 +171,27 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn('test_ru_ref', response.data.decode())
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
 
+    def test_get_instrument_by_search_string_type(self):
+
+        # Given an instrument which is in the db
+        instrument_id = self.add_instrument_without_exercise()
+
+        # When the collection instrument end point is called with a search string
+        response = self.client.get(
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"TYPE":%20"EQ"}',
+            headers=self.get_auth_headers())
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
+        self.assertIn(str(instrument_id), response.data.decode())
+
     def test_get_instrument_by_search_classifier(self):
 
         # Given an instrument which is in the db
         # When the collection instrument end point is called with a search classifier
         response = self.client.get(
-            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}',
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"form_type":%20"001"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -155,14 +206,14 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument?'
-            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
+            'searchString={"form_type":%20"001","GEOGRAPHY":%20"EN"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
         self.assertStatus(response, 200)
         self.assertIn('test_file', response.data.decode())
         self.assertIn('"GEOGRAPHY": "EN"', response.data.decode())
-        self.assertIn('"FORM_TYPE": "001"', response.data.decode())
+        self.assertIn('"form_type": "001"', response.data.decode())
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
 
     def test_get_instrument_by_search_limit_1(self):
@@ -237,7 +288,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with a search classifier
         response = self.client.get(
-            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"FORM_TYPE":%20"001"}',
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"form_type":%20"001"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -251,7 +302,7 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument/count?'
-            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
+            'searchString={"form_type":%20"001","GEOGRAPHY":%20"EN"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -265,7 +316,7 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument/count?'
-            'searchString={"FORM_TYPE":%20"666","GEOGRAPHY":%20"GB"}',
+            'searchString={"form_type":%20"666","GEOGRAPHY":%20"GB"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -364,7 +415,7 @@ class TestCollectionInstrumentView(TestClient):
             # When a post is made to the upload end point
             response = self.client.post(
                     '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-                    '?classifiers={"FORM_TYPE": "001"}',
+                    '?classifiers={"form_type": "001"}',
                     headers=self.get_auth_headers(),
                     data=data,
                     content_type='multipart/form-data')
@@ -406,15 +457,63 @@ class TestCollectionInstrumentView(TestClient):
         # Then a 401 unauthorised is return
         self.assertStatus(response, 401)
 
+    def test_link_collection_instrument(self):
+
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        with patch('pika.BlockingConnection'):
+            # When the instrument is linked to an exercise
+            response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+                                        headers=self.get_auth_headers())
+
+        # Then that instrument is successfully linked to the given collection exercise
+        self.assertStatus(response, 200)
+        all_collection_exercises = collection_exercises()
+        matching_exercises = [collection_exercise
+                              for collection_exercise in all_collection_exercises
+                              if str(collection_exercise.exercise_id) == exercise_id]
+        self.assertEquals(matching_exercises[0].items, 1)
+
+    def test_link_collection_instrument_rabbit_exception(self):
+
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        rabbit = Mock()
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
+
+        # When the instrument is linked to an exercise
+        response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+                                    headers=self.get_auth_headers())
+
+        response_data = json.loads(response.data)
+
+        self.assertStatus(response, 500)
+        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
+    @staticmethod
+    @with_db_session
+    def add_instrument_without_exercise(session=None):
+        instrument = InstrumentModel(ci_type='EQ', classifiers={"form_type": "001", "GEOGRAPHY": "EN"})
+        survey = SurveyModel(survey_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
+        instrument.survey = survey
+        business = BusinessModel(ru_ref='test_ru_ref')
+        instrument.businesses.append(business)
+        session.add(instrument)
+        return instrument.instrument_id
+
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(file_name='test_file',
-                                     classifiers={"FORM_TYPE": "001", "GEOGRAPHY": "EN"},
-                                     length='999')
+        instrument = InstrumentModel(classifiers={"form_type": "001", "GEOGRAPHY": "EN"}, ci_type='SEFT')
         crypto = Cryptographer()
         data = BytesIO(b'test data')
-        instrument.data = crypto.encrypt(data.read())
+        data = crypto.encrypt(data.read())
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file', length='999', data=data)
+        instrument.seft_file = seft_file
         exercise = ExerciseModel()
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)

@@ -11,8 +11,7 @@ from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
 from application.exceptions import RasError
-from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel
-
+from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel, SEFTModel
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -55,7 +54,7 @@ class CollectionInstrument(object):
 
             instrument_json = {
                 'id': instrument.instrument_id,
-                'file_name': instrument.file_name,
+                'file_name': instrument.name,
                 'classifiers': {**classifiers, **ru, **collection_exercise},
                 'surveyId': instrument.survey.survey_id
             }
@@ -77,7 +76,10 @@ class CollectionInstrument(object):
         log.info('Upload exercise', exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-        instrument = self._create_instrument(file)
+        instrument = InstrumentModel(ci_type='SEFT')
+
+        seft_file = self._create_seft_file(instrument.instrument_id, file)
+        instrument.seft_file = seft_file
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
@@ -96,6 +98,54 @@ class CollectionInstrument(object):
         if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
             raise RasError('Failed to publish upload message', 500)
         return instrument
+
+    @with_db_session
+    def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
+        """
+        Upload a collection instrument to the db without a collection exercise
+        :param classifiers: Classifiers associated with the instrument
+        :param session: database session
+        :param survey_id: database session
+        :return a collection instrument instance
+        """
+
+        log.info('Upload instrument', survey_id=survey_id)
+
+        validate_uuid(survey_id)
+        instrument = InstrumentModel(ci_type='EQ')
+
+        survey = self._find_or_create_survey_from_survey_id(survey_id, session)
+        instrument.survey = survey
+
+        if classifiers:
+            instrument.classifiers = loads(classifiers)
+
+        session.add(instrument)
+
+        return instrument
+
+    @with_db_session
+    def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
+        """
+        Link a collection instrument to a collection exercise
+        :param instrument_id: A collection instrument id (UUID)
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        :return True if instrument has been successfully linked to exercise
+        """
+        log.info('Linking instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        validate_uuid(instrument_id)
+        validate_uuid(exercise_id)
+
+        instrument = self.get_instrument_by_id(instrument_id, session)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+        instrument.exercises.append(exercise)
+
+        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
+
+        log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        return True
 
     @staticmethod
     def initialise_messaging():
@@ -141,6 +191,21 @@ class CollectionInstrument(object):
         return survey
 
     @staticmethod
+    def _find_or_create_survey_from_survey_id(survey_id, session):
+        """
+        reuses the survey if it exists in this service or create if it doesn't
+        :param survey_id: A survey id (UUID)
+        :param session: database session
+        :return survey
+        """
+
+        survey = query_survey_by_id(survey_id, session)
+        if not survey:
+            log.info('creating survey', survey_id=survey_id)
+            survey = SurveyModel(survey_id=survey_id)
+        return survey
+
+    @staticmethod
     def _find_or_create_exercise(exercise_id, session):
         """
         Creates a exercise in the db if it doesn't exist, or reuses if it does
@@ -170,19 +235,20 @@ class CollectionInstrument(object):
         return business
 
     @staticmethod
-    def _create_instrument(file):
+    def _create_seft_file(instrument_id, file):
         """
-        Creates a Instrument with an encrypted version of the file
+        Creates a seft_file with an encrypted version of the file
         :param file: A file object from which we can read the file contents
         :return instrument
         """
-        log.info('creating instrument')
+        log.info('creating instrument seft file')
         file_contents = file.read()
         file_size = len(file_contents)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
-        instrument = InstrumentModel(file_name=file.filename, length=file_size, data=encrypted_file)
-        return instrument
+        seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename,
+                              length=file_size, data=encrypted_file)
+        return seft_file
 
     @staticmethod
     @with_db_session
@@ -209,8 +275,8 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             csv += csv_format.format(count=count,
-                                     file_name=instrument.file_name,
-                                     length=instrument.len,
+                                     file_name=instrument.name,
+                                     length=instrument.seft_file.len if instrument.seft_file else None,
                                      date_stamp=instrument.stamp)
             count += 1
         return csv
@@ -234,6 +300,7 @@ class CollectionInstrument(object):
         """
         Get the instrument data from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: data and file_name
         """
 
@@ -244,8 +311,8 @@ class CollectionInstrument(object):
         if instrument:
             log.info('Decrypting collection instrument data', instrument_id=instrument_id)
             cryptographer = Cryptographer()
-            data = cryptographer.decrypt(instrument.data)
-            file_name = instrument.file_name
+            data = cryptographer.decrypt(instrument.seft_file.data)
+            file_name = instrument.seft_file.file_name
         return data, file_name
 
     @staticmethod
@@ -253,6 +320,7 @@ class CollectionInstrument(object):
         """
         Get the collection instrument from the db using the id
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: instrument
         """
         log.info('Searching for instrument', instrument_id=instrument_id)
@@ -278,6 +346,8 @@ class CollectionInstrument(object):
                 query = query.filter(ExerciseModel.exercise_id == value)
             elif classifier == 'SURVEY_ID':
                 query = query.filter(SurveyModel.survey_id == value)
+            elif classifier == 'TYPE':
+                query = query.filter(InstrumentModel.type == value)
             else:
                 query = query.filter(InstrumentModel.classifiers.contains({classifier: value}))
         result = query.order_by(InstrumentModel.stamp.desc())

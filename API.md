@@ -2,7 +2,7 @@
 
 This page documents the Collection Instrument service API endpoints.
 
-### Encrypt and upload a collection exercise with RU
+### Encrypt and upload a collection instrument associated to collection exercise and RU
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>/<RU_id>` (with a file in the data of the POST)
 
@@ -11,7 +11,7 @@ Example Response
 The upload was successful
 ```
 
-### Encrypt and upload a collection exercise without RU
+### Encrypt and upload a collection instrument associated to collection exercise without RU
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>` (with a file in the data of the POST)
 
@@ -20,13 +20,31 @@ Example Response
 The upload was successful
 ```
 
-### Encrypt and upload a collection exercise with classifiers
+### Encrypt and upload a collection instrument associated to collection exercise with classifiers
 
 * `POST /collection-instrument-api/1.0.2/upload/<exercise_id>?classifiers={"FORM_TYPE":%20"001"}` (with a file in the data of the POST)
 
 Example Response
 ```
 The upload was successful
+```
+
+### upload an eQ collection instrument associated to a survey with classifiers
+
+* `POST /collection-instrument-api/1.0.2/upload?classifiers={"FORM_TYPE":%20"001"}&survey_id=02b9c366-7397-42f7-942a-76dc5876d86d`
+
+Example Response
+```
+The upload was successful
+```
+
+### Link a collection instrument to a collection exercise
+
+* `POST /collection-instrument-api/1.0.2/link/<instrument_id>/<exercise_id>`
+
+Example Response
+```
+Linked collection instrument to collection exercise
 ```
 
 ### Find all collection instruments associated with an exercise (CSV)
@@ -77,7 +95,7 @@ Example Response
 
 ### Get collection instrument by search string
 
-* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}`
+* `GET /collection-instrument-api/1.0.2/collectioninstrument?searchString={"form_type":%20"001"}`
 
 Example JSON Response
 ```json
@@ -86,7 +104,7 @@ Example JSON Response
     "COLLECTION_EXERCISE": [
       "8f078c99-2843-47c6-9c57-13e5966fbc9e"
     ],
-    "FORM_TYPE": "001",
+    "form_type": "001",
     "RU_REF": [
       "test_ru_ref"
     ]

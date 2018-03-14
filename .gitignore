@@ -52,3 +52,9 @@ ras-ci
 .idea/
 onsdb
 *~
+
+# dotenv
+*.env
+
+# pytest_cache
+*.pytest_cache
