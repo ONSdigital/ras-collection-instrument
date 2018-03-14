@@ -191,7 +191,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with a search classifier
         response = self.client.get(
-            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"form_type":%20"001"}',
+            '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"FORM_TYPE":%20"001"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -206,13 +206,13 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument?'
-            'searchString={"form_type":%20"001","GEOGRAPHY":%20"EN"}',
+            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
         self.assertStatus(response, 200)
         self.assertIn('test_file', response.data.decode())
-        self.assertIn('"GEOGRAPHY": "EN"', response.data.decode())
+        self.assertIn('"geography": "EN"', response.data.decode())
         self.assertIn('"form_type": "001"', response.data.decode())
         self.assertIn('cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87', response.data.decode())
 
@@ -288,7 +288,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with a search classifier
         response = self.client.get(
-            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"form_type":%20"001"}',
+            '/collection-instrument-api/1.0.2/collectioninstrument/count?searchString={"FORM_TYPE":%20"001"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -302,7 +302,7 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument/count?'
-            'searchString={"form_type":%20"001","GEOGRAPHY":%20"EN"}',
+            'searchString={"FORM_TYPE":%20"001","GEOGRAPHY":%20"EN"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -316,7 +316,7 @@ class TestCollectionInstrumentView(TestClient):
         # When the collection instrument end point is called with a multiple search classifiers
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument/count?'
-            'searchString={"form_type":%20"666","GEOGRAPHY":%20"GB"}',
+            'searchString={"FORM_TYPE":%20"666","GEOGRAPHY":%20"GB"}',
             headers=self.get_auth_headers())
 
         # Then the response returns the correct data
@@ -497,7 +497,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_without_exercise(session=None):
-        instrument = InstrumentModel(ci_type='EQ', classifiers={"form_type": "001", "GEOGRAPHY": "EN"})
+        instrument = InstrumentModel(ci_type='EQ', classifiers={"form_type": "001", "geography": "EN"})
         survey = SurveyModel(survey_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
         instrument.survey = survey
         business = BusinessModel(ru_ref='test_ru_ref')
@@ -508,7 +508,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None):
-        instrument = InstrumentModel(classifiers={"form_type": "001", "GEOGRAPHY": "EN"}, ci_type='SEFT')
+        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type='SEFT')
         crypto = Cryptographer()
         data = BytesIO(b'test data')
         data = crypto.encrypt(data.read())
