@@ -56,6 +56,11 @@ class Config(object):
                                             RM_SURVEY_SERVICE_HOST,
                                             RM_SURVEY_SERVICE_PORT)
 
+    PARTY_SERVICE_PROTOCOL = os.getenv('PARTY_SERVICE_PROTOCOL', 'http')
+    PARTY_SERVICE_HOST = os.getenv('PARTY_SERVICE_HOST', 'localhost')
+    PARTY_SERVICE_PORT = os.getenv('PARTY_SERVICE_PORT', 8081)
+    PARTY_SERVICE = f'{PARTY_SERVICE_PROTOCOL}://{PARTY_SERVICE_HOST}:{PARTY_SERVICE_PORT}'
+
 
 class DevelopmentConfig(Config):
     DEBUG = os.getenv('DEBUG', True)
