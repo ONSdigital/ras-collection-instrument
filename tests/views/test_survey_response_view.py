@@ -23,7 +23,8 @@ class TestSurveyResponseView(TestClient):
         mock_case_service = Response()
         mock_case_service.status_code = 200
         mock_case_service._content = b'{"caseGroup": {"sampleUnitRef": "sampleUnitRef", ' \
-                                     b'"collectionExerciseId": "collectionExerciseId"}}'
+                                     b'"collectionExerciseId": "collectionExerciseId",' \
+                                     b'"partyId": "partyId"}}'
 
         mock_collection_service = Response()
         mock_collection_service.status_code = 200
@@ -33,8 +34,13 @@ class TestSurveyResponseView(TestClient):
         mock_survey_service.status_code = 200
         mock_survey_service._content = b'{"surveyRef": "123456"}'
 
+        mock_party_service = Response()
+        mock_party_service.status_code = 200
+        mock_party_service._content = b'{"checkletter": "A"}'
+
         with patch('application.controllers.service_helper.service_request',
-                   side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
+                   side_effect=[mock_case_service, mock_collection_service,
+                                mock_survey_service, mock_party_service]), \
                 patch('pika.BlockingConnection'):
 
             # When that file is post to the survey response end point
@@ -57,7 +63,8 @@ class TestSurveyResponseView(TestClient):
         mock_case_service = Response()
         mock_case_service.status_code = 200
         mock_case_service._content = b'{"caseGroup": {"sampleUnitRef": "sampleUnitRef", ' \
-                                     b'"collectionExerciseId": "collectionExerciseId"}}'
+                                     b'"collectionExerciseId": "collectionExerciseId",' \
+                                     b'"partyId": "partyId"}}'
 
         mock_collection_service = Response()
         mock_collection_service.status_code = 200
@@ -67,8 +74,13 @@ class TestSurveyResponseView(TestClient):
         mock_survey_service.status_code = 200
         mock_survey_service._content = b'{"surveyRef": "123456"}'
 
+        mock_party_service = Response()
+        mock_party_service.status_code = 200
+        mock_party_service._content = b'{"checkletter": "A"}'
+
         with patch('application.controllers.service_helper.service_request',
-                   side_effect=[mock_case_service, mock_collection_service, mock_survey_service]),\
+                   side_effect=[mock_case_service, mock_collection_service,
+                                mock_survey_service, mock_party_service]),\
                 patch('application.controllers.rabbit_helper.QueuePublisher'):
             with self.assertLogs(level='INFO') as cm:
                 # When that file is post to the survey response end point
@@ -184,6 +196,45 @@ class TestSurveyResponseView(TestClient):
         self.assertStatus(response, 400)
         self.assertEquals(response.data.decode(), INVALID_UPLOAD)
 
+    def test_add_survey_response_success_party_missing_data(self):
+
+        # Given a file with mocked micro service calls to case, collection and survey
+        data = dict(file=(BytesIO(b'upload_test'), 'upload_test.xls'))
+
+        mock_case_service = Response()
+        mock_case_service.status_code = 200
+        mock_case_service._content = b'{"caseGroup": {"sampleUnitRef": "sampleUnitRef", ' \
+                                     b'"collectionExerciseId": "collectionExerciseId",' \
+                                     b'"partyId": "partyId"}}'
+
+        mock_collection_service = Response()
+        mock_collection_service.status_code = 200
+        mock_collection_service._content = b'{"exerciseRef": "test", "surveyId": "test"}'
+
+        mock_survey_service = Response()
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyRef": "123456"}'
+
+        mock_party_service = Response()
+        mock_party_service.status_code = 404
+
+        with patch('application.controllers.service_helper.service_request',
+                   side_effect=[mock_case_service, mock_collection_service,
+                                mock_survey_service, mock_party_service]), \
+                patch('pika.BlockingConnection'):
+
+            # When that file is post to the survey response end point
+            response = self.client.post(
+                '/survey_response-api/v1/survey_responses/{case_id}'.
+                format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+                data=data,
+                headers=self.get_auth_headers(),
+                content_type='multipart/form-data')
+
+            # Then the the missing data response is returned
+            self.assertStatus(response, 404)
+            self.assertEquals(response.data.decode(), MISSING_DATA)
+
     def test_add_survey_response_invalid_file_extension(self):
 
         # Given a file with an unaccepted file extension
@@ -225,7 +276,8 @@ class TestSurveyResponseView(TestClient):
         mock_case_service = Response()
         mock_case_service.status_code = 200
         mock_case_service._content = b'{"caseGroup": {"sampleUnitRef": "sampleUnitRef", ' \
-                                     b'"collectionExerciseId": "collectionExerciseId"}}'
+                                     b'"collectionExerciseId": "collectionExerciseId",' \
+                                     b'"partyId": "partyId"}}'
 
         mock_collection_service = Response()
         mock_collection_service.status_code = 200
@@ -235,12 +287,16 @@ class TestSurveyResponseView(TestClient):
         mock_survey_service.status_code = 200
         mock_survey_service._content = b'{"surveyRef": "123456"}'
 
+        mock_party_service = Response()
+        mock_party_service.status_code = 200
+        mock_party_service._content = b'{"checkletter": "A"}'
+
         rabbit = Mock()
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service,
-                                mock_survey_service]), \
+                                mock_survey_service, mock_party_service]), \
             patch('application.controllers.rabbit_helper.QueuePublisher',
                   return_value=rabbit):
             # When that file is post to the survey response end point
