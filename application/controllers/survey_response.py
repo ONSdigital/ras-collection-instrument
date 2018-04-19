@@ -125,7 +125,8 @@ class SurveyResponse(object):
         ru = case_group.get('sampleUnitRef')
         exercise_ref = self._format_exercise_ref(exercise_ref)
 
-        business_party = get_business_party(case_group['partyId'], verbose=True)
+        business_party = get_business_party(case_group['partyId'],
+                                            collection_exercise_id=collection_exercise_id, verbose=True)
         if not business_party:
             return None, None
         check_letter = business_party['checkletter']

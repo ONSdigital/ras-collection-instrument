@@ -64,22 +64,24 @@ def get_survey_ref(survey_id):
     return survey_ref
 
 
-def get_business_party(business_id, verbose=False):
+def get_business_party(business_id, collection_exercise_id=None, verbose=False):
     """
     :param business_id: The business UUID to search with
+    :param collection_exercise_id: The collection exercise id to retrieve attributes for
     :param verbose: Boolean to decide the verbosity of the party response
     :return: a business party
     """
-    log.debug('Retrieving business party', party_id=business_id)
+    log.debug('Retrieving business party', party_id=business_id, collection_exercise_id=collection_exercise_id)
     response = service_request(service='party-service',
                                endpoint='party-api/v1/businesses/id',
-                               search_value=f'{business_id}?verbose={verbose}')
+                               search_value=f'{business_id}?verbose={verbose}'
+                                            f'&collection_exercise_id={collection_exercise_id}')
 
     if not response.ok:
-        log.error('Failed to find business', party_id=business_id)
+        log.error('Failed to find business', party_id=business_id, collection_exercise_id=collection_exercise_id)
         return None
 
-    log.debug('Successfully retrieved business', party_id=business_id)
+    log.debug('Successfully retrieved business', party_id=business_id, collection_exercise_id=collection_exercise_id)
     return response.json()
 
 
