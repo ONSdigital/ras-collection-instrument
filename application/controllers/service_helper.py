@@ -79,7 +79,7 @@ def get_business_party(business_id, verbose=False):
         log.error('Failed to find business', party_id=business_id)
         return None
 
-    log.info('Successfully retrieved business', party_id=business_id)
+    log.debug('Successfully retrieved business', party_id=business_id)
     return response.json()
 
 
