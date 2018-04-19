@@ -77,7 +77,7 @@ def get_business_party(business_id, verbose=False):
 
     if not response.ok:
         log.error('Failed to find business', party_id=business_id)
-        raise RasError(f'Failed to retrieve business {business_id} from party service, status={response.status_code}')
+        return None
 
     log.info('Successfully retrieved business', party_id=business_id)
     return response.json()

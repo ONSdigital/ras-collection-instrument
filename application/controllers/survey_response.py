@@ -126,6 +126,8 @@ class SurveyResponse(object):
         exercise_ref = self._format_exercise_ref(exercise_ref)
 
         business_party = get_business_party(case_group['partyId'], verbose=True)
+        if not business_party:
+            return None, None
         check_letter = business_party['checkletter']
 
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
