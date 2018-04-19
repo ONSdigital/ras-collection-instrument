@@ -17,6 +17,7 @@ from tests.test_client import TestClient
 
 linked_exercise_id = 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
 
+
 @with_db_session
 def collection_instruments(session=None):
     return session.query(InstrumentModel).all()
