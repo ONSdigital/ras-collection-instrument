@@ -64,6 +64,25 @@ def get_survey_ref(survey_id):
     return survey_ref
 
 
+def get_business_party(business_id, verbose=False):
+    """
+    :param business_id: The business UUID to search with
+    :param verbose: Boolean to decide the verbosity of the party response
+    :return: a business party
+    """
+    log.debug('Retrieving business party', party_id=business_id)
+    response = service_request(service='party-service',
+                               endpoint='party-api/v1/businesses/id',
+                               search_value=f'{business_id}?verbose={verbose}')
+
+    if not response.ok:
+        log.error('Failed to find business', party_id=business_id)
+        raise RasError(f'Failed to retrieve business {business_id} from party service, status={response.status_code}')
+
+    log.info('Successfully retrieved business', party_id=business_id)
+    return response.json()
+
+
 def service_request(service, endpoint, search_value):
     """
     Makes a request to a different micro service
@@ -80,6 +99,7 @@ def service_request(service, endpoint, search_value):
             'survey-service': current_app.config['RM_SURVEY_SERVICE'],
             'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_SERVICE'],
             'case-service': current_app.config['CASE_SERVICE'],
+            'party-service': current_app.config['PARTY_SERVICE']
         }[service]
         service_url = f'{service}/{endpoint}/{search_value}'
         log.info(f'Making request to {service_url}')

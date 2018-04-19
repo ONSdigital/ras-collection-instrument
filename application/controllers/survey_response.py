@@ -8,7 +8,8 @@ from flask import current_app
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
 from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
-from application.controllers.service_helper import get_case_group, get_collection_exercise, get_survey_ref
+from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
+                                                    get_survey_ref)
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -124,7 +125,9 @@ class SurveyResponse(object):
         ru = case_group.get('sampleUnitRef')
         exercise_ref = self._format_exercise_ref(exercise_ref)
 
-        check_letter = 'X'  # Business related file name requirement
+        business_party = get_business_party(case_group['partyId'], verbose=True)
+        check_letter = business_party['checkletter']
+
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
         file_name = "{ru}{check_letter}_{exercise_ref}_" \
                     "{survey_ref}_{time_date_stamp}{file_format}".format(ru=ru,
