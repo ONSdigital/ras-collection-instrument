@@ -147,6 +147,34 @@ class CollectionInstrument(object):
         log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
         return True
 
+    @with_db_session
+    def unlink_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
+        """
+        Unlink a collection instrument and a collection exercise
+        :param instrument_id: A collection instrument id (UUID)
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        :return True if instrument has been successfully unlinked to exercise
+        """
+        log.info('Unlinking instrument and exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        validate_uuid(instrument_id)
+        validate_uuid(exercise_id)
+
+        instrument = self.get_instrument_by_id(instrument_id, session)
+        exercise = self._find_exercise(exercise_id, session)
+        if not instrument or not exercise:
+            log.info('Failed to unlink, unable to find instrument or exercise', instrument_id=instrument_id,
+                     exercise_id=exercise_id)
+            raise RasError('Unable to find instrument or exercise', 404)
+
+        instrument.exercises.remove(exercise)
+
+        if not self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id):
+            raise RasError('Failed to publish upload message', 500)
+
+        log.info('Successfully unlinked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        return True
+
     @staticmethod
     def initialise_messaging():
         log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
@@ -165,6 +193,24 @@ class CollectionInstrument(object):
         tx_id = str(uuid.uuid4())
         json_message = dumps({
             'action': 'ADD',
+            'exercise_id': str(exercise_id),
+            'instrument_id': str(instrument_id)
+        })
+        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
+
+    @staticmethod
+    def publish_remove_collection_instrument(exercise_id, instrument_id):
+        """
+        Publish message to a rabbitmq exchange with details of collection exercise and instrument unlinked
+        :param exercise_id: An exercise id (UUID)
+        :param instrument_id: The id (UUID) of collection instrument
+        :return True if message successfully published to RABBIT_QUEUE_NAME
+        """
+        log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
+
+        tx_id = str(uuid.uuid4())
+        json_message = dumps({
+            'action': 'REMOVE',
             'exercise_id': str(exercise_id),
             'instrument_id': str(instrument_id)
         })
@@ -218,6 +264,18 @@ class CollectionInstrument(object):
         if not exercise:
             log.info('creating exercise', exercise_id=exercise_id)
             exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+        return exercise
+
+    @staticmethod
+    def _find_exercise(exercise_id, session):
+        """
+        Retrieves exercise
+        :param exercise_id: An exercise id (UUID)
+        :param session: database session
+        :return exercise
+        """
+
+        exercise = query_exercise_by_id(exercise_id, session)
         return exercise
 
     @staticmethod

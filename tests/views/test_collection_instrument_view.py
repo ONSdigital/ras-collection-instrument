@@ -15,6 +15,8 @@ from application.views.collection_instrument_view import (
     UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
 from tests.test_client import TestClient
 
+linked_exercise_id = 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+
 
 @with_db_session
 def collection_instruments(session=None):
@@ -26,11 +28,17 @@ def collection_exercises(session=None):
     return session.query(ExerciseModel).all()
 
 
+@with_db_session
+def collection_exercises_linked_to_collection_instrument(instrument_id, session=None):
+    ci = session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
+    return ci.exercises
+
+
 class TestCollectionInstrumentView(TestClient):
     """ Collection Instrument view unit tests"""
 
     def setUp(self):
-        self.instrument = self.add_instrument_data()
+        self.instrument_id = self.add_instrument_data()
 
     def test_collection_instrument_upload(self):
         # Given an upload file and a patched survey_id response
@@ -329,7 +337,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
         response = self.client.get('/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}'
-                                   .format(instrument_id=self.instrument), headers=self.get_auth_headers())
+                                   .format(instrument_id=self.instrument_id), headers=self.get_auth_headers())
 
         # Then the response returns the correct data
         self.assertStatus(response, 200)
@@ -365,7 +373,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument size end point is called with an id
         response = self.client.get('/collection-instrument-api/1.0.2/instrument_size/{instrument_id}'
-                                   .format(instrument_id=self.instrument), headers=self.get_auth_headers())
+                                   .format(instrument_id=self.instrument_id), headers=self.get_auth_headers())
 
         # Then the response returns the correct size
         self.assertStatus(response, 200)
@@ -388,7 +396,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
         response = self.client.get('/collection-instrument-api/1.0.2/download/{instrument_id}'
-                                   .format(instrument_id=self.instrument), headers=self.get_auth_headers())
+                                   .format(instrument_id=self.instrument_id), headers=self.get_auth_headers())
 
         # Then the response returns the correct instrument
         self.assertStatus(response, 200)
@@ -470,11 +478,10 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then that instrument is successfully linked to the given collection exercise
         self.assertStatus(response, 200)
-        all_collection_exercises = collection_exercises()
-        matching_exercises = [collection_exercise
-                              for collection_exercise in all_collection_exercises
-                              if str(collection_exercise.exercise_id) == exercise_id]
-        self.assertEquals(matching_exercises[0].items, 1)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id)
+                               for collection_exercise in linked_exercises]
+        self.assertIn(exercise_id, linked_exercise_ids)
 
     def test_link_collection_instrument_rabbit_exception(self):
 
@@ -493,6 +500,82 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertStatus(response, 500)
         self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
+    def test_unlink_collection_instrument(self):
+
+        # Given an instrument which is in the db is linked to a collection exercise
+
+        # When the instrument is unlinked to an exercise
+        with patch('pika.BlockingConnection'):
+            response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
+                                       f'{self.instrument_id}/{linked_exercise_id}',
+                                       headers=self.get_auth_headers())
+
+        # Then that instrument and collection exercise are successfully unlinked
+        self.assertStatus(response, 200)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(self.instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id)
+                               for collection_exercise in linked_exercises]
+        self.assertNotIn(linked_exercise_id, linked_exercise_ids)
+
+    def test_unlink_collection_instrument_rabbit_exception(self):
+
+        # Given an instrument which is in the db is linked to a collection exercise
+
+        # When the instrument is unlinked to an exercise but failed to publish messsage
+        rabbit = Mock()
+        rabbit.publish_message = Mock(side_effect=PublishMessageError)
+        response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
+                                   f'{self.instrument_id}/{linked_exercise_id}', headers=self.get_auth_headers())
+
+        # Then 500 server error returned
+        response_data = json.loads(response.data)
+
+        self.assertStatus(response, 500)
+        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+
+    def test_unlink_collection_instrument_does_not_unlink_all_ci_to_given_ce(self):
+
+        # Given there are multiple cis linked to the same ce
+        instrument_id = self.add_instrument_without_exercise()
+
+        with patch('pika.BlockingConnection'):
+            # When the instrument is linked to an exercise
+            self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/'
+                             f'{instrument_id}/{linked_exercise_id}', headers=self.get_auth_headers())
+
+        # When the instrument is unlinked to an exercise
+        with patch('pika.BlockingConnection'):
+            response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
+                                       f'{self.instrument_id}/{linked_exercise_id}', headers=self.get_auth_headers())
+
+        # Then only that ci and ce are unlinked the other link remains
+        self.assertStatus(response, 200)
+
+        linked_exercises = collection_exercises_linked_to_collection_instrument(self.instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id)
+                               for collection_exercise in linked_exercises]
+        self.assertNotIn(linked_exercise_id, linked_exercise_ids)
+
+        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id)
+                               for collection_exercise in linked_exercises]
+        self.assertIn(linked_exercise_id, linked_exercise_ids)
+
+    def test_unlink_collection_instrument_not_found_ci(self):
+        # given we have an unknown collection instrument id
+        unknown_ci = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        # When unlink call made with
+        with patch('pika.BlockingConnection'):
+            response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
+                                       f'{unknown_ci}/{linked_exercise_id}', headers=self.get_auth_headers())
+
+        # Then 404 not found error returned
+        response_data = json.loads(response.data)
+
+        self.assertStatus(response, 404)
+        self.assertEqual(response_data['errors'][0], 'Unable to find instrument or exercise')
 
     @staticmethod
     @with_db_session
@@ -514,7 +597,7 @@ class TestCollectionInstrumentView(TestClient):
         data = crypto.encrypt(data.read())
         seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name='test_file', length='999', data=data)
         instrument.seft_file = seft_file
-        exercise = ExerciseModel()
+        exercise = ExerciseModel(exercise_id=linked_exercise_id)
         business = BusinessModel(ru_ref='test_ru_ref')
         instrument.exercises.append(exercise)
         instrument.businesses.append(business)
