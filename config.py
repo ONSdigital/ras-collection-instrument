@@ -8,7 +8,7 @@ cf = ONSCloudFoundry()
 
 class Config(object):
     NAME = os.getenv('RAS-COLLECTION-INSTRUMENT', 'ras-collection-instrument')
-    VERSION = os.getenv('VERSION', '1.1.0')
+    VERSION = os.getenv('VERSION', '1.2.0')
     SCHEME = os.getenv('http')
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = os.getenv('PORT', 8002)
