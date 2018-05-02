@@ -16,4 +16,7 @@ class ONSCloudFoundry(object):
 
     @property
     def rabbit(self):
-        return self._cf_env.get_service(name='<TODO!!!>')
+        try:
+            return self._cf_env.get_service(name='ras-rabbitmq')
+        except StopIteration:
+            return None
