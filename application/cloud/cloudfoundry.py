@@ -13,3 +13,10 @@ class ONSCloudFoundry(object):
     @property
     def db(self):
         return self._cf_env.get_service(name='ras-ci-db')
+
+    @property
+    def queue(self):
+        try:
+            return self._cf_env.get_service(name='ras-rabbitmq')
+        except StopIteration:
+            return None
