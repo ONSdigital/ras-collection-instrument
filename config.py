@@ -27,7 +27,7 @@ class Config(object):
     if cf.detected:
         DATABASE_SCHEMA = 'ras_ci'
         DATABASE_URI = cf.db.credentials['uri']
-        if cf.queue.credentials['uri']:
+        if cf.queue:
             RABBITMQ_AMQP_COLLECTION_INSTRUMENT = cf.queue.credentials['uri']
             RABBITMQ_AMQP_SURVEY_RESPONSE = cf.queue.credentials['uri']
     else:
