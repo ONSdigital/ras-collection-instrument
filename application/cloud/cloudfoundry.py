@@ -1,4 +1,5 @@
 import cfenv
+import os
 
 
 class ONSCloudFoundry(object):
@@ -15,8 +16,15 @@ class ONSCloudFoundry(object):
         return self._cf_env.get_service(name='ras-ci-db')
 
     @property
-    def queue(self):
+    def rm_queue(self):
         try:
-            return self._cf_env.get_service(name='ras-rabbitmq')
+            return self._cf_env.get_service(name='rm-rabbitmq')
         except StopIteration:
-            return None
+            return os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
+
+    @property
+    def sdx_queue(self):
+        try:
+            return self._cf_env.get_service(name='sdx-rabbitmq')
+        except StopIteration:
+            return os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')

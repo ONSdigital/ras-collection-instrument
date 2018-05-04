@@ -7,5 +7,6 @@ applications:
   memory: 512M
   services:
   - ras-ci-db
+  - rm-rabbitmq
   stack: cflinuxfs2
   timeout: 180
