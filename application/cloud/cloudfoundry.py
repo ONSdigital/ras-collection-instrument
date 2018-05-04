@@ -17,14 +17,14 @@ class ONSCloudFoundry(object):
 
     @property
     def rm_queue_uri(self):
-        try:
+        if self._cf_env.get_service(name='rm-rabbitmq'):
             return self._cf_env.get_service(name='rm-rabbitmq').credentials['uri']
-        except StopIteration:
+        else:
             return os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
 
     @property
     def sdx_queue_uri(self):
-        try:
+        if self._cf_env.get_service(name='sdx-rabbitmq'):
             return self._cf_env.get_service(name='sdx-rabbitmq').credentials['uri']
-        except StopIteration:
+        else:
             return os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')

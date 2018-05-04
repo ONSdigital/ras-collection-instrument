@@ -21,7 +21,7 @@ class TestONSCloudFoundry(unittest.TestCase):
     def test_no_rm_queue_bound_uses_environmental_variable(self):
         cf = ONSCloudFoundry()
         cf._cf_env = Mock()
-        cf._cf_env.get_service.side_effect = StopIteration()
+        cf._cf_env.get_service.return_value = None
 
         queue = cf.rm_queue_uri
 
@@ -40,7 +40,7 @@ class TestONSCloudFoundry(unittest.TestCase):
     def test_no_sdx_queue_bound_uses_environmental_variable(self):
         cf = ONSCloudFoundry()
         cf._cf_env = Mock()
-        cf._cf_env.get_service.side_effect = StopIteration()
+        cf._cf_env.get_service.return_value = None
 
         queue = cf.sdx_queue_uri
 
