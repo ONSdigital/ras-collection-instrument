@@ -45,3 +45,23 @@ class TestONSCloudFoundry(unittest.TestCase):
         queue = cf.sdx_queue_uri
 
         self.assertEqual('rabbit_amqp', queue)
+
+
+    def test_get_db_from_cloudfoundry(self):
+        cf = ONSCloudFoundry()
+        cf._cf_env = Mock()
+        cf._cf_env.get_service.return_value = Service({'credentials': {'uri': 'service'}})
+
+        queue = cf.db_uri
+
+        self.assertEqual(queue, 'service')
+        cf._cf_env.get_service.assert_called_with(name='ras-ci-db')
+
+    def test_no_db_bound_uses_environmental_variable(self):
+        cf = ONSCloudFoundry()
+        cf._cf_env = Mock()
+        cf._cf_env.get_service.return_value = None
+
+        queue = cf.db_uri
+
+        self.assertEqual('postgres://postgres:postgres@localhost:6432/postgres', queue)

@@ -24,12 +24,11 @@ class Config(object):
 
     RABBITMQ_AMQP_COLLECTION_INSTRUMENT = cf.rm_queue_uri
     RABBITMQ_AMQP_SURVEY_RESPONSE = cf.sdx_queue_uri
+    DATABASE_URI = cf.db_uri
     if cf.detected:
         DATABASE_SCHEMA = 'ras_ci'
-        DATABASE_URI = cf.db.credentials['uri']
     else:
         DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
-        DATABASE_URI = os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
