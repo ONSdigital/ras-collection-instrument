@@ -46,7 +46,6 @@ class TestONSCloudFoundry(unittest.TestCase):
 
         self.assertEqual('rabbit_amqp', queue)
 
-
     def test_get_db_from_cloudfoundry(self):
         cf = ONSCloudFoundry()
         cf._cf_env = Mock()
