@@ -8,5 +8,6 @@ applications:
   services:
   - ras-ci-db
   - rm-rabbitmq
+  - sdx-rabbitmq
   stack: cflinuxfs2
   timeout: 180

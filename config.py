@@ -18,18 +18,17 @@ class Config(object):
     ONS_CRYPTOKEY = os.getenv('ONS_CRYPTOKEY')
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
-    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
 
+    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = cf.rm_queue_uri
+    RABBITMQ_AMQP_SURVEY_RESPONSE = cf.sdx_queue_uri
+    DATABASE_URI = cf.db_uri
     if cf.detected:
         DATABASE_SCHEMA = 'ras_ci'
-        DATABASE_URI = cf.db.credentials['uri']
     else:
         DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
-        DATABASE_URI = os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 

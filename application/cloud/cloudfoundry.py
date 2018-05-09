@@ -1,4 +1,5 @@
 import cfenv
+import os
 
 
 class ONSCloudFoundry(object):
@@ -11,5 +12,22 @@ class ONSCloudFoundry(object):
         return self._cf_env.app
 
     @property
-    def db(self):
-        return self._cf_env.get_service(name='ras-ci-db')
+    def db_uri(self):
+        if self._cf_env.get_service(name='ras-ci-db'):
+            return self._cf_env.get_service(name='ras-ci-db').credentials['uri']
+        else:
+            return os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
+
+    @property
+    def rm_queue_uri(self):
+        if self._cf_env.get_service(name='rm-rabbitmq'):
+            return self._cf_env.get_service(name='rm-rabbitmq').credentials['uri']
+        else:
+            return os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
+
+    @property
+    def sdx_queue_uri(self):
+        if self._cf_env.get_service(name='sdx-rabbitmq'):
+            return self._cf_env.get_service(name='sdx-rabbitmq').credentials['uri']
+        else:
+            return os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')
