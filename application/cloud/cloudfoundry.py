@@ -12,6 +12,12 @@ class ONSCloudFoundry(object):
         return self._cf_env.app
 
     @property
+    def rabbit(self):
+        try:
+            return self._cf_env.get_service(name='ras-rabbitmq')
+        except StopIteration:
+            return None
+
     def db_uri(self):
         if self._cf_env.get_service(name='ras-ci-db'):
             return self._cf_env.get_service(name='ras-ci-db').credentials['uri']

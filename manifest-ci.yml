@@ -7,6 +7,7 @@ applications:
   memory: 512M
   services:
   - ras-ci-db
+  - ras-rabbitmq
   - rm-rabbitmq
   - sdx-rabbitmq
   stack: cflinuxfs2
