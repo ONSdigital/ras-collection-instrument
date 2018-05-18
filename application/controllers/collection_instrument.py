@@ -206,7 +206,7 @@ class CollectionInstrument(object):
         :param instrument_id: The id (UUID) of collection instrument
         :return True if message successfully published to RABBIT_QUEUE_NAME
         """
-        log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
+        log.info('Publishing remove message', exercise_id=exercise_id, instrument_id=instrument_id)
 
         tx_id = str(uuid.uuid4())
         json_message = dumps({
