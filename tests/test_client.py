@@ -16,7 +16,8 @@ class TestClient(TestCase):
     def create_app():
         app = create_app('TestingConfig')
         logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
-        app.db = create_database(app.config['DATABASE_URI'], app.config['DATABASE_SCHEMA'])
+        app.db = create_database(app.config['DATABASE_URI'], app.config['DATABASE_SCHEMA'], app.config['DB_POOL_SIZE'],
+                                 app.config['DB_MAX_OVERFLOW'], app.config['DB_POOL_RECYCLE'])
         return app
 
     def tearDown(self):
