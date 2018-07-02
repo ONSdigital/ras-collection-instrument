@@ -40,7 +40,7 @@ The upload was successful
 
 ### Link a collection instrument to a collection exercise
 
-* `POST /collection-instrument-api/1.0.2/link/<instrument_id>/<exercise_id>`
+* `POST /collection-instrument-api/1.0.2/link-exercise/<instrument_id>/<exercise_id>`
 
 Example Response
 ```
