@@ -1,8 +1,9 @@
 import logging
-import structlog
 import uuid
-
 from json import dumps, loads
+
+import structlog
+
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.rabbit_helper import initialise_rabbitmq_exchange, send_message_to_rabbitmq_exchange
@@ -95,8 +96,6 @@ class CollectionInstrument(object):
             instrument.classifiers = loads(classifiers)
 
         session.add(instrument)
-        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
-            raise RasError('Failed to publish upload message', 500)
         return instrument
 
     @with_db_session
@@ -141,9 +140,6 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        if not self.publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
-            raise RasError('Failed to publish upload message', 500)
-
         log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
         return True
 
@@ -179,24 +175,6 @@ class CollectionInstrument(object):
     def initialise_messaging():
         log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
         initialise_rabbitmq_exchange(RABBIT_QUEUE_NAME)
-
-    @staticmethod
-    def publish_uploaded_collection_instrument(exercise_id, instrument_id):
-        """
-        Publish message to a rabbitmq exchange with details of collection exercise and instrument
-        :param exercise_id: An exercise id (UUID)
-        :param instrument_id: The id (UUID) for the newly created collection instrument
-        :return True if message successfully published to RABBIT_QUEUE_NAME
-        """
-        log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
-
-        tx_id = str(uuid.uuid4())
-        json_message = dumps({
-            'action': 'ADD',
-            'exercise_id': str(exercise_id),
-            'instrument_id': str(instrument_id)
-        })
-        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):

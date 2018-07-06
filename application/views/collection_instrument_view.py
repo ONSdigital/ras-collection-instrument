@@ -1,12 +1,15 @@
 import logging
-import structlog
+import uuid
+from json import dumps
 
+import structlog
 from flask import Blueprint
 from flask import make_response, request, jsonify
 
 from application.controllers.basic_auth import auth
-from application.controllers.collection_instrument import CollectionInstrument
-
+from application.controllers.collection_instrument import CollectionInstrument, log, RABBIT_QUEUE_NAME
+from application.controllers.rabbit_helper import send_message_to_rabbitmq_exchange
+from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -30,7 +33,12 @@ def before_collection_instrument_view():
 def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files['file']
     classifiers = request.args.get('classifiers')
-    CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    instrument = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+
+    if not publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
+        log.error(f'Failed to publish upload message', instrument_id=instrument.instrument_id,
+                  collection_exercise_id=exercise_id, ru_ref=ru_ref)
+        raise RasError('Failed to publish upload message', 500)
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
@@ -45,6 +53,10 @@ def upload_collection_instrument_without_collection_exercise():
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
 def link_collection_instrument(instrument_id, exercise_id):
     CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
+    if not publish_uploaded_collection_instrument(exercise_id, instrument_id):
+        log.error(f'Failed to publish upload message', instrument_id=instrument_id,
+                  collection_exercise_id=exercise_id)
+        raise RasError('Failed to publish upload message', 500)
     return make_response(LINK_SUCCESSFUL, 200)
 
 
@@ -60,8 +72,8 @@ def download_csv(exercise_id):
 
     if csv:
         response = make_response(csv, 200)
-        response.headers["Content-Disposition"] = "attachment; filename=instruments_for_{exercise_id}.csv"\
-                .format(exercise_id=exercise_id)
+        response.headers["Content-Disposition"] = "attachment; filename=instruments_for_{exercise_id}.csv" \
+            .format(exercise_id=exercise_id)
         response.headers["Content-type"] = "text/csv"
         return response
 
@@ -115,3 +127,21 @@ def instrument_size(instrument_id):
         return make_response(str(instrument['len']), 200)
 
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
+
+
+def publish_uploaded_collection_instrument(exercise_id, instrument_id):
+    """
+    Publish message to a rabbitmq exchange with details of collection exercise and instrument
+    :param exercise_id: An exercise id (UUID)
+    :param instrument_id: The id (UUID) for the newly created collection instrument
+    :return True if message successfully published to RABBIT_QUEUE_NAME
+    """
+    log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
+
+    tx_id = str(uuid.uuid4())
+    json_message = dumps({
+        'action': 'ADD',
+        'exercise_id': str(exercise_id),
+        'instrument_id': str(instrument_id)
+    })
+    return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
