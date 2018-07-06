@@ -7,7 +7,7 @@ from flask import Blueprint
 from flask import make_response, request, jsonify
 
 from application.controllers.basic_auth import auth
-from application.controllers.collection_instrument import CollectionInstrument, log, RABBIT_QUEUE_NAME
+from application.controllers.collection_instrument import CollectionInstrument, RABBIT_QUEUE_NAME
 from application.controllers.rabbit_helper import send_message_to_rabbitmq_exchange
 from application.exceptions import RasError
 
