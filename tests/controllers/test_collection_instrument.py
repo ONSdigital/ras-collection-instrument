@@ -5,6 +5,7 @@ from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.collection_instrument import CollectionInstrument
+from application.views.collection_instrument_view import publish_uploaded_collection_instrument
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasDatabaseError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
@@ -90,7 +91,7 @@ class TestCollectionInstrument(TestClient):
         # When publishing to a rabbit exchange that a collection instrument has been uploaded
         c_id = 'db0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
         with patch('pika.BlockingConnection'):
-            result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
+            result = publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
         # Then the message is successfully published
         self.assertTrue(result)
@@ -104,7 +105,7 @@ class TestCollectionInstrument(TestClient):
         rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
         with patch('sdc.rabbit.DurableExchangePublisher', return_value=rabbit):
-            result = self.collection_instrument.publish_uploaded_collection_instrument(c_id, self.instrument_id)
+            result = publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
         # Then the message is not successfully published
         self.assertFalse(result)

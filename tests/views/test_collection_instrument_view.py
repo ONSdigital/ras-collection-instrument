@@ -114,34 +114,6 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 2)
 
-    def test_collection_instrument_upload_rabbit_exception(self):
-        # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
-        data = {'file': (BytesIO(b'test data'), 'test.xls')}
-
-        rabbit = Mock()
-        rabbit.publish_message = Mock(side_effect=PublishMessageError)
-
-        with patch('application.controllers.collection_instrument.service_request', return_value=mock_survey_service),\
-                patch('application.controllers.rabbit_helper.DurableExchangePublisher', return_value=rabbit):
-            # When a post is made to the upload end point
-            response = self.client.post(
-                '/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-                '?classifiers={"form_type": "001"}',
-                headers=self.get_auth_headers(),
-                data=data,
-                content_type='multipart/form-data')
-
-        response_data = json.loads(response.data)
-
-        # Then the file does not upload successfully
-        self.assertStatus(response, 500)
-        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
-
-        self.assertEqual(len(collection_instruments()), 1)
-
     def test_download_exercise_csv(self):
 
         # Given a patched exercise
@@ -489,17 +461,16 @@ class TestCollectionInstrumentView(TestClient):
         instrument_id = self.add_instrument_without_exercise()
         exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
 
-        rabbit = Mock()
-        rabbit.publish_message = Mock(side_effect=PublishMessageError)
-
         # When the instrument is linked to an exercise
-        response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
-                                    headers=self.get_auth_headers())
+        with patch('application.controllers.collection_instrument') as rabbit:
+            rabbit.publish_uploaded_collection_instrument = Mock(side_effect=PublishMessageError)
+            response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
+                                        headers=self.get_auth_headers())
 
-        response_data = json.loads(response.data)
+            response_data = json.loads(response.data)
 
-        self.assertStatus(response, 500)
-        self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
+            self.assertStatus(response, 500)
+            self.assertEqual(response_data['errors'][0], 'Failed to publish upload message')
 
     def test_unlink_collection_instrument(self):
 
