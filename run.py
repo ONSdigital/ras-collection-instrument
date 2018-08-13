@@ -20,7 +20,7 @@ from application.logger_config import logger_initial_config
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None):
+def create_app(config=None, init_db=True, init_rabbit=True):
     # create and configure the Flask application
     app = Flask(__name__)
     config_name = config or os.environ.get('APP_SETTINGS', 'Config')
@@ -45,17 +45,23 @@ def create_app(config=None):
     with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
         app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
 
-    try:
-        initialise_db(app)
-    except RetryError:
-        logger.exception('Failed to initialise database')
-        exit(1)
+    if init_db:
+        try:
+            initialise_db(app)
+        except RetryError:
+            logger.exception('Failed to initialise database')
+            exit(1)
+    else:
+        logger.debug('Skipped initialising database')
 
-    try:
-        initialise_rabbit(app)
-    except RetryError:
-        logger.exception('Failed to initialise rabbitmq')
-        exit(1)
+    if init_rabbit:
+        try:
+            initialise_rabbit(app)
+        except RetryError:
+            logger.exception('Failed to initialise rabbitmq')
+            exit(1)
+    else:
+        logger.debug('Skipped initialising rabbitmq')
 
     logger.info("App setup complete", config=config_name)
 
