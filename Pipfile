@@ -1,17 +1,12 @@
 [[source]]
-
 name = "pypi"
 verify_ssl = true
 url = "https://pypi.python.org/simple"
 
-
 [requires]
-
 python_version = "3.6"
 
-
 [packages]
-
 cfenv = "*"
 flask = "*"
 flask-cors = "*"
@@ -32,10 +27,10 @@ retrying = "*"
 sdc-rabbit = "*"
 alembic = "*"
 pycryptodome = "*"
-
+requestsdefaulter = {git = "https://github.com/ONSdigital/requestsdefaulter.git", editable = true}
+flask-zipkin = "*"
 
 [dev-packages]
-
 coverage = "*"
 "flake8" = "*"
 "flake8-mock" = "*"
