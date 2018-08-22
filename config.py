@@ -2,7 +2,6 @@ import os
 
 from application.cloud.cloudfoundry import ONSCloudFoundry
 
-
 cf = ONSCloudFoundry()
 
 

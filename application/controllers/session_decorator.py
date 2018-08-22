@@ -1,8 +1,8 @@
 import logging
-import structlog
-
-from flask import current_app
 from functools import wraps
+
+import structlog
+from flask import current_app
 
 from application.exceptions import RasDatabaseError, RasError
 

@@ -1,13 +1,13 @@
 from datetime import datetime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Table, Column, Integer, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
-from sqlalchemy.dialects.postgresql.json import JSONB
 from uuid import uuid4
 
-from application.models import GUID
+from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy.dialects.postgresql.json import JSONB
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship
+from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
 
+from application.models import GUID
 
 Base = declarative_base()
 

@@ -7,7 +7,6 @@ from werkzeug.datastructures import FileStorage
 from application.controllers.survey_response import SurveyResponse
 from tests.test_client import TestClient
 
-
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
 
 with open("./tests/files/keys.json") as fp:

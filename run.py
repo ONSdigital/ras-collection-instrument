@@ -1,12 +1,12 @@
 import logging
 import os
-import structlog
+from json import loads
 
-from alembic.config import Config
+import structlog
 from alembic import command
+from alembic.config import Config
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
-from json import loads
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text

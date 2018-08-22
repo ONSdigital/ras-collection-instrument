@@ -6,7 +6,6 @@ from application.controllers.helper import convert_string_to_bytes_base64, valid
     convert_file_object_to_string_base64, to_str, to_bytes, is_valid_file_extension, is_valid_file_name_length
 from application.exceptions import RasError
 
-
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
 
 

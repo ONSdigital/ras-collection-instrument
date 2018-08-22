@@ -1,6 +1,6 @@
 import logging
-import structlog
 
+import structlog
 from flask_testing import TestCase
 
 from application.logger_config import logger_initial_config

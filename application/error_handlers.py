@@ -1,10 +1,9 @@
 import logging
-import structlog
 
+import structlog
 from flask import Blueprint, jsonify
 
 from application.exceptions import RasError
-
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

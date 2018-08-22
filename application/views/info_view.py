@@ -3,7 +3,6 @@ import os
 
 from flask import Blueprint, make_response, current_app, jsonify
 
-
 info_view = Blueprint('info_view', __name__)
 
 

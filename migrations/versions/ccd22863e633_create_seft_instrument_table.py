@@ -5,11 +5,10 @@ Revises: 72912058602c
 Create Date: 2018-02-20 13:22:14.773113
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from application.models import GUID
-
 
 # revision identifiers, used by Alembic.
 revision = 'ccd22863e633'

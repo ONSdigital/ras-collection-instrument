@@ -1,7 +1,7 @@
 import logging
-import structlog
-
 from json import loads
+
+import structlog
 from retrying import RetryError
 
 from application.logger_config import logger_initial_config
