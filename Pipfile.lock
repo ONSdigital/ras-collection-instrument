@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8d63154d17ff3225ad4afa89a6e9f6cfdbc62e4b6f6e7a9252aad84348c14faa"
+            "sha256": "4279832af0995a6406b9e454b1786ff6ec2d0afce46f93dee80e9cb4f844b53f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -156,9 +156,9 @@
         },
         "furl": {
             "hashes": [
-                "sha256:5436226c89536b5fa8c5faa1e34d684d417f69dea91d406edaab102c5da6de8c"
+                "sha256:17654103b8d0cbe42798592db099c728165ac12057d49fe2e69de967d87bf29b"
             ],
-            "version": "==1.2"
+            "version": "==1.2.1"
         },
         "gevent": {
             "hashes": [
@@ -403,8 +403,12 @@
             "version": "==2.19.1"
         },
         "requestsdefaulter": {
-            "editable": true,
-            "git": "https://github.com/ONSdigital/requestsdefaulter.git"
+            "hashes": [
+                "sha256:5e185d9b38f29215c78446188afd70765a8e876244eec6a5f0e71ae437fdb128",
+                "sha256:bb83e7f96009be470d1dea55c270c9dad06fb231dd33dda483ab3d8ffb6b8102"
+            ],
+            "index": "pypi",
+            "version": "==0.1.0"
         },
         "retrying": {
             "hashes": [

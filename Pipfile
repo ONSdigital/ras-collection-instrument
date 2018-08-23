@@ -27,7 +27,7 @@ retrying = "*"
 sdc-rabbit = "*"
 alembic = "*"
 pycryptodome = "*"
-requestsdefaulter = {git = "https://github.com/ONSdigital/requestsdefaulter.git", editable = true}
+requestsdefaulter = "*"
 flask-zipkin = "*"
 
 [dev-packages]
