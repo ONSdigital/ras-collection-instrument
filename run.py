@@ -1,6 +1,7 @@
 import logging
 import os
 import structlog
+import requestsdefaulter
 
 from alembic.config import Config
 from alembic import command
@@ -13,6 +14,7 @@ from sqlalchemy import create_engine, column, text
 from sqlalchemy.exc import ProgrammingError, DatabaseError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import exists, select
+from flask_zipkin import Zipkin
 
 from application.logger_config import logger_initial_config
 
@@ -22,8 +24,13 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 def create_app(config=None):
     # create and configure the Flask application
     app = Flask(__name__)
+    app.name = "ras-collection-instrument"
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
+
+    # Zipkin
+    zipkin = Zipkin(app=app, sample_rate=app.config.get("ZIPKIN_SAMPLE_RATE"))
+    requestsdefaulter.default_headers(zipkin.create_http_headers_for_new_span)
 
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view
