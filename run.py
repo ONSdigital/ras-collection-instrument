@@ -3,10 +3,12 @@ import os
 from json import loads
 
 import structlog
+import requestsdefaulter
 from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
+from flask_zipkin import Zipkin
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text
@@ -22,8 +24,13 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 def create_app(config=None):
     # create and configure the Flask application
     app = Flask(__name__)
+    app.name = "ras-collection-instrument"
     app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
     app.config.from_object(app_config)
+
+    # Zipkin
+    zipkin = Zipkin(app=app, sample_rate=app.config.get("ZIPKIN_SAMPLE_RATE"))
+    requestsdefaulter.default_headers(zipkin.create_http_headers_for_new_span)
 
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view
