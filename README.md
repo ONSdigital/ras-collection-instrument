@@ -14,16 +14,15 @@ pip install pipenv
 ```
 
 ## Tests
-To run the tests, install the dev dependencies using Pipenv and run tox within the virtual environment, 
-which will run the unit tests with py.test, then run flake8 coverage.
+To run the tests a rabbitmq and database server is required. The tox script creates and runs these dependencies inside Docker containers, which are destroyed after the unit tests are run.
 ```
 pipenv install --dev
 pipenv run tox
 ```
 
-
-To install and run:
+To run the service with the required dependencies:
 ``` bash
+docker-compose up -d db rabbitmq
 pipenv run python run.py
 ```
 
@@ -34,6 +33,12 @@ curl http://localhost:8082/info
 ```
 
 The database will automatically be created when starting the application.
+
+## Docker
+To run the service in a Docker container a Compose script is included:
+```bash
+docker-compose up -d
+```
 
 ## Upload test collection instruments
 Navigate to /developer_scripts and run import.py, answer the prompts on the command line

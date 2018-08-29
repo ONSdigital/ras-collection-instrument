@@ -18,14 +18,16 @@ from flask_zipkin import Zipkin
 
 from application.logger_config import logger_initial_config
 
+
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None):
+def create_app(config=None, init_db=True, init_rabbit=True):
     # create and configure the Flask application
     app = Flask(__name__)
     app.name = "ras-collection-instrument"
-    app_config = f"config.{config or os.environ.get('APP_SETTINGS', 'Config')}"
+    config_name = config or os.environ.get('APP_SETTINGS', 'Config')
+    app_config = f"config.{config_name}"
     app.config.from_object(app_config)
 
     # Zipkin
@@ -43,6 +45,33 @@ def create_app(config=None):
     app.register_blueprint(error_blueprint)
 
     CORS(app)
+
+    logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
+    logger.info("Logging configured", log_level=app.config['LOGGING_LEVEL'])
+
+    with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
+        app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
+
+    if init_db:
+        try:
+            initialise_db(app)
+        except RetryError:
+            logger.exception('Failed to initialise database')
+            exit(1)
+    else:
+        logger.debug('Skipped initialising database')
+
+    if init_rabbit:
+        try:
+            initialise_rabbit(app)
+        except RetryError:
+            logger.exception('Failed to initialise rabbitmq')
+            exit(1)
+    else:
+        logger.debug('Skipped initialising rabbitmq')
+
+    logger.info("App setup complete", config=config_name)
+
     return app
 
 
@@ -121,22 +150,6 @@ def initialise_rabbit(app):
 
 if __name__ == '__main__':
     app = create_app()
-    with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
-        app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
-
-    logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
-
-    try:
-        initialise_db(app)
-    except RetryError:
-        logger.exception('Failed to initialise database')
-        exit(1)
-
-    try:
-        initialise_rabbit(app)
-    except RetryError:
-        logger.exception('Failed to initialise rabbitmq')
-        exit(1)
 
     scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
 

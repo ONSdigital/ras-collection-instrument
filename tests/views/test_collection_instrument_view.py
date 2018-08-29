@@ -1,6 +1,6 @@
 import base64
 import json
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from flask import current_app
 from requests.models import Response
@@ -462,8 +462,8 @@ class TestCollectionInstrumentView(TestClient):
         exercise_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
 
         # When the instrument is linked to an exercise
-        with patch('application.controllers.collection_instrument') as rabbit:
-            rabbit.publish_uploaded_collection_instrument = Mock(side_effect=PublishMessageError)
+        with patch('application.controllers.rabbit_helper.DurableExchangePublisher.publish_message',
+                   side_effect=PublishMessageError):
             response = self.client.post(f'/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}',
                                         headers=self.get_auth_headers())
 
@@ -494,10 +494,10 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db is linked to a collection exercise
 
         # When the instrument is unlinked to an exercise but failed to publish messsage
-        rabbit = Mock()
-        rabbit.publish_message = Mock(side_effect=PublishMessageError)
-        response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
-                                   f'{self.instrument_id}/{linked_exercise_id}', headers=self.get_auth_headers())
+        with patch('application.controllers.rabbit_helper.DurableExchangePublisher.publish_message',
+                   side_effect=PublishMessageError):
+            response = self.client.put(f'/collection-instrument-api/1.0.2/unlink-exercise/'
+                                       f'{self.instrument_id}/{linked_exercise_id}', headers=self.get_auth_headers())
 
         # Then 500 server error returned
         response_data = json.loads(response.data)
