@@ -1,5 +1,5 @@
 import base64
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 from flask import current_app
 from requests.models import Response
@@ -291,14 +291,11 @@ class TestSurveyResponseView(TestClient):
         mock_party_service.status_code = 200
         mock_party_service._content = b'{"checkletter": "A"}'
 
-        rabbit = Mock()
-        rabbit.publish_message = Mock(side_effect=PublishMessageError)
-
         with patch('application.controllers.service_helper.service_request',
                    side_effect=[mock_case_service, mock_collection_service,
                                 mock_survey_service, mock_party_service]), \
-            patch('application.controllers.rabbit_helper.QueuePublisher',
-                  return_value=rabbit):
+            patch('application.controllers.rabbit_helper.QueuePublisher.publish_message',
+                  side_effect=PublishMessageError):
             # When that file is post to the survey response end point
             response = self.client.post(
                 '/survey_response-api/v1/survey_responses/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87',

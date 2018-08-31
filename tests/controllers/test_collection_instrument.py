@@ -1,5 +1,5 @@
 import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
@@ -100,10 +100,9 @@ class TestCollectionInstrument(TestClient):
         # Given there is an instrument in the db
         # When publishing to a rabbit exchange that a collection instrument has been uploaded
         c_id = 'db0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-        rabbit = Mock()
-        rabbit.publish_message = Mock(side_effect=PublishMessageError)
 
-        with patch('sdc.rabbit.DurableExchangePublisher', return_value=rabbit):
+        with patch('application.controllers.rabbit_helper.DurableExchangePublisher.publish_message',
+                   side_effect=PublishMessageError):
             result = publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
         # Then the message is not successfully published

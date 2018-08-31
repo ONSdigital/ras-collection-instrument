@@ -15,5 +15,12 @@ services:
     restart: always
     depends_on:
       - db
+      - rabbitmq
     ports:
       - "8081:8081"
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.6.10-management
+    ports:
+      - "5672:5672"
