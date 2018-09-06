@@ -1,5 +1,6 @@
-from tests.test_client import TestClient
 from unittest.mock import patch, mock_open
+
+from tests.test_client import TestClient
 
 
 class TestInfoView(TestClient):

@@ -1,5 +1,6 @@
-from requests.models import Response
 from unittest.mock import patch
+
+from requests.models import Response
 
 from application.controllers.service_helper import service_request
 from application.exceptions import RasError

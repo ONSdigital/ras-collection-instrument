@@ -3,7 +3,6 @@ from distutils.util import strtobool
 
 from application.cloud.cloudfoundry import ONSCloudFoundry
 
-
 cf = ONSCloudFoundry()
 
 

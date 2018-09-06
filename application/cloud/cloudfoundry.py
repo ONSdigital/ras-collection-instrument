@@ -1,5 +1,6 @@
-import cfenv
 import os
+
+import cfenv
 
 
 class ONSCloudFoundry(object):

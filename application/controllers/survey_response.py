@@ -1,8 +1,8 @@
 import logging
-import structlog
 import time
 import uuid
 
+import structlog
 from flask import current_app
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,

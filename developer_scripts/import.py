@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import xlsxwriter
-import requests
-import sys
 import os
+import sys
 
+import requests
+import xlsxwriter
 
 END_POINT = '{}/collection-instrument-api/1.0.2/upload/{}/{}'
 FILE_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

@@ -1,5 +1,6 @@
-from application.controllers.basic_auth import get_pw
 from flask import current_app
+
+from application.controllers.basic_auth import get_pw
 from tests.test_client import TestClient
 
 

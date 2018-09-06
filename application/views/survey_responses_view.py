@@ -1,7 +1,7 @@
 import logging
 import os
-import structlog
 
+import structlog
 from flask import Blueprint
 from flask import make_response, request
 from werkzeug.utils import secure_filename

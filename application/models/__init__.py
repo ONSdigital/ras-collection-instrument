@@ -3,10 +3,9 @@ import json
 import uuid
 
 from sqlalchemy import String
-from sqlalchemy.types import TypeDecorator, CHAR, Unicode
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext import mutable
-
+from sqlalchemy.types import TypeDecorator, CHAR, Unicode
 
 json_null = object()
 

@@ -1,7 +1,7 @@
 import logging
+
 import requests
 import structlog
-
 from flask import current_app
 
 from application.exceptions import RasError

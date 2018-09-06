@@ -1,13 +1,12 @@
 import functools
 import logging
-import structlog
 
+import structlog
 from flask import current_app
-from sdc.rabbit.exceptions import PublishMessageError
 from sdc.rabbit import DurableExchangePublisher, QueuePublisher
+from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.json_encrypter import Encrypter
-
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

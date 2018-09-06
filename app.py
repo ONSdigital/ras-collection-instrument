@@ -1,6 +1,5 @@
-from run import create_app
-
 """This is a duplicate of run.py, with minor modifications to support gunicorn execution."""
+from run import create_app
 
 app = create_app()
 
