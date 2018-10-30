@@ -23,7 +23,7 @@ class TestHelper(unittest.TestCase):
             file_as_string = convert_file_object_to_string_base64(f)
 
             # Then it is a string
-            self.assertEquals(type(file_as_string), str)
+            self.assertEqual(type(file_as_string), str)
 
     def test_string_to_file_object(self):
 
@@ -37,7 +37,7 @@ class TestHelper(unittest.TestCase):
             string_as_bytes = convert_string_to_bytes_base64(file_as_string)
 
             # Then it is a byte stream
-            self.assertEquals(type(string_as_bytes), bytes)
+            self.assertEqual(type(string_as_bytes), bytes)
 
     def test_valid_file_format_true(self):
 

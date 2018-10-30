@@ -53,7 +53,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the file uploads successfully
             self.assertStatus(response, 200)
-            self.assertEquals(response.data.decode(), UPLOAD_SUCCESSFUL)
+            self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
     def test_add_survey_response_writes_expected_filename_in_log(self):
 
@@ -115,7 +115,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the the missing data response is returned
             self.assertStatus(response, 404)
-            self.assertEquals(response.data.decode(), MISSING_DATA)
+            self.assertEqual(response.data.decode(), MISSING_DATA)
 
     def test_add_survey_response_missing_survey_data(self):
 
@@ -148,7 +148,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the the missing data response is returned
             self.assertStatus(response, 404)
-            self.assertEquals(response.data.decode(), MISSING_DATA)
+            self.assertEqual(response.data.decode(), MISSING_DATA)
 
     def test_add_survey_response_missing_collection_data(self):
 
@@ -177,7 +177,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the the missing data response is returned
             self.assertStatus(response, 404)
-            self.assertEquals(response.data.decode(), MISSING_DATA)
+            self.assertEqual(response.data.decode(), MISSING_DATA)
 
     def test_add_survey_response_missing_data(self):
 
@@ -194,7 +194,7 @@ class TestSurveyResponseView(TestClient):
 
         # Then an invalid upload is returned
         self.assertStatus(response, 400)
-        self.assertEquals(response.data.decode(), INVALID_UPLOAD)
+        self.assertEqual(response.data.decode(), INVALID_UPLOAD)
 
     def test_add_survey_response_success_party_missing_data(self):
 
@@ -233,7 +233,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the the missing data response is returned
             self.assertStatus(response, 404)
-            self.assertEquals(response.data.decode(), MISSING_DATA)
+            self.assertEqual(response.data.decode(), MISSING_DATA)
 
     def test_add_survey_response_invalid_file_extension(self):
 
@@ -250,7 +250,7 @@ class TestSurveyResponseView(TestClient):
 
         # Then the file uploads successfully
         self.assertStatus(response, 400)
-        self.assertEquals(response.data.decode(), FILE_EXTENSION_ERROR)
+        self.assertEqual(response.data.decode(), FILE_EXTENSION_ERROR)
 
     def test_add_survey_response_invalid_file_name_length(self):
 
@@ -267,7 +267,7 @@ class TestSurveyResponseView(TestClient):
 
         # Then the file uploads successfully
         self.assertStatus(response, 400)
-        self.assertEquals(response.data.decode(), FILE_NAME_LENGTH_ERROR)
+        self.assertEqual(response.data.decode(), FILE_NAME_LENGTH_ERROR)
 
     def test_add_survey_response_rabbit_exception(self):
         # Given a file with mocked services and failing rabbitmq
@@ -306,7 +306,7 @@ class TestSurveyResponseView(TestClient):
 
             # Then the file does not upload successfully
             self.assertStatus(response, 500)
-            self.assertEquals(response.data.decode(), UPLOAD_UNSUCCESSFUL)
+            self.assertEqual(response.data.decode(), UPLOAD_UNSUCCESSFUL)
 
     def test_add_survey_response_missing_auth_details(self):
 

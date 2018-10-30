@@ -73,7 +73,7 @@ class TestCollectionInstrument(TestClient):
         instrument = self.collection_instrument.get_instrument_json('db0711c3-0ac8-41d3-ae0e-567e5ea1ef87')
 
         # Then that instrument is not found
-        self.assertEquals(instrument, None)
+        self.assertEqual(instrument, None)
 
     def test_initialise_messaging(self):
         with patch('pika.BlockingConnection'):

@@ -8,4 +8,4 @@ class TestBasicAuth(TestClient):
 
     def test_getpw(self):
         password = get_pw(current_app.config.get('SECURITY_USER_NAME'))
-        self.assertEquals(password, current_app.config.get('SECURITY_USER_PASSWORD'))
+        self.assertEqual(password, current_app.config.get('SECURITY_USER_PASSWORD'))
