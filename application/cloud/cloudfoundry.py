@@ -17,7 +17,7 @@ class ONSCloudFoundry(object):
         if self._cf_env.get_service(name='ras-ci-db'):
             return self._cf_env.get_service(name='ras-ci-db').credentials['uri']
         else:
-            return os.getenv('DATABASE_URI', 'postgres://postgres:postgres@localhost:6432/postgres')
+            return os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
 
     @property
     def rm_queue_uri(self):

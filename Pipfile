@@ -14,7 +14,7 @@ gunicorn = "*"
 gevent = {version = "*", platform_python_implementation="=='CPython'"}
 sqlalchemy-utils = "*"
 sqlalchemy = "*"
-"psycopg2" = "*"
+"psycopg2-binary" = "*"
 structlog = "==17.2"
 werkzeug = "*"
 sdc-cryptography = "*"

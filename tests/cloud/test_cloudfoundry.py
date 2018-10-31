@@ -63,4 +63,4 @@ class TestONSCloudFoundry(unittest.TestCase):
 
         queue = cf.db_uri
 
-        self.assertEqual('postgres://postgres:postgres@localhost:6432/postgres', queue)
+        self.assertEqual('postgresql://postgres:postgres@localhost:6432/postgres', queue)
