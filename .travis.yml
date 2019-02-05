@@ -8,13 +8,6 @@ language: python
 python:
   - "3.6"
 
-before_install:
-- if ([ "$TRAVIS_BRANCH" == "rm-census" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]) || ([ "$TRAVIS_BRANCH" == "automate-census-docker-build" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]); then
-  docker build -t "${DOCKER_GCP_LOCATION}"/ras-collection-instrument .;
-  docker login -u "${DOCKER_GCP_USERNAME}" -p "${DOCKER_GCP_PASSWORD}" "${DOCKER_GCP_REGISTRY}";
-  docker push "${DOCKER_GCP_LOCATION}"/ras-collection-instrument;
-  fi
-
 install:
   - pip install pipenv
   - pipenv install --dev --deploy
