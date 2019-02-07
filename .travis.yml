@@ -11,6 +11,7 @@ python:
 install:
   - pip install pipenv
   - pipenv install --dev --deploy
+  - pipenv clean
   - pipenv check
   - pip install tox==2.7.0
 
