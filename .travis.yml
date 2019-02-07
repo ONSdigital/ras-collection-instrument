@@ -8,7 +8,10 @@ language: python
 python:
   - "3.6"
 
-before_install:
+cache:
+  - pip
+
+install:
   - pip install pipenv
   - pipenv install --dev --deploy
   - pipenv check
