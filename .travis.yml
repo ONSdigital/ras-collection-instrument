@@ -8,10 +8,9 @@ language: python
 python:
   - "3.6"
 
-install:
+before_install:
   - pip install pipenv
   - pipenv install --dev --deploy
-  - pipenv clean
   - pipenv check
   - pip install tox==2.7.0
 
