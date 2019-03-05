@@ -42,5 +42,3 @@ docker-compose up -d
 
 ## Upload test collection instruments
 Navigate to /developer_scripts and run import.py, answer the prompts on the command line
-
-
