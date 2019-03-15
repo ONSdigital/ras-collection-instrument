@@ -6,8 +6,8 @@ EXPOSE 8002
 RUN apt-get update -y && apt-get install -y python-pip
 RUN pip3 install pipenv==8.3.1 && pipenv install --deploy --system
 
-RUN groupadd -g 992 collectioninstrumentsvc && \
-    useradd -r -u 992 -g collectioninstrumentsvc collectioninstrumentsvc
+RUN groupadd --gid 992 collectioninstrumentsvc && \
+    useradd --create-home --system --uid 992 --gid collectioninstrumentsvc collectioninstrumentsvc
 USER collectioninstrumentsvc
 
 ENTRYPOINT ["python3"]
