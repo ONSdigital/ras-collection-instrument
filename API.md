@@ -173,3 +173,17 @@ Example Response
 ```
 Upload successful
 ```
+
+## Info Endpoints
+### Get Service Information
+* `GET /info`
+    * Returns service information.
+    * Doesn't require any parameters.
+
+### Example JSON Response
+```json
+{
+    "name": "response-operations-ui", 
+    "version": "0.17.0"
+}
+```
