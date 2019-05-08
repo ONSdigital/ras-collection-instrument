@@ -183,7 +183,7 @@ Upload successful
 ### Example JSON Response
 ```json
 {
-    "name": "response-operations-ui", 
-    "version": "0.17.0"
+"name":"ras-collection-instrument",
+"version":"1.3.1"
 }
 ```
