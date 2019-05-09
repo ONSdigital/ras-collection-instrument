@@ -47,6 +47,15 @@ Example Response
 Linked collection instrument to collection exercise
 ```
 
+### Unlink a collection instrument from a collection exercise
+
+* `PUT /collection-instrument-api/1.0.2/unlink-exercise/<instrument_id>/<exercise_id>`
+
+Example Response
+```
+collection instrument and collection exercise unlinked
+```
+
 ### Find all collection instruments associated with an exercise (CSV)
 
 * `GET /collection-instrument-api/1.0.2/download_csv/<exercise_id>`
@@ -158,9 +167,23 @@ Example JSON Response
 ```
 ### Encrypt and upload collection instrument
 
-* `POST /survey_response-api/v1/survey_responses/<instrument_id>` (with a file in the data of the POST)
+* `POST /survey_response-api/v1/survey_responses/<case_id>` (with a file in the data of the POST)
 
 Example Response
 ```
 Upload successful
+```
+
+## Info Endpoints
+### Get Service Information
+* `GET /info`
+    * Returns service information.
+    * Doesn't require any parameters.
+
+### Example JSON Response
+```json
+{
+"name":"ras-collection-instrument",
+"version":"1.3.1"
+}
 ```
