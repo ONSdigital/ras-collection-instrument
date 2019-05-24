@@ -81,8 +81,7 @@ def create_database(db_connection, db_schema, pool_size, max_overflow, pool_recy
     def current_request():
         return _app_ctx_stack.__ident_func__()
 
-    engine = create_engine(db_connection, convert_unicode=True, pool_size=pool_size, max_overflow=max_overflow,
-                           pool_recycle=pool_recycle)
+    engine = create_engine(db_connection, pool_size=pool_size, max_overflow=max_overflow, pool_recycle=pool_recycle)
     session = scoped_session(sessionmaker(), scopefunc=current_request)
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
