@@ -295,10 +295,10 @@
         },
         "pika": {
             "hashes": [
-                "sha256:0c50285f00a8b4816f2c9a44469107d9e738ba3a90386f14b625d8cceef4f6ae",
-                "sha256:5ba83d3daffccb92788d24facdab62a3db6aa03b8a6d709b03dc792d35c0dfe8"
+                "sha256:b0640085f1d6398fd47bb16a17713053e26578192821ea5d928772b8e6a28789",
+                "sha256:b785e0d5f74a94781bd7d020862eb137d2b56cef2a21475aadbe5bcc8ec4db15"
             ],
-            "version": "==1.0.1"
+            "version": "==0.13.1"
         },
         "ply": {
             "hashes": [
@@ -451,11 +451,11 @@
         },
         "sdc-rabbit": {
             "hashes": [
-                "sha256:a3d421fa8a0ca8cbd777493bb4adccfb0dca621983e00d7ab2c4ef0dead40774",
-                "sha256:d2c60ab8b4be8d6dd2138f7be246247886c1a43cc894882937f789075ba84ba7"
+                "sha256:5b76ee9a6c3c12d9c8e5cf9e4cdb8b767fc2c7e958bfff07c5c62e4b681f185f",
+                "sha256:e7511e4807d67f9d29e0014b6a87bdc6249fa7351282505ecd376993f09957a5"
             ],
             "index": "pypi",
-            "version": "==1.5.2"
+            "version": "==1.5.3"
         },
         "six": {
             "hashes": [
