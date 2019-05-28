@@ -2,7 +2,7 @@ version: '2'
 
 services:
   db:
-    container_name: postgres
+    container_name: postgres_collection_instrument
     image: postgres:9.6
     environment:
       POSTGRES_PASSWORD: postgres
@@ -20,7 +20,7 @@ services:
       - "8081:8081"
 
   rabbitmq:
-    container_name: rabbitmq
+    container_name: rabbitmq_collection_instrument
     image: rabbitmq:3.6.10-management
     ports:
       - "5672:5672"
