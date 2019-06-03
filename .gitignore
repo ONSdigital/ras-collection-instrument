@@ -42,7 +42,6 @@ coverage.xml
 *,cover
 .hypothesis/
 venv/
-.python-version
 
 **/test.db
 config/local.yaml
