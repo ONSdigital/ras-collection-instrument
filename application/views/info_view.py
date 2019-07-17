@@ -15,7 +15,7 @@ def get_info():
             git_info = json.loads(io.read())
 
     app_info = {
-            "name": current_app.config['NAME'],
+            "name": 'ras-collection-instrument',
             "version": current_app.config['VERSION'],
            }
     info = dict(git_info, **app_info)
