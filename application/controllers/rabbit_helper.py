@@ -55,7 +55,7 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
     publisher = publisher_type([rabbitmq_amqp], queue_name)
     message = _encrypt_message(message) if encrypt else message
     try:
-        result = publisher.publish_message(message, headers={"tx_id": tx_id}, immediate=False, mandatory=True)
+        result = publisher.publish_message(message, headers={"tx_id": tx_id}, mandatory=True)
         log.info('Message successfully sent to rabbitmq', tx_id=tx_id, queue=queue_name)
         return result
     except PublishMessageError:
