@@ -59,7 +59,7 @@ def get_survey_ref(survey_id):
         survey_service_data = response.json()
         survey_ref = survey_service_data.get('surveyRef')
     else:
-        log.debug('Survey service data not found')
+        log.info('Survey service data not found', survey_id=survey_id)
 
     return survey_ref
 
@@ -71,7 +71,7 @@ def get_business_party(business_id, collection_exercise_id=None, verbose=False):
     :param verbose: Boolean to decide the verbosity of the party response
     :return: a business party
     """
-    log.debug('Retrieving business party', party_id=business_id, collection_exercise_id=collection_exercise_id)
+    log.info('Retrieving business party', party_id=business_id, collection_exercise_id=collection_exercise_id)
     response = service_request(service='party-service',
                                endpoint='party-api/v1/businesses/id',
                                search_value=f'{business_id}?verbose={verbose}'
@@ -81,7 +81,7 @@ def get_business_party(business_id, collection_exercise_id=None, verbose=False):
         log.error('Failed to find business', party_id=business_id, collection_exercise_id=collection_exercise_id)
         return None
 
-    log.debug('Successfully retrieved business', party_id=business_id, collection_exercise_id=collection_exercise_id)
+    log.info('Successfully retrieved business', party_id=business_id, collection_exercise_id=collection_exercise_id)
     return response.json()
 
 
