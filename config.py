@@ -7,7 +7,7 @@ cf = ONSCloudFoundry()
 
 
 class Config(object):
-    VERSION = '1.3.5'
+    VERSION = '1.4.0'
     SCHEME = os.getenv('http')
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = os.getenv('PORT', 8002)
