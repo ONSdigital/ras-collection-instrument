@@ -98,7 +98,7 @@ def service_request(service, endpoint, search_value):
 
     try:
         service = {
-            'survey-service': current_app.config['RM_SURVEY_SERVICE'],
+            'survey-service': current_app.config['SURVEY_SERVICE'],
             'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_SERVICE'],
             'case-service': current_app.config['CASE_SERVICE'],
             'party-service': current_app.config['PARTY_SERVICE']

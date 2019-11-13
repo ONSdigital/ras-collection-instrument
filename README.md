@@ -67,9 +67,9 @@ Environment variables available for configuration are listed below:
 | COLLECTION_EXERCISE_PROTOCOL | Protocol used for collection exercise service uri | 'http'
 | COLLECTION_EXERCISE_HOST     | Host address used for collection exercise uri | 'localhost'
 | COLLECTION_EXERCISE_PORT     | Port used for collection exercise uri | 8145
-| RM_SURVEY_SERVICE_PROTOCOL   | Protocol used for rm survey service uri | 'http'
-| RM_SURVEY_SERVICE_HOST       | Host address used for rm survey service uri | 'localhost'
-| RM_SURVEY_SERVICE_PORT       | Port used for rm survey service uri | 8080
+| SURVEY_SERVICE_PROTOCOL   | Protocol used for rm survey service uri | 'http'
+| SURVEY_SERVICE_HOST       | Host address used for rm survey service uri | 'localhost'
+| SURVEY_SERVICE_PORT       | Port used for rm survey service uri | 8080
 | PARTY_SERVICE_PROTOCOL       | Protocol used for party service uri | 'http'
 | PARTY_SERVICE_HOST           | Host address used for party service uri | 'localhost'
 | PARTY_SERVICE_PORT           | Port used for party service uri | 8081
