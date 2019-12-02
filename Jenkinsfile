@@ -38,8 +38,8 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_HOST collectionexercisesvc-dev.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-dev COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_HOST surveysvc-dev.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-dev RM_SURVEY_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-dev SURVEY_SERVICE_HOST surveysvc-dev.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-dev SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-dev'
             }
         }
@@ -96,8 +96,8 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_HOST collectionexercisesvc-ci.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-ci COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_HOST surveysvc-ci.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-ci RM_SURVEY_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-ci SURVEY_SERVICE_HOST surveysvc-ci.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-ci SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-ci'
             }
         }
@@ -177,8 +177,8 @@ pipeline {
                 sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_HOST collectionexertestsesvc-test.${env.CF_DOMAIN}"
                 sh "cf set-env ras-collection-instrument-test COLLECTION_EXERCISE_PORT 80"
 
-                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_HOST surveysvc-test.${env.CF_DOMAIN}"
-                sh "cf set-env ras-collection-instrument-test RM_SURVEY_SERVICE_PORT 80"
+                sh "cf set-env ras-collection-instrument-test SURVEY_SERVICE_HOST surveysvc-test.${env.CF_DOMAIN}"
+                sh "cf set-env ras-collection-instrument-test SURVEY_SERVICE_PORT 80"
                 sh 'cf start ras-collection-instrument-test'
             }
         }

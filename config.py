@@ -56,12 +56,12 @@ class Config(object):
                                                       COLLECTION_EXERCISE_HOST,
                                                       COLLECTION_EXERCISE_PORT)
 
-    RM_SURVEY_SERVICE_PROTOCOL = os.getenv('RM_SURVEY_SERVICE_PROTOCOL', 'http')
-    RM_SURVEY_SERVICE_HOST = os.getenv('RM_SURVEY_SERVICE_HOST', 'localhost')
-    RM_SURVEY_SERVICE_PORT = os.getenv('RM_SURVEY_SERVICE_PORT', 8080)
-    RM_SURVEY_SERVICE = '{}://{}:{}'.format(RM_SURVEY_SERVICE_PROTOCOL,
-                                            RM_SURVEY_SERVICE_HOST,
-                                            RM_SURVEY_SERVICE_PORT)
+    SURVEY_SERVICE_PROTOCOL = os.getenv('SURVEY_SERVICE_PROTOCOL', 'http')
+    SURVEY_SERVICE_HOST = os.getenv('SURVEY_SERVICE_HOST', 'localhost')
+    SURVEY_SERVICE_PORT = os.getenv('SURVEY_SERVICE_PORT', 8080)
+    SURVEY_SERVICE = '{}://{}:{}'.format(SURVEY_SERVICE_PROTOCOL,
+                                         SURVEY_SERVICE_HOST,
+                                         SURVEY_SERVICE_PORT)
 
     PARTY_SERVICE_PROTOCOL = os.getenv('PARTY_SERVICE_PROTOCOL', 'http')
     PARTY_SERVICE_HOST = os.getenv('PARTY_SERVICE_HOST', 'localhost')
