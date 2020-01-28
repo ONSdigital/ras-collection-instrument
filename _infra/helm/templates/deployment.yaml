@@ -6,8 +6,8 @@ spec:
   replicas: 1
   strategy:
     rollingUpdate:
-      maxSurge:
-      maxUnavailable:
+      maxSurge: 1
+      maxUnavailable: 1
     type: RollingUpdate
   selector:
     matchLabels:
@@ -99,19 +99,19 @@ spec:
           - name: CONFIG_YML
             value: "config/config-docker.yaml"
           - name: ONS_CRYPTOKEY
-            value: "somethingsecure"
+            value: "{{ .Values.cryptoKey }}"
           - name: COLLECTION_EXERCISE_HOST
-            value: "$(COLLECTIONEXERCISESVC_SERVICE_HOST)"
+            value: "$(COLLECTION_EXERCISE_SERVICE_HOST)"
           - name: COLLECTION_EXERCISE_PORT
-            value: "$(COLLECTIONEXERCISESVC_SERVICE_PORT)"
+            value: "$(COLLECTION_EXERCISE_SERVICE_PORT)"
           - name: CASE_SERVICE_HOST
-            value: "$(CASESVC_SERVICE_HOST)"
+            value: "$(CASE_SERVICE_HOST)"
           - name: PARTY_SERVICE_HOST
-            value: "$(RAS_PARTY_SERVICE_HOST)"
+            value: "$(PARTY_SERVICE_HOST)"
           - name: PARTY_SERVICE_PORT
-            value: "$(RAS_PARTY_SERVICE_PORT)"
+            value: "$(PARTY_SERVICE_PORT)"
           - name: RM_SURVEY_SERVICE_HOST
-            value: "$(SURVEYSVC_SERVICE_HOST)"
+            value: "$(SURVEY_SERVICE_HOST)"
           - name: RABBITMQ_AMQP_SURVEY_RESPONSE
             value: "amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@$(RABBITMQ_SERVICE_HOST):5672"
           - name: RABBITMQ_AMQP_COLLECTION_INSTRUMENT
@@ -121,9 +121,4 @@ spec:
           - name: ZIPKIN_SAMPLE_RATE
             value: "100"
           resources:
-            limits:
-              cpu: 1000m
-              memory: 2056Mi
-            requests:
-              cpu: 500m
-              memory: 1028Mi
+            {{ toYaml .Values.resources | nindent 12 }}

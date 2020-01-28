@@ -1,6 +1,7 @@
 replicaCount: 1
 
-env: "dev"
+env: "minikube"
+cryptoKey: "supersecure"
 
 service:
   port: 8085
