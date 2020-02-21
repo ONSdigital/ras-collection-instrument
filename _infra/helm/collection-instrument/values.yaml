@@ -1,0 +1,21 @@
+cryptoKey: "supersecure"
+env: minikube
+replicaCount: 1
+
+container:
+  port: 80
+
+image:
+  name: eu.gcr.io/ons-rasrmbs-management
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    memory: "256Mi"
+
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable:
+
+service:
+  port: 8085
