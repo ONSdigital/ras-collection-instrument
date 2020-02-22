@@ -1,21 +1,28 @@
-cryptoKey: "supersecure"
 env: minikube
-replicaCount: 1
 
-container:
-  port: 80
+replicas: 1
+rollingUpdate:
+  maxSurge: 1
+  maxUnavailable: 1
 
 image:
   name: eu.gcr.io/ons-rasrmbs-management
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+
+database:
+  managedPostgres: false
+  secrets:
+    usernameKey: username
+    passwordKey: password
+    nameKey: db-name
+
+container:
+  port: 80
+service:
+  port: 80
 
 resources:
   requests:
     memory: "256Mi"
 
-rollingUpdate:
-  maxSurge: 1
-  maxUnavailable:
-
-service:
-  port: 8085
+cryptoKey: "supersecure"
