@@ -19,6 +19,20 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
+      {{- if .Values.database.managedPostgres }}
+      volumes:
+        - name: cloud-sql-certs
+          secret:
+            secretName: cloud-sql-certs
+            defaultMode: 0444
+            items:
+            - key: "root.crt"
+              path: "root.crt"
+            - key: "postgresql.crt"
+              path: "postgresql.crt"
+            - key: "postgresql.key"
+              path: "postgresql.key"
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.name }}/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
@@ -26,6 +40,12 @@ spec:
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
+          {{- if .Values.database.managedPostgres }}
+          volumeMounts:
+          - name: cloud-sql-certs
+            mountPath: "/root/.postgresql"
+            readOnly: true
+          {{- end}}
           readinessProbe:
             httpGet:
               path: /info 
@@ -95,7 +115,11 @@ spec:
                 name: rabbitmq
                 key: rabbitmq-password
           - name: DATABASE_URI
-            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            {{- if .Values.database.managedPostgres }}
+            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=verify-ca"
+            {{- else }}
+            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
+            {{- end }}
           - name: JSON_SECRET_KEYS
             valueFrom:
               secretKeyRef:
