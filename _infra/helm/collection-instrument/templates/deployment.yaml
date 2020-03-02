@@ -19,7 +19,7 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
-      {{- if .Values.database.managedPostgres }}
+      {{- if .Values.database.sslEnabled }}
       volumes:
         - name: cloud-sql-certs
           secret:
@@ -40,7 +40,7 @@ spec:
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
-          {{- if .Values.database.managedPostgres }}
+          {{- if .Values.database.sslEnabled }}
           volumeMounts:
           - name: cloud-sql-certs
             mountPath: "/root/.postgresql"
@@ -115,7 +115,7 @@ spec:
                 name: rabbitmq
                 key: rabbitmq-password
           - name: DATABASE_URI
-            {{- if .Values.database.managedPostgres }}
+            {{- if .Values.database.sslEnabled }}
             value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=verify-ca"
             {{- else }}
             value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
