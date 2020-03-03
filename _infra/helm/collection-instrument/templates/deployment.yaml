@@ -19,7 +19,43 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
+      {{- if .Values.database.sqlProxyEnabled }}
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-proxy-credentials
+            defaultMode: 0444
+            items:
+            - key: "credentials.json"
+              path: "credentials.json"
+      {{- end }}
       containers:
+        {{- if .Values.database.sqlProxyEnabled }}
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.16
+          command: ["/cloud_sql_proxy",
+                    "-instances=$(SQL_INSTANCE_NAME)=tcp:$(DB_PORT)",
+                    "-ip_address_types=PRIVATE",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          securityContext:
+            runAsUser: 2  # non-root user
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+          env:
+          - name: SQL_INSTANCE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: cloudsql-proxy-config
+                key: instance-connection-name
+          - name: DB_PORT
+            valueFrom:
+              secretKeyRef:
+                name: db-config
+                key: db-port
+        {{- end }}
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.name }}/{{ .Chart.Name }}:{{ .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -95,7 +131,11 @@ spec:
                 name: rabbitmq
                 key: rabbitmq-password
           - name: DATABASE_URI
-            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            {{- if .Values.database.sqlProxyEnabled }}
+            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@127.0.0.1:$(DB_PORT)/$(DB_NAME)"
+            {{- else }}
+            value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
+            {{- end }}
           - name: JSON_SECRET_KEYS
             valueFrom:
               secretKeyRef:
