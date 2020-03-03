@@ -11,7 +11,7 @@ image:
 
 database:
   managedPostgres: false
-  sslEnabled: false
+  sqlProxyEnabled: false
   secrets:
     usernameKey: username
     passwordKey: password
