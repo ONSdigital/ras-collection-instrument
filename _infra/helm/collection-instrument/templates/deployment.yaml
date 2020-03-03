@@ -62,12 +62,6 @@ spec:
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
-          {{- if .Values.database.sslEnabled }}
-          volumeMounts:
-          - name: cloud-sql-certs
-            mountPath: "/root/.postgresql"
-            readOnly: true
-          {{- end}}
           readinessProbe:
             httpGet:
               path: /info 
