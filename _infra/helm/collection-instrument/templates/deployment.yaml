@@ -120,16 +120,6 @@ spec:
               secretKeyRef:
                 name: security-credentials
                 key: security-password
-          - name: RABBITMQ_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: rabbitmq
-                key: rabbitmq-username
-          - name: RABBITMQ_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: rabbitmq
-                key: rabbitmq-password
           - name: DATABASE_URI
             {{- if .Values.database.sqlProxyEnabled }}
             value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@127.0.0.1:$(DB_PORT)/$(DB_NAME)"
@@ -159,10 +149,74 @@ spec:
             value: "$(PARTY_SERVICE_PORT)"
           - name: RM_SURVEY_SERVICE_HOST
             value: "$(SURVEY_SERVICE_HOST)"
-          - name: RABBITMQ_AMQP_SURVEY_RESPONSE
-            value: "amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@$(RABBITMQ_SERVICE_HOST):5672"
+          - name: RABBITMQ_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq
+                key: rabbitmq-username
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq
+                key: rabbitmq-password
+          - name: RABBITMQ_HOST
+            {{- if .Values.managedRabbitMQ }}
+            valueFrom:
+                configMapKeyRef:
+                    name: rabbit-mq-config
+                    key: rabbit-mq-host
+            {{- else }}
+            value: "$(RABBITMQ_SERVICE_HOST)"
+            {{- end }}
+          - name: RABBITMQ_PORT
+            {{- if .Values.managedRabbitMQ }}
+            valueFrom:
+                configMapKeyRef:
+                    name: rabbit-mq-config
+                    key: rabbit-mq-port
+            {{- else }}
+            value: "$(RABBITMQ_SERVICE_PORT)"
+            {{- end }}
           - name: RABBITMQ_AMQP_COLLECTION_INSTRUMENT
-            value: "amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@$(RABBITMQ_SERVICE_HOST):5672"
+            value: "amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@$(RABBITMQ_HOST):$(RABBITMQ_PORT)"
+          - name: SDX_RABBITMQ_USERNAME
+            {{- if .Values.sdx.rabbitMQ.enabled }}
+            valueFrom:
+              secretKeyRef:
+                name: sdx-rabbitmq
+                key: rabbitmq-password
+            {{- else }}
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq
+                key: rabbitmq-username
+            {{- end }}
+          - name: SDX_RABBITMQ_PASSWORD
+            {{- if .Values.sdx.rabbitMQ.enabled }}
+            valueFrom:
+              secretKeyRef:
+                name: sdx-rabbitmq
+                key: rabbitmq-password
+            {{- else }}
+            valueFrom:
+              secretKeyRef:
+                name: rabbitmq
+                key: rabbitmq-password
+            {{- end }}
+          - name: SDX_RABBITMQ_HOST
+            {{- if .Values.sdx.rabbitMQ.enabled }}
+            value: {{ .Values.sdx.rabbitMQ.host }}
+            {{- else }}
+            value: "$(RABBITMQ_SERVICE_HOST)"
+            {{- end }}
+          - name: SDX_RABBITMQ_PORT
+            {{- if .Values.sdx.rabbitMQ.enabled }}
+            value: {{ .Values.sdx.rabbitMQ.port }}
+            {{- else }}
+            value: "$(RABBITMQ_SERVICE_PORT)"
+            {{- end }}
+          - name: RABBITMQ_AMQP_SURVEY_RESPONSE
+            value: "amqp://$(SDX_RABBITMQ_USERNAME):$(SDX_RABBITMQ_PASSWORD)@$(SDX_RABBITMQ_HOST):$(SDX_RABBITMQ_PORT)"
           - name: ZIPKIN_DSN
             value: "http://$(ZIPKIN_SERVICE_HOST):$(ZIPKIN_SERVICE_PORT)/api/v1/spans"
           - name: ZIPKIN_SAMPLE_RATE

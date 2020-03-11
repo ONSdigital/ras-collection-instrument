@@ -27,3 +27,14 @@ resources:
     memory: "256Mi"
 
 cryptoKey: "supersecure"
+
+managedRabbitMQ:
+  enabled: false
+
+sdx:
+  rabbitMQ:
+    enabled: false
+    host: "127.0.0.1"
+    port: "5672"
+    username: guest
+    password: guest
