@@ -7,7 +7,9 @@ python:
 install:
   - pip install pipenv
   - pipenv install --dev --deploy
-  - pipenv check
+# TEMPORARILY disable pipenv check, pending resolution of pipenv bugs 2412 and 4147
+# TODO: re-enable as soon as possible.
+#  - pipenv check
   - pip install tox==2.7.0
 script:
   - pipenv run tox
