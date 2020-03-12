@@ -163,7 +163,7 @@ spec:
             {{- if .Values.managedRabbitMQ.enabled }}
             valueFrom:
                 configMapKeyRef:
-                    name: rabbit-mq-config
+                    name: rabbit-config
                     key: rabbit-mq-host
             {{- else }}
             value: "$(RABBITMQ_SERVICE_HOST)"
@@ -172,7 +172,7 @@ spec:
             {{- if .Values.managedRabbitMQ.enabled }}
             valueFrom:
                 configMapKeyRef:
-                    name: rabbit-mq-config
+                    name: rabbit-config
                     key: rabbit-mq-port
             {{- else }}
             value: "$(RABBITMQ_SERVICE_PORT)"
