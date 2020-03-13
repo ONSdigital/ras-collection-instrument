@@ -205,13 +205,13 @@ spec:
             {{- end }}
           - name: SDX_RABBITMQ_HOST
             {{- if .Values.sdx.rabbitMQ.enabled }}
-            value: {{ .Values.sdx.rabbitMQ.host }}
+            value: "{{ .Values.sdx.rabbitMQ.host }}"
             {{- else }}
             value: "$(RABBITMQ_SERVICE_HOST)"
             {{- end }}
           - name: SDX_RABBITMQ_PORT
             {{- if .Values.sdx.rabbitMQ.enabled }}
-            value: {{ .Values.sdx.rabbitMQ.port }}
+            value: "{{ .Values.sdx.rabbitMQ.port }}"
             {{- else }}
             value: "$(RABBITMQ_SERVICE_PORT)"
             {{- end }}
