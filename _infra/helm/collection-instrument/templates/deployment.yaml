@@ -143,6 +143,8 @@ spec:
             value: "$(COLLECTION_EXERCISE_SERVICE_PORT)"
           - name: CASE_SERVICE_HOST
             value: "$(CASE_SERVICE_HOST)"
+          - name: CASE_SERVICE_PORT
+            value: "$(CASE_SERVICE_PORT)"
           - name: PARTY_SERVICE_HOST
             value: "$(PARTY_SERVICE_HOST)"
           - name: PARTY_SERVICE_PORT
