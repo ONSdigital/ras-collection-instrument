@@ -38,3 +38,7 @@ sdx:
     port: "5672"
     username: guest
     password: guest
+
+dns:
+  enabled: false
+  wellKnownPort: 8080
