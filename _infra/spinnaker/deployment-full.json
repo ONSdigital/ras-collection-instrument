@@ -1,16 +1,15 @@
 {
   "schema": "v2",
   "application": "collection-instrument",
-  "name": "collection-instrument",
+  "name": "deployment",
   "template": {
     "artifactAccount": "front50ArtifactCredentials",
-    "reference": "spinnaker://rasrmApplicationTemplate",
+    "reference": "spinnaker://fullDeploymentTemplate",
     "type": "front50/pipelineTemplate"
   },
   "variables": {
-    "name": "collection-instrument",
-    "defaultHelmChart": "collection-instrument-0.1.0.tgz",
-    "helmChartMatcher": "collection-instrument-.*\\.tgz"
+    "service": "collection-instrument",
+    "defaultVersion": "1.0.0"
   },
   "exclude": [],
   "triggers": [],
