@@ -220,7 +220,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 name: sdx-rabbitmq
-                key: rabbitmq-password
+                key: rabbitmq-username
             {{- else }}
             valueFrom:
               secretKeyRef:
