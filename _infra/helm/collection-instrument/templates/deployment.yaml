@@ -244,14 +244,24 @@ spec:
                 key: rabbitmq-password
             {{- end }}
           - name: SDX_RABBITMQ_HOST
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             value: "{{ .Values.sdx.rabbitMQ.host }}"
+            {{- else if .Values.sdx.rabbitMQ.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-mq-host
             {{- else }}
             value: "$(RABBITMQ_SERVICE_HOST)"
             {{- end }}
           - name: SDX_RABBITMQ_PORT
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             value: "{{ .Values.sdx.rabbitMQ.port }}"
+            {{- else if .Values.managedRabbitMQ.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                  name: rabbit-config
+                  key: rabbit-mq-port
             {{- else }}
             value: "$(RABBITMQ_SERVICE_PORT)"
             {{- end }}
