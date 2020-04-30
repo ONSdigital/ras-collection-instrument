@@ -200,7 +200,7 @@ spec:
                 name: rabbitmq
                 key: rabbitmq-password
           - name: RABBITMQ_HOST
-            {{- if .Values.managedRabbitMQ.enabled }}
+            {{- if .Values.managedRabbitMQ.enabled  }}
             valueFrom:
                 configMapKeyRef:
                     name: rabbit-config
@@ -220,7 +220,7 @@ spec:
           - name: RABBITMQ_AMQP_COLLECTION_INSTRUMENT
             value: "amqp://$(RABBITMQ_USERNAME):$(RABBITMQ_PASSWORD)@$(RABBITMQ_HOST):$(RABBITMQ_PORT)"
           - name: SDX_RABBITMQ_USERNAME
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             valueFrom:
               secretKeyRef:
                 name: sdx-rabbitmq
@@ -232,7 +232,7 @@ spec:
                 key: rabbitmq-username
             {{- end }}
           - name: SDX_RABBITMQ_PASSWORD
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             valueFrom:
               secretKeyRef:
                 name: sdx-rabbitmq
@@ -244,14 +244,24 @@ spec:
                 key: rabbitmq-password
             {{- end }}
           - name: SDX_RABBITMQ_HOST
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             value: "{{ .Values.sdx.rabbitMQ.host }}"
+            {{- else if .Values.sdx.rabbitMQ.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                name: rabbit-config
+                key: rabbit-mq-host
             {{- else }}
             value: "$(RABBITMQ_SERVICE_HOST)"
             {{- end }}
           - name: SDX_RABBITMQ_PORT
-            {{- if .Values.sdx.rabbitMQ.enabled }}
+            {{- if and .Values.sdx.rabbitMQ.enabled .Values.sdx.rabbitMQ.external }}
             value: "{{ .Values.sdx.rabbitMQ.port }}"
+            {{- else if .Values.managedRabbitMQ.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                name: rabbit-config
+                key: rabbit-mq-port
             {{- else }}
             value: "$(RABBITMQ_SERVICE_PORT)"
             {{- end }}
