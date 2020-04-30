@@ -36,6 +36,7 @@ managedRabbitMQ:
 sdx:
   rabbitMQ:
     enabled: false
+    external: true
     host: "127.0.0.1"
     port: "5672"
     username: guest
