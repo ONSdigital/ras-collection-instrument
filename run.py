@@ -8,7 +8,6 @@ from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack
 from flask_cors import CORS
-from flask_zipkin import Zipkin
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import create_engine, column, text
@@ -29,10 +28,6 @@ def create_app(config=None, init_db=True, init_rabbit=True):
     config_name = config or os.environ.get('APP_SETTINGS', 'Config')
     app_config = f"config.{config_name}"
     app.config.from_object(app_config)
-
-    # Zipkin
-    zipkin = Zipkin(app=app, sample_rate=app.config.get("ZIPKIN_SAMPLE_RATE"))
-    requestsdefaulter.default_headers(zipkin.create_http_headers_for_new_span)
 
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view

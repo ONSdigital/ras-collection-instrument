@@ -73,9 +73,6 @@ Environment variables available for configuration are listed below:
 | PARTY_SERVICE_PROTOCOL       | Protocol used for party service uri | 'http'
 | PARTY_SERVICE_HOST           | Host address used for party service uri | 'localhost'
 | PARTY_SERVICE_PORT           | Port used for party service uri | 8081
-| ZIPKIN_DISABLE               | Totally disable Zipkin (including tracing headers) | False
-| ZIPKIN_DSN                   | Zipkin Sample API URL (e.g. <http://zipkin:9411/api/v1/spans)> | None
-| ZIPKIN_SAMPLE_RATE           | Percentage of requests to send to zipkin span API | 0
 
 These are set in [config.py](config.py)
 
