@@ -47,7 +47,17 @@ def logger_initial_config(service_name=None,
         event_dict['parent'] = g._zipkin_span.zipkin_attrs.parent_span_id
         return event_dict
 
+    def add_severity_level(logger, method_name, event_dict):
+        """
+        Add the log level to the event dict.
+        """
+        if method_name == "warn":
+            # The stdlib has an alias
+            method_name = "warning"
+
+        event_dict["severity"] = method_name
+
     logging.basicConfig(stream=sys.stdout, level=log_level, format=logger_format)
-    configure(processors=[zipkin_ids, add_log_level, filter_by_level, add_service,
+    configure(processors=[add_severity_level, add_log_level, filter_by_level, add_service,
                           TimeStamper(fmt=logger_date_format, utc=True, key="created_at"),
                           JSONRenderer(indent=indent)])
