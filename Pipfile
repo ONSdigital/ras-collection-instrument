@@ -28,6 +28,7 @@ sdc-rabbit = "*"
 alembic = "*"
 pycryptodome = "*"
 requestsdefaulter = "*"
+flask-zipkin = "*"
 
 [dev-packages]
 coverage = "*"
