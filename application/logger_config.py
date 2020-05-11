@@ -2,8 +2,6 @@ import logging
 import os
 import sys
 
-import flask
-from flask import g
 from structlog import configure
 from structlog.processors import JSONRenderer, TimeStamper
 from structlog.stdlib import add_log_level, filter_by_level
