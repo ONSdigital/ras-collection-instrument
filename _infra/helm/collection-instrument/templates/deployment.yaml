@@ -267,5 +267,9 @@ spec:
             {{- end }}
           - name: RABBITMQ_AMQP_SURVEY_RESPONSE
             value: "amqp://$(SDX_RABBITMQ_USERNAME):$(SDX_RABBITMQ_PASSWORD)@$(SDX_RABBITMQ_HOST):$(SDX_RABBITMQ_PORT)"
+          - name: ZIPKIN_DSN
+            value: "http://$(ZIPKIN_SERVICE_HOST):$(ZIPKIN_SERVICE_PORT)/api/v1/spans"
+          - name: ZIPKIN_SAMPLE_RATE
+            value: "100"
           resources:
             {{ toYaml .Values.resources | nindent 12 }}
