@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 
 from application.cloud.cloudfoundry import ONSCloudFoundry
 
@@ -9,7 +8,7 @@ cf = ONSCloudFoundry()
 class Config(object):
     VERSION = '1.4.1'
     SCHEME = os.getenv('http')
-    HOST = os.getenv('HOST', '0.0.0.0')
+    HOSTf = os.getenv('HOST', '0.0.0.0')
     PORT = os.getenv('PORT', 8002)
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
@@ -34,7 +33,6 @@ class Config(object):
         DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
-
 
     # dependencies
 

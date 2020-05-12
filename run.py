@@ -3,7 +3,6 @@ import os
 from json import loads
 
 import structlog
-import requestsdefaulter
 from alembic import command
 from alembic.config import Config
 from flask import Flask, _app_ctx_stack
