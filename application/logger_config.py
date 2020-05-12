@@ -34,4 +34,4 @@ def logger_initial_config(service_name=None,
 
     logging.basicConfig(stream=sys.stdout, level=log_level, format=logger_format)
     configure(processors=[add_log_level, filter_by_level, add_service,
-    TimeStamper(fmt=logger_date_format, utc=True,key="created_at"), JSONRenderer(indent=indent)])
+              TimeStamper(fmt=logger_date_format, utc=True, key="created_at"), JSONRenderer(indent=indent)])
