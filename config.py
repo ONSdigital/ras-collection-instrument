@@ -8,7 +8,7 @@ cf = ONSCloudFoundry()
 class Config(object):
     VERSION = '1.4.1'
     SCHEME = os.getenv('http')
-    HOSTf = os.getenv('HOST', '0.0.0.0')
+    HOST = os.getenv('HOST', '0.0.0.0')
     PORT = os.getenv('PORT', 8002)
     DEBUG = os.getenv('DEBUG', False)
     LOGGING_LEVEL = os.getenv('LOGGING_LEVEL', 'INFO')
