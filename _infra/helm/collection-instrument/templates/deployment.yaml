@@ -68,7 +68,7 @@ spec:
               containerPort: {{ .Values.container.port }}
           readinessProbe:
             httpGet:
-              path: /info 
+              path: /info
               port: {{ .Values.container.port }}
             initialDelaySeconds: 1
             periodSeconds: 20
@@ -141,53 +141,29 @@ spec:
             value: "config/config-docker.yaml"
           - name: ONS_CRYPTOKEY
             value: "{{ .Values.cryptoKey }}"
-          - name: COLLECTION_EXERCISE_HOST
+          - name: CASE_URL
             {{- if .Values.dns.enabled }}
-            value: "collection-exercise.{{ .Values.namespace }}.svc.cluster.local"
+            value: "http://case.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
             {{- else }}
-            value: "$(COLLECTION_EXERCISE_SERVICE_HOST)"
+            value: "http://$(CASE_SERVICE_HOST):$(CASE_SERVICE_PORT)"
             {{- end }}
-          - name: COLLECTION_EXERCISE_PORT
+          - name: COLLECTION_EXERCISE_URL
             {{- if .Values.dns.enabled }}
-            value: "{{ .Values.dns.wellKnownPort }}"
+            value: "http://collection-exercise.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
             {{- else }}
-            value: "$(COLLECTION_EXERCISE_SERVICE_PORT)"
+            value: "http://$(COLLECTION_EXERCISE_SERVICE_HOST):$(COLLECTION_EXERCISE_SERVICE_PORT)"
             {{- end }}
-          - name: CASE_SERVICE_HOST
+          - name: PARTY_URL
             {{- if .Values.dns.enabled }}
-            value: "case.{{ .Values.namespace }}.svc.cluster.local"
+            value: "http://party.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
             {{- else }}
-            value: "$(CASE_SERVICE_HOST)"
+            value: "http://$(PARTY_SERVICE_HOST):$(PARTY_SERVICE_PORT)"
             {{- end }}
-          - name: CASE_SERVICE_PORT
+          - name: SURVEY_URL
             {{- if .Values.dns.enabled }}
-            value: "{{ .Values.dns.wellKnownPort }}"
+            value: "http://survey.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
             {{- else }}
-            value: "$(CASE_SERVICE_PORT)"
-            {{- end }}
-          - name: PARTY_SERVICE_HOST
-            {{- if .Values.dns.enabled }}
-            value: "party.{{ .Values.namespace }}.svc.cluster.local"
-            {{- else }}
-            value: "$(PARTY_SERVICE_HOST)"
-            {{- end }}
-          - name: PARTY_SERVICE_PORT
-            {{- if .Values.dns.enabled }}
-            value: "{{ .Values.dns.wellKnownPort }}"
-            {{- else }}
-            value: "$(PARTY_SERVICE_PORT)"
-            {{- end }}
-          - name: SURVEY_SERVICE_HOST
-             {{- if .Values.dns.enabled }}
-            value: "survey.{{ .Values.namespace }}.svc.cluster.local"
-            {{- else }}
-            value: "$(SURVEY_SERVICE_HOST)"
-            {{- end }}
-          - name: SURVEY_SERVICE_PORT
-            {{- if .Values.dns.enabled }}
-            value: "{{ .Values.dns.wellKnownPort }}"
-            {{- else }}
-            value: "$(SURVEY_SERVICE_PORT)"
+            value: "http://$(SURVEY_SERVICE_HOST):$(SURVEY_SERVICE_PORT)"
             {{- end }}
           - name: RABBITMQ_USERNAME
             valueFrom:

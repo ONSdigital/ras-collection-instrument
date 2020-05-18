@@ -98,10 +98,10 @@ def service_request(service, endpoint, search_value):
 
     try:
         service = {
-            'survey-service': current_app.config['SURVEY_SERVICE'],
-            'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_SERVICE'],
-            'case-service': current_app.config['CASE_SERVICE'],
-            'party-service': current_app.config['PARTY_SERVICE']
+            'survey-service': current_app.config['SURVEY_URL'],
+            'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_URL'],
+            'case-service': current_app.config['CASE_URL'],
+            'party-service': current_app.config['PARTY_URL']
         }[service]
         service_url = f'{service}/{endpoint}/{search_value}'
         log.info(f'Making request to {service_url}')
