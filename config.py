@@ -1,9 +1,5 @@
 import os
 
-from application.cloud.cloudfoundry import ONSCloudFoundry
-
-cf = ONSCloudFoundry()
-
 
 class Config(object):
     VERSION = '1.4.1'
@@ -20,47 +16,18 @@ class Config(object):
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
 
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = cf.rm_queue_uri
-    RABBITMQ_AMQP_SURVEY_RESPONSE = cf.sdx_queue_uri
-    DATABASE_URI = cf.db_uri
-    DB_POOL_SIZE = int(os.getenv('DB_POOL_SIZE', 5))
-    DB_MAX_OVERFLOW = int(os.getenv('DB_MAX_OVERFLOW', 10))
-    DB_POOL_RECYCLE = int(os.getenv('DB_POOL_RECYCLE', -1))
-
-    if cf.detected:
-        DATABASE_SCHEMA = 'ras_ci'
-    else:
-        DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
+    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
+    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')
+    DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
+    DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
-    # dependencies
-
-    CASE_SERVICE_PROTOCOL = os.getenv('CASE_SERVICE_PROTOCOL', 'http')
-    CASE_SERVICE_HOST = os.getenv('CASE_SERVICE_HOST', 'localhost')
-    CASE_SERVICE_PORT = os.getenv('CASE_SERVICE_PORT', 8171)
-    CASE_SERVICE = '{}://{}:{}'.format(CASE_SERVICE_PROTOCOL,
-                                       CASE_SERVICE_HOST,
-                                       CASE_SERVICE_PORT)
-
-    COLLECTION_EXERCISE_PROTOCOL = os.getenv('COLLECTION_EXERCISE_PROTOCOL', 'http')
-    COLLECTION_EXERCISE_HOST = os.getenv('COLLECTION_EXERCISE_HOST', 'localhost')
-    COLLECTION_EXERCISE_PORT = os.getenv('COLLECTION_EXERCISE_PORT', 8145)
-    COLLECTION_EXERCISE_SERVICE = '{}://{}:{}'.format(COLLECTION_EXERCISE_PROTOCOL,
-                                                      COLLECTION_EXERCISE_HOST,
-                                                      COLLECTION_EXERCISE_PORT)
-
-    SURVEY_SERVICE_PROTOCOL = os.getenv('SURVEY_SERVICE_PROTOCOL', 'http')
-    SURVEY_SERVICE_HOST = os.getenv('SURVEY_SERVICE_HOST', 'localhost')
-    SURVEY_SERVICE_PORT = os.getenv('SURVEY_SERVICE_PORT', 8080)
-    SURVEY_SERVICE = '{}://{}:{}'.format(SURVEY_SERVICE_PROTOCOL,
-                                         SURVEY_SERVICE_HOST,
-                                         SURVEY_SERVICE_PORT)
-
-    PARTY_SERVICE_PROTOCOL = os.getenv('PARTY_SERVICE_PROTOCOL', 'http')
-    PARTY_SERVICE_HOST = os.getenv('PARTY_SERVICE_HOST', 'localhost')
-    PARTY_SERVICE_PORT = os.getenv('PARTY_SERVICE_PORT', 8081)
-    PARTY_SERVICE = f'{PARTY_SERVICE_PROTOCOL}://{PARTY_SERVICE_HOST}:{PARTY_SERVICE_PORT}'
+    # Dependencies
+    CASE_URL = os.getenv('CASE_URL', 'http://localhost:8171')
+    COLLECTION_EXERCISE_URL = os.getenv('COLLECTION_EXERCISE_URL', 'http://localhost:8145')
+    PARTY_URL = os.getenv('PARTY_URL', 'http://localhost:8081')
+    SURVEY_URL = os.getenv('SURVEY_URL', 'http://localhost:8080')
 
 
 class DevelopmentConfig(Config):

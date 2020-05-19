@@ -7,14 +7,13 @@ url = "https://pypi.python.org/simple"
 python_version = "3.6"
 
 [packages]
-cfenv = "*"
 flask = "*"
 flask-cors = "*"
 gunicorn = "*"
 gevent = {version = "*", platform_python_implementation="=='CPython'"}
 sqlalchemy-utils = "*"
 sqlalchemy = "*"
-"psycopg2-binary" = "*"
+psycopg2-binary = "*"
 structlog = "*"
 werkzeug = "*"
 sdc-cryptography = "*"
@@ -32,8 +31,8 @@ flask-zipkin = "*"
 
 [dev-packages]
 coverage = "*"
-"flake8" = "*"
-"flake8-mock" = "*"
+flake8 = "*"
+flake8-mock = "*"
 flask-testing = "*"
 pytest = "*"
 pytest-cov = "*"

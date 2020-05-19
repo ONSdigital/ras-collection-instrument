@@ -1,3 +1,4 @@
+namespace: minikube
 env: minikube
 
 replicas: 1
