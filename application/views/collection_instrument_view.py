@@ -36,7 +36,7 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
     instrument = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
 
     if not publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
-        log.error(f'Failed to publish upload message', instrument_id=instrument.instrument_id,
+        log.error('Failed to publish upload message', instrument_id=instrument.instrument_id,
                   collection_exercise_id=exercise_id, ru_ref=ru_ref)
         raise RasError('Failed to publish upload message', 500)
     return make_response(UPLOAD_SUCCESSFUL, 200)
@@ -54,7 +54,7 @@ def upload_collection_instrument_without_collection_exercise():
 def link_collection_instrument(instrument_id, exercise_id):
     CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
     if not publish_uploaded_collection_instrument(exercise_id, instrument_id):
-        log.error(f'Failed to publish upload message', instrument_id=instrument_id,
+        log.error('Failed to publish upload message', instrument_id=instrument_id,
                   collection_exercise_id=exercise_id)
         raise RasError('Failed to publish upload message', 500)
     return make_response(LINK_SUCCESSFUL, 200)
