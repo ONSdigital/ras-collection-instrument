@@ -62,9 +62,7 @@ Environment variables available for configuration are listed below:
 | SECURITY_USER_PASSWORD       | Password the client uses to authenticate with other apis | secret
 | COLLECTION_EXERCISE_SCHEMA   | Database number for the redis instance | application/schemas/collection_instrument_schema.json
 | CASE_URL                     | URL for the case service | 'http://localhost:8171'
-| COLLECTION_EXERCISE_PROTOCOL | Protocol used for collection exercise service uri | 'http'
-| COLLECTION_EXERCISE_HOST     | Host address used for collection exercise uri | 'localhost'
-| COLLECTION_EXERCISE_PORT     | Port used for collection exercise uri | 8145
+| COLLECTION_EXERCISE_URL      | URL for the collection exercise service | 'http://localhost:8145'
 | SURVEY_SERVICE_URL           | URL for the survey service | 'http://localhost:8080'
 | PARTY_URL                    | URL for the party service | 'http://localhost:8081'
 
