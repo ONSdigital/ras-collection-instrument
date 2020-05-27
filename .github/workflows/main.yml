@@ -4,7 +4,7 @@ name: Build
 # events but only for the master branch
 on:
   push:
-    branches: [ github-actions ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
