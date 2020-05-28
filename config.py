@@ -16,8 +16,8 @@ class Config(object):
     COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
                                            'application/schemas/collection_instrument_schema.json')
 
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT', 'rabbit_amqp')
-    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'rabbit_amqp')
+    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
+    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE')
     DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
 
