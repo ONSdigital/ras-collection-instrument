@@ -28,10 +28,10 @@ jobs:
         with:
           fetch-depth: '0'
           token: ${{ secrets.BOT_TOKEN }}
-      - name: Set up Python 3.6
+      - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: '3.6'
+          python-version: '3.8'
       - name: Get Dependencies
         run: |
           pip install pipenv
@@ -97,7 +97,7 @@ jobs:
             git add $CHART_DIRECTORY/Chart.yaml
             git commit -m "$COMMIT_MSG"
 
-            git push 
+            git push
           else
             echo "git version and appVersion do not not match"
             echo "Using current appVersion: $APP_VERSION"
@@ -124,7 +124,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ steps.release.outputs.version }}
-      
+
       - name: Publish Charts
         if: github.ref == 'refs/heads/master'
         run: |
