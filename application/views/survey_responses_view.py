@@ -29,6 +29,11 @@ def add_survey_response(case_id):
 
     file = request.files.get('file')
 
+    file_contents = file.read()
+    file_size = len(file_contents)
+
+    log.error(f"file contents={file_contents} and filesize={file_size}")
+
     if case_id and file and hasattr(file, 'filename'):
         file_name, file_extension = os.path.splitext(secure_filename(file.filename))
         survey_response = SurveyResponse()
