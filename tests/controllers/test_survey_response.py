@@ -1,3 +1,4 @@
+import io
 from os import putenv, environ
 from unittest.mock import patch, Mock
 
@@ -49,3 +50,8 @@ class TestSurveyResponse(TestClient):
 
         # Then the file uploads successfully
         self.assertTrue(status)
+
+    def test_is_file_size_too_small(self):
+        test_file = io.BytesIO()
+        test_file_size = test_file.getbuffer().nbytes
+        SurveyResponse.is_file_size_too_small(self, test_file_size)

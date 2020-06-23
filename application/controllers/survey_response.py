@@ -36,6 +36,9 @@ class SurveyResponse(object):
         log.info('Adding survey response file', filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
 
         file_contents = file.read()
+        if not self.is_file_size_too_small(file_contents):
+            log.info('THE CHECK WORKS')
+
         json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
         return send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
 
@@ -143,6 +146,11 @@ class SurveyResponse(object):
         log.info('Generated file name for upload', filename=file_name)
 
         return file_name, survey_ref
+
+    def is_file_size_too_small(self, upload_file):
+        if upload_file < 1:
+            return False
+        return True
 
     @staticmethod
     def _format_exercise_ref(exercise_ref):
