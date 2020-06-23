@@ -280,6 +280,9 @@ class CollectionInstrument(object):
         log.info('creating instrument seft file')
         file_contents = file.read()
         file_size = len(file_contents)
+
+        log.error(f"file contents={file_contents} and filesize={file_size}")
+
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
         seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename,
