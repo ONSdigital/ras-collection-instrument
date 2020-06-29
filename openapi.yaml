@@ -9,29 +9,19 @@ servers:
     description: The path used by the collection exercise service when port forwarded by kubectl (8080:8080)
 
 tags:
-  - name: upload
-    description: Endpoints for uploading collection instruments
-  - name: link-exercise
-    description: Endpoints for linking collection instruments to collection exercises
-  - name: unlink-exercise
-    description: Endpoints for unlinking collection instruments from collection exercises
-  - name: download-csv
-    description: Endpoints for downloading CSV files
-  - name: download
-    description: Endpoints for downloading collection instruments
-  - name: instrument-size
-    description: Endpoints for getting the size of a collection instruments
   - name: collection-instrument
-    description: Endpoints for getting collection instruments
+    description: Endpoints for getting, linking, unlinking, and dowloading collection instruments
   - name: info
     description: Service information endpoints
+  - name: survey-response
+    description: Survey response endpoints
 
 paths:
   "/collection-instrument-api/1.0.2/upload/{exercise_id}/{RU_id}":
     post:
       summary: Encrypt and upload collection instrument associated to collection exercise and RU
       tags:
-        - upload
+        - collection-instrument
       parameters:
         - in: path
           name: exercise_id
@@ -59,14 +49,21 @@ paths:
       responses:
         '200':
           description: Successfully uploaded collection instrument
-          content: "The upload was successful"
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
   "/collection-instrument-api/1.0.2/upload/{exercise_id}":
     post:
       summary: Encrypt and upload collection instrument associated to collection exercised without RU
       tags:
-        - upload
+        - collection-instrument
       parameters:
         - in: path
           name: exercise_id
@@ -82,25 +79,24 @@ paths:
             type: string
             example: 'file_name.xlsx'
           description: Spreadsheet file
-        - in: query
-          name: classifiers
-          required: true
-          schema:
-            type: string
-            format: dictionary
-            example: '{"FORM_TYPE":%20"001"}'
-          description: Collection instrument classifiers
       responses:
         '200':
           description: Successfully uploaded collection instrument
-          content: "The upload was successful"
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
   "/collection-instrument-api/1.0.2/upload":
     post:
       summary: Upload an eQ collection instrument associated to a survey with classifiers
       tags:
-        - upload
+        - collection-instrument
       parameters:
         - in: query
           name: classifiers
@@ -117,14 +113,21 @@ paths:
       responses:
         '200':
           description: Successfully uploaded collection instrument
-          content: "The upload was successful"
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
   "/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}":
     post:
       summary: Link a collection instrument to a collection exercise
       tags:
-        - link-exercise
+        - collection-instrument
       parameters:
         - in: path
           name: instrument_id
@@ -145,14 +148,21 @@ paths:
       responses:
         '200':
           description: Successfully linked collection exercise and instrument.
-          content: Linked collection instrument to collection exercise
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Linked collection instrument to collection exercise'
         '500':
           description: Failed to publish upload message.
   "/collection-instrument-api/1.0.2/unlink-exercise/{instrument_id}/{exercise_id}":
     put:
       summary: Unink a collection instrument to a collection exercise
       tags:
-        - unlink-exercise
+        - collection-instrument
       parameters:
         - in: path
           name: instrument_id
@@ -173,12 +183,19 @@ paths:
       responses:
         '200':
           description: Successfully unlinked collection exercise and instrument.
-          content: Collection instrument to collection exercise unlinked.
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Collection instrument to collection exercise unlinked'
   "/collection-instrument-api/1.0.2/download_csv/{exercise_id}":
     get:
       summary: Find all collection instruments associated with an exercise
       tags:
-        - download-csv
+        - collection-instrument
       parameters:
         - in: path
           name: exercise_id
@@ -215,7 +232,7 @@ paths:
     get:
       summary: Download a collection instrument
       tags:
-        - download
+        - collection-instrument
       parameters:
         - in: path
           name: instrument_id
@@ -237,7 +254,7 @@ paths:
     get:
       summary: Get the size of a collection instrument
       tags:
-        - instrument_size
+        - collection-instrument
       parameters:
         - in: path
           name: instrument_id
@@ -250,7 +267,14 @@ paths:
       responses:
         '200':
           description: Returned size of collection instrument
-          content: '52224'
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  size:
+                    type: integer
+                    example: '52224'
         '404':
           description: Collection instrument not found
   "/collection-instrument-api/1.0.2/collectioninstrument/count":
@@ -269,7 +293,14 @@ paths:
       responses:
         '200':
           description: Returned count of collection instruments
-          responses: '123'
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: '123'
   "/collection-instrument-api/1.0.2/collectioninstrument":
     get:
       summary: Get collection instrument by search string
@@ -364,7 +395,7 @@ paths:
     post:
       summary: Encrypt and upload collection instrument
       tags:
-        - survey-responses
+        - survey-response
       parameters:
         - in: path
           name: case_id
@@ -384,7 +415,14 @@ paths:
       responses:
         '200':
           description: Collection instrument successfully uploaded
-          content: 'Upload successful'
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Upload successful'
         '400':
           description: File is invalid
         '404':
