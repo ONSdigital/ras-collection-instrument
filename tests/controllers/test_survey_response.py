@@ -51,24 +51,6 @@ class TestSurveyResponse(TestClient):
         # Then the file uploads successfully
         self.assertTrue(status)
 
-    # def test_zero_byte_file_upload(self):
-    #     # Given a survey response
-    #     filename = 'test_file.xlsx'
-    #     with open(TEST_FILE_LOCATION, 'rb') as io:
-    #         file = FileStorage(stream=io, filename=filename)
-    #
-    #     # When the file is posted to the upload end point with a case_id
-    #         case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
-    #         env = Mock()
-    #         service = Mock()
-    #         service.credentials = {'uri': 'tests-uri'}
-    #         env.get_service = Mock(return_value=service)
-    #         with patch('pika.BlockingConnection'):
-    #             status = self.survey_response.add_survey_response(case_id, file, filename, '023')
-    #
-    #     # Then the file uploads successfully
-    #     self.assertTrue(status)
-
     def test_is_file_size_too_small(self):
         test_file = io.BytesIO()
         test_file_size = test_file.getbuffer().nbytes
