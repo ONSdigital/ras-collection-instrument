@@ -1,0 +1,531 @@
+openapi: 3.0.2
+info:
+  title: collection instrument
+  description: A service for the uploading of collection instruments and exercises
+  version: "2.0"
+
+servers:
+  - url: https://localhost:8080/
+    description: The path used by the collection exercise service when port forwarded by kubectl (8080:8080)
+
+tags:
+  - name: collection-instrument
+    description: Endpoints for getting, linking, unlinking, and dowloading collection instruments
+  - name: info
+    description: Service information endpoints
+  - name: survey-response
+    description: Survey response endpoints
+
+paths:
+  "/collection-instrument-api/1.0.2/upload/{exercise_id}/{RU_id}":
+    post:
+      summary: Encrypt and upload collection instrument associated to collection exercise and RU
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The collection exercise ID.
+        - in: path
+          name: RU_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'test_ru_ref'
+          description: The RU reference
+        - in : query
+          name: file
+          required: true
+          schema:
+            type: string
+            example: 'file_name.xlsx'
+          description: Spreadsheet file
+      responses:
+        '200':
+          description: Successfully uploaded collection instrument
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
+        '500':
+          description: Failed to publish upload message
+  "/collection-instrument-api/1.0.2/upload/{exercise_id}":
+    post:
+      summary: Encrypt and upload collection instrument associated to collection exercised without RU
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+        - in: query
+          name: file
+          required: true
+          schema:
+            type: string
+            example: 'file_name.xlsx'
+          description: Spreadsheet file
+      responses:
+        '200':
+          description: Successfully uploaded collection instrument
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
+        '500':
+          description: Failed to publish upload message
+  "/collection-instrument-api/1.0.2/upload":
+    post:
+      summary: Upload an eQ collection instrument associated to a survey with classifiers
+      tags:
+        - collection-instrument
+      parameters:
+        - in: query
+          name: classifiers
+          schema:
+            type: string
+            format: dictionary
+            example: '{"FORM_TYPE":%20"001"}'
+        - in: query
+          name: survey_id
+          schema:
+            type: string
+            format: uuid
+            example: '02b9c366-7397-42f7-942a-76dc5876d86d'
+      responses:
+        '200':
+          description: Successfully uploaded collection instrument
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'The upload was successful'
+        '500':
+          description: Failed to publish upload message
+  "/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}":
+    post:
+      summary: Link a collection instrument to a collection exercise
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The ID of the collection exercise.
+      responses:
+        '200':
+          description: Successfully linked collection exercise and instrument.
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Linked collection instrument to collection exercise'
+        '500':
+          description: Failed to publish upload message.
+  "/collection-instrument-api/1.0.2/unlink-exercise/{instrument_id}/{exercise_id}":
+    put:
+      summary: Unink a collection instrument to a collection exercise
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The ID of the collection exercise.
+      responses:
+        '200':
+          description: Successfully unlinked collection exercise and instrument.
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Collection instrument to collection exercise unlinked'
+  "/collection-instrument-api/1.0.2/download_csv/{exercise_id}":
+    get:
+      summary: Find all collection instruments associated with an exercise
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The ID of the collection exercise.
+      responses:
+        '200':
+          description: Found collection instruments associated with collection exercise ID
+          content:
+            application/csv:
+              schema:
+                type: object
+                properties:
+                  Count:
+                    type: integer
+                    example: 1
+                  RU Code:
+                    type: string
+                    example: "test_ru_ref"
+                  Length:
+                    type: integer
+                    example: "999"
+                  Time Stamp:
+                    type: string
+                    format: date-time
+                    example: '2017-10-13 11:25:27.020468'
+        '404':
+          description: No collection instruments found for collection excercise ID
+  "/collection-instrument-api/1.0.2/download/{instrument_id}":
+    get:
+      summary: Download a collection instrument
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+      responses:
+        '200':
+          description: Successfully downloaded collection instrument
+          content:
+            xlsx file:
+              example: 'adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx'
+        '404':
+          description: Collection instrument not found
+  "/collection-instrument-api/1.0.2/instrument_size/{instrument_id}":
+    get:
+      summary: Get the size of a collection instrument
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+      responses:
+        '200':
+          description: Returned size of collection instrument
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  size:
+                    type: integer
+                    example: '52224'
+        '404':
+          description: Collection instrument not found
+  "/collection-instrument-api/1.0.2/collectioninstrument/count":
+    get:
+      summary: Get count of collection instruments
+      tags:
+        - collection-instrument
+      parameters:
+        - in: query
+          name: searchString
+          schema:
+            type: string
+            format: dictionary
+            example: '{"COLLECTION_EXERCISE":%20"{exercise_id}"}'
+          description: The query used to filter the count of collection instruments.
+      responses:
+        '200':
+          description: Returned count of collection instruments
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: '123'
+  "/collection-instrument-api/1.0.2/collectioninstrument":
+    get:
+      summary: Get collection instrument by search string
+      tags:
+        - collection-instrument
+      parameters:
+        - in: query
+          name: searchString
+          required: true
+          schema:
+            type: string
+            format: dictionary
+            example: '{"form_type":%20"001"}'
+          description: The query used to filter the collection instruments
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: '1'
+          description: The limit on the number of hits
+      responses:
+        '200':
+          description: Returns the collection instrumenta matching the search string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classifiers:
+                    type: string
+                    format: dictionary
+                    example: '"COLLECTION_EXERCISE": ["8f078c99-2843-47c6-9c57-13e5966fbc9e"]'
+                  form_type:
+                    type: string
+                    format: dictionary
+                    example: '"form_type": "001","RU_REF": ["test_ru_ref"]'
+                  file_name:
+                    type: string
+                    example: 'file_name'
+                  id:
+                    type: string
+                    format: uuid
+                    example: '7574283a-d1fd-49df-b684-d7b201e5748a'
+                  surveyId:
+                    type: string
+                    format: uuid
+                    example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+  "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}":
+    get:
+      summary: Get collection instrument by instrument ID
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+      responses:
+        '200':
+          description: Returns the collection instrument matching the instrument ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  classifiers:
+                    type: string
+                    format: dictionary
+                    example: '"COLLECTION_EXERCISE": ["8f078c99-2843-47c6-9c57-13e5966fbc9e"]'
+                  form_type:
+                    type: string
+                    format: dictionary
+                    example: '"form_type": "001","RU_REF": ["test_ru_ref"]'
+                  file_name:
+                    type: string
+                    example: 'file_name'
+                  id:
+                    type: string
+                    format: uuid
+                    example: '7574283a-d1fd-49df-b684-d7b201e5748a'
+                  surveyId:
+                    type: string
+                    format: uuid
+                    example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+        '404':
+          description: Collection instrument not found
+  "/survey_response-api/v1/survey_responses/{case_id}":
+    post:
+      summary: Encrypt and upload collection instrument
+      tags:
+        - survey-response
+      parameters:
+        - in: path
+          name: case_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ab548d78-c2f1-400f-9899-79d944b87300'
+          description: The ID of the case
+        - in: query
+          name: file
+          required: true
+          schema:
+            type: string
+            example: 'file_name.xlsx'
+          description: Spreadsheet file
+      responses:
+        '200':
+          description: Collection instrument successfully uploaded
+          content:
+            text/plain:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Upload successful'
+        '400':
+          description: File is invalid
+        '404':
+          description: Missing data
+        '500':
+          description: Collection instrument upload unsuccessful
+  "/info":
+    get:
+      summary: Returns survey information
+      tags:
+        - info
+      responses:
+        '200':
+          description: Retrieved service information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: 'ras-collection-instrument'
+                  version:
+                    type: string
+                    example: '1.3.1'
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  responses:
+    NotFoundError:
+      description: Resource has not been found.
+    BadRequestError:
+      description: Required parameters are missing or invalid.
+    InvalidResponseTypeError:
+      description: There was a problem with the server response.
+  schemas:
+    collection_instrument:
+      type: object
+      properties:
+        sampleUnitRef:
+          type: string
+          example: "sampleUnitRef"
+        sampleUnitType:
+          type: string
+          format: enum
+          example: "B"
+        sampleSummaryId:
+          type: string
+          format: uuid
+          example: 'e291c21f-1a04-ff53-7844-826bb29f7e44d'
+        attributes:
+          type: object
+          properties:
+            ruref:
+              type: string
+            birthdate:
+              type: string
+            checkletter:
+              type: string
+            entname1:
+              type: string
+            entname2:
+              type: string
+            entname3:
+              type: string
+            entref:
+              type: string
+            formType:
+              type: string
+            formtype:
+              type: string
+            froempment:
+              type: integer
+            frosic2007:
+              type: string
+            frosic92:
+              type: string
+            frotover:
+              type: integer
+            inclexl:
+              type: string
+            legalstatus:
+              type: string
+            region:
+              type: string
+            runame1:
+              type: string
+            runame2:
+              type: string
+            runame3:
+              type: string
+            rusic2007:
+              type: string
+            rusic92:
+              type: string
+            seltype:
+              type: string
+            tradstyle1:
+              type: string
+            cell_no:
+              type: integer
+security:
+  - basicAuth: []

@@ -4,9 +4,23 @@
 
 ## Overview
 
-This is the RAS Collection Instrument micro-service, responsible for the uploading of collection exercises and instruments
+This is the RAS Collection Instrument micro-service, responsible for the uploading of collection exercises and instruments. It can also be used to download collection instruments as .xlsx files, and allows for the searching of collection instruments via search filters.
+This service has the ability to link and unlink collection exercises with collection instruments. The relationship between exercises and instruments is one-to-many, so one collection exercise can have multiple collection instruments.
+Each collection instrument in the JSON schema has a sample unit reference, type, and summary ID, as well as additional attributes.
+This service commmunicates primarily with the collection exercise service, as well as the party, case, and survey services.
+Logging information about the collection instruments is sent to rabbitmq.
 
-The API is specified [here](./API.md).
+Collection instruments are stored in an instrument table with the following fields:
+
+type = the type of the collection exercise (i.e. SEFT, EQ, etc.)
+instrument_id = the UUID for the instrument
+stamp = the timestamp showing when the collection instrument was created
+survey_id = the UUID of the associated survey
+classifiers = the survey classifiers
+survey = the survey itself
+seft_file = the instrument's seft file
+
+Three different endpoint views exist: `/collectioninstrument`, which is used for the majority of the endpoints, as well as `/survey_responses` and `/info`.
 
 ## Environment
 
@@ -74,3 +88,10 @@ These are set in [config.py](config.py)
 ## Upload test collection instruments
 
 Navigate to /developer_scripts and run import.py, answer the prompts on the command line
+
+## Suggestions for improvements
+
+* The `collection_instrument_schema` has two seemingly identical attribute fields: `formType` and `formtype`.
+* Apropos the previous point, many of the attributes in the schema have unclear names and purposes, like `entname1/2/3` and `runame1/2/3`, among others. The schema should be redesigned, or have more specific documentation.
+* A couple of the endpoints have fairly useless functionality. For example, all the `/collectioninstrument/count` endpoint does is return the number of collection instruments. Why is this something the service needs to do? Could this not be accomplished by a database query?
+* Given the service's heavy reliance on collection exercises, could this service not be combined with the collection exercise service during the ras-rm redesign?
