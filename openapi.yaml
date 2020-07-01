@@ -2,10 +2,10 @@ openapi: 3.0.2
 info:
   title: collection instrument
   description: A service for the uploading of collection instruments and exercises
-  version: "2.0"
+  version: "1.0"
 
 servers:
-  - url: https://localhost:8080/
+  - url: https://localhost:8002
     description: The path used by the collection exercise service when port forwarded by kubectl (8080:8080)
 
 tags:
