@@ -45,13 +45,11 @@ def add_survey_response(case_id):
 
         upload_success = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
 
+        if upload_success == "False":
+            return make_response(FILE_TOO_SMALL, 400)
+
         if upload_success:
             return make_response(UPLOAD_SUCCESSFUL, 200)
-
-        is_file_size_zero_byte = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
-
-        if not is_file_size_zero_byte:
-            return make_response(FILE_TOO_SMALL, 400)
         else:
             return make_response(UPLOAD_UNSUCCESSFUL, 500)
     else:

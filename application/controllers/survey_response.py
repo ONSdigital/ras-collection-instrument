@@ -39,7 +39,7 @@ class SurveyResponse(object):
 
         if self.check_if_file_size_too_small(file_size):
             log.info('File size is too small')
-            return False
+            return 'False'
         elif not self.check_if_file_size_too_small(file_size):
             log.info('File size is correct')
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
