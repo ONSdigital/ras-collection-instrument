@@ -16,6 +16,7 @@ INVALID_UPLOAD = 'The upload must have valid case_id and a file attached'
 MISSING_DATA = 'Data needed to create the file name is missing'
 UPLOAD_SUCCESSFUL = 'Upload successful'
 UPLOAD_UNSUCCESSFUL = 'Upload failed'
+FILE_TOO_SMALL = 'File too small'
 
 
 @survey_responses_view.before_request
@@ -44,10 +45,12 @@ def add_survey_response(case_id):
 
         upload_success = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
 
+        if upload_success == "False":
+            return make_response(FILE_TOO_SMALL, 400)
+
         if upload_success:
             return make_response(UPLOAD_SUCCESSFUL, 200)
         else:
             return make_response(UPLOAD_UNSUCCESSFUL, 500)
-
     else:
         return make_response(INVALID_UPLOAD, 400)
