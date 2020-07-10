@@ -10,9 +10,9 @@ from application.controllers.helper import (is_valid_file_extension, is_valid_fi
 from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
-
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
+UPLOAD_SUCCESSFUL = 'Upload successful'
 FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls or .xlsx format'
 FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'
 RABBIT_QUEUE_NAME = 'Seft.Responses'
@@ -51,11 +51,11 @@ class SurveyResponse(object):
         else:
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
-            if sent:
-                return sent
+            if not sent:
+                log.error("Unable to send file to rabbit queue")
+                raise SurveyResponseError()
             else:
-                raise SurveyResponseError
-
+                return True
 
     @staticmethod
     def initialise_messaging():
@@ -164,7 +164,6 @@ class SurveyResponse(object):
     @staticmethod
     def check_if_file_size_too_small(file_size):
         return file_size < 1
-
 
     @staticmethod
     def _format_exercise_ref(exercise_ref):

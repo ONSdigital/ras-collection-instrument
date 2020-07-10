@@ -42,18 +42,15 @@ def add_survey_response(case_id):
 
         if not file_name:
             return make_response(MISSING_DATA, 404)
-
         try:
             log.info('Processing file')
             survey_response.add_survey_response(case_id, file, file_name, survey_ref)
-        except FileTooSmallError:
-            log.error('File too small')
-            return make_response(FILE_TOO_SMALL, 400)
-        except SurveyResponseError:
-            log.error('Something went wrong')
-            return make_response(UPLOAD_UNSUCCESSFUL, 500)
-        else:
             log.info('File processed')
             return make_response(UPLOAD_SUCCESSFUL, 200)
+        except FileTooSmallError:
+            return make_response(FILE_TOO_SMALL, 400)
+        except SurveyResponseError:
+            return make_response(UPLOAD_UNSUCCESSFUL, 500)
+
     else:
         return make_response(INVALID_UPLOAD, 400)
