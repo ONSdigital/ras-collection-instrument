@@ -7,7 +7,7 @@ from flask import make_response, request
 from werkzeug.utils import secure_filename
 
 from application.controllers.basic_auth import auth
-from application.controllers.survey_response import SurveyResponse
+from application.controllers.survey_response import SurveyResponse, FileTooSmallError, SurveyResponseError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -43,14 +43,17 @@ def add_survey_response(case_id):
         if not file_name:
             return make_response(MISSING_DATA, 404)
 
-        upload_success = survey_response.add_survey_response(case_id, file, file_name, survey_ref)
-
-        if upload_success == "False":
+        try:
+            log.info('Processing file')
+            survey_response.add_survey_response(case_id, file, file_name, survey_ref)
+        except FileTooSmallError:
+            log.error('File too small')
             return make_response(FILE_TOO_SMALL, 400)
-
-        if upload_success:
-            return make_response(UPLOAD_SUCCESSFUL, 200)
-        else:
+        except SurveyResponseError:
+            log.error('Something went wrong')
             return make_response(UPLOAD_UNSUCCESSFUL, 500)
+        else:
+            log.info('File processed')
+            return make_response(UPLOAD_SUCCESSFUL, 200)
     else:
         return make_response(INVALID_UPLOAD, 400)
