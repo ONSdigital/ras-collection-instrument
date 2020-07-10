@@ -99,7 +99,6 @@ class SurveyResponse(object):
         """
 
         log.info('Checking if file is valid')
-
         if not is_valid_file_extension(file_extension, current_app.config.get('UPLOAD_FILE_EXTENSIONS')):
             log.info('File extension not valid')
             return False, FILE_EXTENSION_ERROR
