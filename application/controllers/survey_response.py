@@ -49,13 +49,13 @@ class SurveyResponse(object):
             log.info('File size is too small')
             raise FileTooSmallError()
         else:
-            log.info('File size is correct')
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
             if sent:
                 return sent
             else:
                 raise SurveyResponseError
+
 
     @staticmethod
     def initialise_messaging():
@@ -165,6 +165,7 @@ class SurveyResponse(object):
     @staticmethod
     def check_if_file_size_too_small(file_size):
         return file_size < 1
+
 
     @staticmethod
     def _format_exercise_ref(exercise_ref):
