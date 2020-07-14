@@ -54,8 +54,6 @@ class SurveyResponse(object):
             if not sent:
                 log.error("Unable to send file to rabbit queue")
                 raise SurveyResponseError()
-            else:
-                return True
 
     @staticmethod
     def initialise_messaging():

@@ -8,7 +8,8 @@ from six import BytesIO
 
 from application.controllers.survey_response import FILE_EXTENSION_ERROR, FILE_NAME_LENGTH_ERROR
 from application.views.survey_responses_view import INVALID_UPLOAD, MISSING_DATA
-from application.views.survey_responses_view import UPLOAD_UNSUCCESSFUL
+from application.views.survey_responses_view import UPLOAD_UNSUCCESSFUL, UPLOAD_SUCCESSFUL
+from application.controllers.survey_response import SurveyResponseError
 from tests.test_client import TestClient
 
 
@@ -19,7 +20,7 @@ class TestSurveyResponseView(TestClient):
 
         # Given a file with mocked micro service calls to case, collection and survey
         data = dict(file=(BytesIO(b'upload_test'), 'upload_test.xls'))
-
+        case_id = 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
         mock_case_service = Response()
         mock_case_service.status_code = 200
         mock_case_service._content = b'{"caseGroup": {"sampleUnitRef": "sampleUnitRef", ' \
@@ -46,14 +47,17 @@ class TestSurveyResponseView(TestClient):
             # When that file is post to the survey response end point
             response = self.client.post(
                 '/survey_response-api/v1/survey_responses/{case_id}'.
-                format(case_id='cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'),
+                format(case_id=case_id),
                 data=data,
                 headers=self.get_auth_headers(),
                 content_type='multipart/form-data')
 
             # Then the file uploads successfully
             self.assertStatus(response, 200)
-            self.assertTrue(response.data.decode())
+            try:
+                self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+            except SurveyResponseError:
+                self.fail("Should not raise an exception")
 
     def test_add_survey_response_writes_expected_filename_in_log(self):
 
