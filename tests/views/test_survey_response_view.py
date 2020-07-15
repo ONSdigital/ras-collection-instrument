@@ -46,8 +46,7 @@ class TestSurveyResponseView(TestClient):
 
             # When that file is post to the survey response end point
             response = self.client.post(
-                '/survey_response-api/v1/survey_responses/{case_id}'.
-                format(case_id=case_id),
+                f'/survey_response-api/v1/survey_responses/{case_id}',
                 data=data,
                 headers=self.get_auth_headers(),
                 content_type='multipart/form-data')

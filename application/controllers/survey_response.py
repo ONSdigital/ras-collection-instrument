@@ -52,7 +52,8 @@ class SurveyResponse(object):
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
             if not sent:
-                log.error("Unable to send file to rabbit queue")
+                log.error("Unable to send file to rabbit queue", filename=file_name,
+                          case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
                 raise SurveyResponseError()
 
     @staticmethod

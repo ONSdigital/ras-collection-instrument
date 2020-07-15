@@ -46,13 +46,11 @@ class TestSurveyResponse(TestClient):
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
             with patch('pika.BlockingConnection'):
-                status = self.survey_response.add_survey_response(case_id, file, filename, '023')
-
-            # Then the file uploads successfully
-            try:
-                status
-            except SurveyResponseError:
-                self.fail("Should not raise an exception")
+                # Then the file uploads successfully
+                try:
+                    self.survey_response.add_survey_response(case_id, file, filename, '023')
+                except SurveyResponseError:
+                    self.fail("Should not raise an exception")
 
     def test_is_file_size_too_small(self):
         test_file = io.BytesIO()
