@@ -5,7 +5,7 @@ from unittest.mock import patch, Mock
 from pika.exceptions import AMQPConnectionError
 from werkzeug.datastructures import FileStorage
 
-from application.controllers.survey_response import SurveyResponse
+from application.controllers.survey_response import SurveyResponse, SurveyResponseError
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
@@ -39,17 +39,18 @@ class TestSurveyResponse(TestClient):
         with open(TEST_FILE_LOCATION, 'rb') as io:
             file = FileStorage(stream=io, filename=filename)
 
-        # When the file is posted to the upload end point with a case_id
+            # When the file is posted to the upload end point with a case_id
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
             env = Mock()
             service = Mock()
             service.credentials = {'uri': 'tests-uri'}
             env.get_service = Mock(return_value=service)
             with patch('pika.BlockingConnection'):
-                status = self.survey_response.add_survey_response(case_id, file, filename, '023')
-
-        # Then the file uploads successfully
-        self.assertTrue(status)
+                # Then the file uploads successfully
+                try:
+                    self.survey_response.add_survey_response(case_id, file, filename, '023')
+                except SurveyResponseError:
+                    self.fail("Should not raise an exception")
 
     def test_is_file_size_too_small(self):
         test_file = io.BytesIO()

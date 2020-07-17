@@ -10,12 +10,20 @@ from application.controllers.helper import (is_valid_file_extension, is_valid_fi
 from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
-
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
+UPLOAD_SUCCESSFUL = 'Upload successful'
 FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls or .xlsx format'
 FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'
 RABBIT_QUEUE_NAME = 'Seft.Responses'
+
+
+class FileTooSmallError(Exception):
+    pass
+
+
+class SurveyResponseError(Exception):
+    pass
 
 
 class SurveyResponse(object):
@@ -39,11 +47,14 @@ class SurveyResponse(object):
 
         if self.check_if_file_size_too_small(file_size):
             log.info('File size is too small')
-            return 'False'
-        elif not self.check_if_file_size_too_small(file_size):
-            log.info('File size is correct')
+            raise FileTooSmallError()
+        else:
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
-            return send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
+            sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
+            if not sent:
+                log.error("Unable to send file to rabbit queue", filename=file_name,
+                          case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
+                raise SurveyResponseError()
 
     @staticmethod
     def initialise_messaging():
@@ -87,7 +98,6 @@ class SurveyResponse(object):
         """
 
         log.info('Checking if file is valid')
-
         if not is_valid_file_extension(file_extension, current_app.config.get('UPLOAD_FILE_EXTENSIONS')):
             log.info('File extension not valid')
             return False, FILE_EXTENSION_ERROR
@@ -151,10 +161,8 @@ class SurveyResponse(object):
         return file_name, survey_ref
 
     @staticmethod
-    def check_if_file_size_too_small(upload_file):
-        if upload_file < 1:
-            return True
-        return False
+    def check_if_file_size_too_small(file_size):
+        return file_size < 1
 
     @staticmethod
     def _format_exercise_ref(exercise_ref):
