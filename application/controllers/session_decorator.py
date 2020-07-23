@@ -18,27 +18,22 @@ def with_db_session(f):
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
-        log.info("Acquiring database session.",
-                 pool_size=current_app.db.engine.pool.size(),
-                 connections_in_pool=current_app.db.engine.pool.checkedin(),
-                 connections_checked_out=current_app.db.engine.pool.checkedout(),
-                 current_overflow=current_app.db.engine.pool.overflow()
-                 )
+        log.info("Acquiring database session")
         session = current_app.db.session()
         try:
             result = f(*args, **kwargs, session=session)
-            log.debug("Committing database session.")
+            log.debug("Committing database session")
             session.commit()
             return result
         except RasError:
-            log.exception("Rolling-back database session.")
+            log.exception("Rolling-back database session")
             session.rollback()
             raise
         except Exception as e:
-            log.exception("Rolling-back database session.")
+            log.exception("Rolling-back database session")
             session.rollback()
             raise RasDatabaseError("There was an error committing the changes to the database. Details: {}".format(e))
         finally:
-            log.debug("Removing database session.")
+            log.debug("Removing database session")
             current_app.db.session.remove()
     return wrapper

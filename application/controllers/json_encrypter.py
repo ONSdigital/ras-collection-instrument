@@ -19,6 +19,7 @@ class Encrypter:
     def encrypt(self, payload):
         """
         Encrypts the payload using the keystore values
+
         :param payload: the value to encrypt
         :return: string of encrypted data
         """

@@ -90,6 +90,18 @@ class BusinessModel(Base):
         """Initialise the class with optionally supplied defaults"""
         self.ru_ref = ru_ref
 
+    @property
+    def json(self):
+        return {
+            'id': self.id,
+            'ru_ref': self.ru_ref,
+            'instruments': self.instrument_ids,
+        }
+
+    @property
+    def instrument_ids(self):
+        return [instrument.id for instrument in self.instruments]
+
 
 class ExerciseModel(Base):
     """
@@ -108,6 +120,20 @@ class ExerciseModel(Base):
         self.exercise_id = exercise_id
         self.items = items
         self.status = status
+
+    @property
+    def json(self):
+        return {
+            'id': self.id,
+            'exercise_id': self.exercise_id,
+            'items': self.items,
+            'status': self.status,
+            'instruments': self.instrument_ids,
+        }
+
+    @property
+    def instrument_ids(self):
+        return [instrument.id for instrument in self.instruments]
 
 
 class SurveyModel(Base):

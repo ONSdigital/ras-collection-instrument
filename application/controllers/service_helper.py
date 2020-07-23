@@ -88,6 +88,7 @@ def get_business_party(business_id, collection_exercise_id=None, verbose=False):
 def service_request(service, endpoint, search_value):
     """
     Makes a request to a different micro service
+
     :param service: The micro service to call to
     :param endpoint: The end point of the micro service
     :param search_value: The value to search on

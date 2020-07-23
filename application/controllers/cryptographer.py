@@ -47,6 +47,7 @@ class Cryptographer:
     def decrypt(self, encrypted_text):
         """
         Decrypt the supplied text
+
         :param encrypted_text: The data to decrypt, must be a string of type byte
         :return: The unencrypted text
         """

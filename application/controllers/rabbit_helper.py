@@ -14,6 +14,7 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 def _encrypt_message(message_json):
     """
     Encrypts a JSON message
+
     :param message_json: The file in JSON format
     :return: jwe as String
     """
@@ -42,6 +43,7 @@ def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
 def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbitmq_amqp_config, encrypt=True):
     """
     Send message to rabbitmq
+
     :param message: The message to send to the queue in JSON format
     :param tx_id: The transaction ID for the message
     :param queue_name: The rabbit queue or exchange to publish to

@@ -33,6 +33,7 @@ class SurveyResponse(object):
     def add_survey_response(self, case_id, file, file_name, survey_ref):
         """
         Encrypt and upload survey response to rabbitmq
+
         :param case_id: A case id
         :param file: A file object from which we can read the file contents
         :param file_name: The filename
@@ -65,15 +66,17 @@ class SurveyResponse(object):
     def _create_json_message_for_file(generated_file_name, file, case_id, survey_ref):
         """
         Create json message from file
+
+        .. note:: the confusing use of survey_id and survey_ref. collection_exercise returns uses survey_id as a
+            GUID, which is the GUID as defined in the survey_service. The survey service holds a survey_ref,
+            a 3 character string holding defining an integer, which other (older) services refer to as survey_id.
+            Therefore, when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
+
         :param generated_file_name: The generated file name
         :param file: The file uploaded
         :param case_id: The case UUID
         :param survey_ref : The survey reference e.g 134 MWSS
         :return: Returns json message
-        ..note:: the confusing use of survey_id and survey_ref. collection_exercise returns uses survey_id as a
-            GUID, which is the GUID as defined in the survey_service. The survey service holds a survey_ref,
-            a 3 character string holding defining an integer, which other (older) services refer to as survey_id.
-            Therefore, when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
         """
 
         log.info('Creating json message', filename=generated_file_name, case_id=case_id, survey_id=survey_ref)
@@ -92,6 +95,7 @@ class SurveyResponse(object):
     def is_valid_file(file_name, file_extension):
         """
         Check a file is valid
+
         :param file_name: The file_name to check
         :param file_extension: The file extension
         :return: (boolean, String)
@@ -112,13 +116,15 @@ class SurveyResponse(object):
         """
         Generate the file name for the upload, if an external service can't find the relevant information
         a None is returned instead.
-        :param case_id: The case id of the upload
-        :param file_extension: The upload file extension
-        :return: file name and survey_ref or None
-        ..note:: returns two seemingly disparate values because the survey_ref is needed for filename anyway,
+
+        .. note:: returns two seemingly disparate values because the survey_ref is needed for filename anyway,
             and resolving requires calls to http services, doing it in one function minimises network traffic.
             survey_id as returned by collection exercise is a uuid, this is resolved by a call to
             survey which returns it as surveyRef which is the 3 digit id that other services refer to as survey_id
+
+        :param case_id: The case id of the upload
+        :param file_extension: The upload file extension
+        :return: file name and survey_ref or None
         """
 
         log.info('Generating file name', case_id=case_id)
@@ -169,6 +175,7 @@ class SurveyResponse(object):
         """
         There is currently data inconsistency in the code, exercise_ref should look like 201712 not '221_201712',
         this is a work around until the data is corrected
+
         :param exercise_ref: exercise reference
         :return: formatted exercise reference
         """

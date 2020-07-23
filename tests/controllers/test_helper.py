@@ -2,8 +2,8 @@ import unittest
 
 from werkzeug.datastructures import FileStorage
 
-from application.controllers.helper import convert_string_to_bytes_base64, validate_uuid, \
-    convert_file_object_to_string_base64, to_str, to_bytes, is_valid_file_extension, is_valid_file_name_length
+from application.controllers.helper import validate_uuid, convert_file_object_to_string_base64, to_str, \
+    is_valid_file_extension, is_valid_file_name_length
 from application.exceptions import RasError
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
@@ -24,20 +24,6 @@ class TestHelper(unittest.TestCase):
 
             # Then it is a string
             self.assertEqual(type(file_as_string), str)
-
-    def test_string_to_file_object(self):
-
-        # Given a file has been converted to a string
-        with open(TEST_FILE_LOCATION, 'rb') as io:
-            file = FileStorage(stream=io, filename='tests.xlsx')
-            f = file.read()
-            file_as_string = convert_file_object_to_string_base64(f)
-
-            # When it is converted to bytes
-            string_as_bytes = convert_string_to_bytes_base64(file_as_string)
-
-            # Then it is a byte stream
-            self.assertEqual(type(string_as_bytes), bytes)
 
     def test_valid_file_format_true(self):
 
@@ -86,38 +72,6 @@ class TestHelper(unittest.TestCase):
 
         # Then it is False
         self.assertFalse(result)
-
-    def test_to_bytes_with_string(self):
-
-        # Given a string
-        string = 'abc'
-
-        # When to_bytes is called
-        b = to_bytes(string)
-
-        # Then a byte stream is returned
-        self.assertEqual(b, b'abc')
-
-    def test_to_bytes_with_bytes(self):
-
-        # Given a byte stream
-        bytes_stream = b'def'
-
-        # When to_bytes is called
-        b = to_bytes(bytes_stream)
-
-        # Then a byte stream is returned
-        self.assertEqual(b, b'def')
-
-    def test_to_bytes_with_none(self):
-        # Given nothing is passed
-        value = None
-
-        # When to_bytes is called
-        b = to_bytes(value)
-
-        # Then None is returned
-        self.assertEqual(b, None)
 
     def test_to_string_with_string(self):
 

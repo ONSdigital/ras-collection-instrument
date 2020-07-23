@@ -62,7 +62,7 @@ def link_collection_instrument(instrument_id, exercise_id):
 
 @collection_instrument_view.route('/unlink-exercise/<instrument_id>/<exercise_id>', methods=['PUT'])
 def unlink_collection_instrument(instrument_id, exercise_id):
-    CollectionInstrument().unlink_instrument_to_exercise(instrument_id, exercise_id)
+    CollectionInstrument().unlink_instrument_from_exercise(instrument_id, exercise_id)
     return make_response(UNLINK_SUCCESSFUL, 200)
 
 
