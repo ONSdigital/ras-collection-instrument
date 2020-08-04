@@ -18,8 +18,6 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 
 RABBIT_QUEUE_NAME = 'Seft.Instruments'
 
-MULTIPLE_CI_FOR_RU_IN_CE_ERROR = 'Instrument already uploaded for this reporting unit for this exercise'
-
 
 class CollectionInstrument(object):
 
@@ -122,7 +120,7 @@ class CollectionInstrument(object):
 
         """
         bound_logger = log.bind(ru_ref=business.ru_ref)
-        bound_logger.info("Validating only one instrument per reporting unit per exercise", ru_ref=business.ru_ref)
+        bound_logger.info("Validating only one instrument per reporting unit per exercise")
         business = query_business_by_ru(business.ru_ref, session)
         if business:
             business_id = str(business.id)
@@ -139,8 +137,10 @@ class CollectionInstrument(object):
                     if related_exercise_id == exercise_id:
                         bound_logger.info('Was about to add a second instrument for a reporting unit for a '
                                           'collection exercise')
-
-                        raise RasError(MULTIPLE_CI_FOR_RU_IN_CE_ERROR, 400)
+                        ru_ref = business.ru_ref
+                        error_text = f'Reporting unit {ru_ref} already has an instrument ' \
+                                     f'uploaded for this collection exercise'
+                        raise RasError(error_text, 400)
 
     @with_db_session
     def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):

@@ -9,7 +9,6 @@ from six import BytesIO
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
-from application.controllers.collection_instrument import MULTIPLE_CI_FOR_RU_IN_CE_ERROR
 from application.exceptions import RasError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import (
@@ -147,7 +146,7 @@ class TestCollectionInstrumentView(TestClient):
 
             # Then the file upload fails
             error = {
-                "errors": [MULTIPLE_CI_FOR_RU_IN_CE_ERROR]
+                "errors": ['Reporting unit 12345678901 already has an instrument uploaded for this collection exercise']
             }
             self.assertStatus(response, 400)
             self.assertEqual(response.json, error)
