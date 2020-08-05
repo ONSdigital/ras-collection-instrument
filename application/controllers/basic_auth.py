@@ -8,6 +8,7 @@ auth = HTTPBasicAuth()
 def get_pw(username):
     """
     Returns basic auth password if the username matches the value in app
+
     :param username: basic auth username
     :return: basic auth password
     """

@@ -25,6 +25,7 @@ class CollectionInstrument(object):
     def get_instrument_by_search_string(self, search_string=None, limit=None, session=None):
         """
         Get Instrument from the db using the search string passed
+
         :param search_string: Classifiers to filter on
         :param limit: the amount of records to return
         :param session: database session
@@ -66,12 +67,13 @@ class CollectionInstrument(object):
     def upload_instrument(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
         """
         Encrypt and upload a collection instrument to the db
+
         :param exercise_id: An exercise id (UUID)
         :param ru_ref: The name of the file we're receiving
         :param classifiers: Classifiers associated with the instrument
         :param file: A file object from which we can read the file contents
         :param session: database session
-        :return a collection instrument instance
+        :return: a collection instrument instance
         """
 
         log.info('Upload exercise', exercise_id=exercise_id)
@@ -90,6 +92,7 @@ class CollectionInstrument(object):
 
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)
+            self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
             instrument.businesses.append(business)
 
         if classifiers:
@@ -98,14 +101,56 @@ class CollectionInstrument(object):
         session.add(instrument)
         return instrument
 
+    @staticmethod
+    def validate_one_instrument_for_ru_specific_upload(exercise, business, session):
+        """
+        Checks there hasn't been an instrument loaded for this reporting unit in this collection exercise already.
+
+        The algorithm for this is as follows:
+          - Check if this business_id is related to other instrument_id's.
+          - If true, check each the exercise_id for each of those instruments to see if it matches the exercise we're
+          attempting to add to.
+          - If any match, then we're trying to add a second collection instrument for a reporting unit for this
+          collection exercise and an exception will be raised.
+
+        :param exercise: A db object representing the collection exercise
+        :param business: A db object representing the business data
+        :param session: A database session
+        :raises RasError:  Raised when a duplicate is found
+
+        """
+        bound_logger = log.bind(ru_ref=business.ru_ref)
+        bound_logger.info("Validating only one instrument per reporting unit per exercise")
+        business = query_business_by_ru(business.ru_ref, session)
+        if business:
+            business_id = str(business.id)
+            for instrument in business.instruments:
+                instrument_id = str(instrument.id)
+                bound_logger.bind(id_of_instrument=instrument_id, business_id=business_id)
+                bound_logger.info('Reporting unit has had collection instruments uploaded for it in the past')
+
+                for related_exercise in instrument.exercises:
+                    related_exercise_id = related_exercise.exercise_id
+                    exercise_id = exercise.exercise_id
+                    bound_logger.bind(exercise_id=exercise_id, related_exercise_id=related_exercise_id)
+                    bound_logger.info("About to check exercise for match")
+                    if related_exercise_id == exercise_id:
+                        bound_logger.info('Was about to add a second instrument for a reporting unit for a '
+                                          'collection exercise')
+                        ru_ref = business.ru_ref
+                        error_text = f'Reporting unit {ru_ref} already has an instrument ' \
+                                     f'uploaded for this collection exercise'
+                        raise RasError(error_text, 400)
+
     @with_db_session
     def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
         """
         Upload a collection instrument to the db without a collection exercise
+
         :param classifiers: Classifiers associated with the instrument
         :param session: database session
         :param survey_id: database session
-        :return a collection instrument instance
+        :return: a collection instrument instance
         """
 
         log.info('Upload instrument', survey_id=survey_id)
@@ -127,10 +172,11 @@ class CollectionInstrument(object):
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
+
         :param instrument_id: A collection instrument id (UUID)
         :param exercise_id: A collection exercise id (UUID)
         :param session: database session
-        :return True if instrument has been successfully linked to exercise
+        :return: True if instrument has been successfully linked to exercise
         """
         log.info('Linking instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
         validate_uuid(instrument_id)
@@ -144,31 +190,34 @@ class CollectionInstrument(object):
         return True
 
     @with_db_session
-    def unlink_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
+    def unlink_instrument_from_exercise(self, instrument_id, exercise_id, session=None):
         """
-        Unlink a collection instrument and a collection exercise
+        Unlink a collection instrument and a collection exercise.  If there is a link between the exercise
+        and a business, this will also be removed.
+
         :param instrument_id: A collection instrument id (UUID)
         :param exercise_id: A collection exercise id (UUID)
         :param session: database session
-        :return True if instrument has been successfully unlinked to exercise
+        :return: True if instrument has been successfully unlinked to exercise
         """
-        log.info('Unlinking instrument and exercise', instrument_id=instrument_id, exercise_id=exercise_id)
-        validate_uuid(instrument_id)
-        validate_uuid(exercise_id)
+        bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
+        bound_logger.info('Unlinking instrument and exercise')
 
         instrument = self.get_instrument_by_id(instrument_id, session)
-        exercise = self._find_exercise(exercise_id, session)
+        exercise = self.get_exercise_by_id(exercise_id, session)
         if not instrument or not exercise:
-            log.info('Failed to unlink, unable to find instrument or exercise', instrument_id=instrument_id,
-                     exercise_id=exercise_id)
+            bound_logger.info('Failed to unlink, unable to find instrument or exercise')
             raise RasError('Unable to find instrument or exercise', 404)
 
         instrument.exercises.remove(exercise)
+        for business in instrument.businesses:
+            bound_logger.info("Removing business/exercise link", business_id=business.id, ru_ref=business.ru_ref)
+            business.instruments.remove(instrument)
 
         if not self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id):
             raise RasError('Failed to publish upload message', 500)
 
-        log.info('Successfully unlinked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        bound_logger.info('Successfully unlinked instrument to exercise')
         return True
 
     @staticmethod
@@ -180,9 +229,10 @@ class CollectionInstrument(object):
     def publish_remove_collection_instrument(exercise_id, instrument_id):
         """
         Publish message to a rabbitmq exchange with details of collection exercise and instrument unlinked
+
         :param exercise_id: An exercise id (UUID)
         :param instrument_id: The id (UUID) of collection instrument
-        :return True if message successfully published to RABBIT_QUEUE_NAME
+        :return: True if message successfully published to RABBIT_QUEUE_NAME
         """
         log.info('Publishing remove message', exercise_id=exercise_id, instrument_id=instrument_id)
 
@@ -199,9 +249,10 @@ class CollectionInstrument(object):
         """
         Makes a request to the collection exercise service for the survey ID,
         reuses the survey if it exists in this service or create if it doesn't
+
         :param exercise_id: An exercise id (UUID)
         :param session: database session
-        :return survey
+        :return: A survey record
         """
         response = service_request(service='collectionexercise-service',
                                    endpoint='collectionexercises',
@@ -218,9 +269,10 @@ class CollectionInstrument(object):
     def _find_or_create_survey_from_survey_id(survey_id, session):
         """
         reuses the survey if it exists in this service or create if it doesn't
+
         :param survey_id: A survey id (UUID)
         :param session: database session
-        :return survey
+        :return: A survey record
         """
 
         survey = query_survey_by_id(survey_id, session)
@@ -233,9 +285,10 @@ class CollectionInstrument(object):
     def _find_or_create_exercise(exercise_id, session):
         """
         Creates a exercise in the db if it doesn't exist, or reuses if it does
+
         :param exercise_id: An exercise id (UUID)
         :param session: database session
-        :return exercise
+        :return: exercise
         """
 
         exercise = query_exercise_by_id(exercise_id, session)
@@ -245,14 +298,16 @@ class CollectionInstrument(object):
         return exercise
 
     @staticmethod
-    def _find_exercise(exercise_id, session):
+    def get_exercise_by_id(exercise_id, session):
         """
         Retrieves exercise
+
         :param exercise_id: An exercise id (UUID)
         :param session: database session
-        :return exercise
+        :return: exercise
         """
-
+        log.info('Searching for exercise', exercise_id=exercise_id)
+        validate_uuid(exercise_id)
         exercise = query_exercise_by_id(exercise_id, session)
         return exercise
 
@@ -260,9 +315,10 @@ class CollectionInstrument(object):
     def _find_or_create_business(ru_ref, session):
         """
         Creates a business in the db if it doesn't exist, or reuses if it does
+
         :param ru_ref: The name of the file we're receiving
         :param session: database session
-        :return  business
+        :return:  business
         """
         business = query_business_by_ru(ru_ref, session)
         if not business:
@@ -274,8 +330,9 @@ class CollectionInstrument(object):
     def _create_seft_file(instrument_id, file):
         """
         Creates a seft_file with an encrypted version of the file
+
         :param file: A file object from which we can read the file contents
-        :return instrument
+        :return: instrument
         """
         log.info('creating instrument seft file')
         file_contents = file.read()
@@ -291,6 +348,7 @@ class CollectionInstrument(object):
     def get_instruments_by_exercise_id_csv(exercise_id, session=None):
         """
         Finds all collection instruments associated with an exercise and returns them in csv format
+
         :param exercise_id
         :param session: database session
         :return: collection instruments in csv
@@ -322,7 +380,9 @@ class CollectionInstrument(object):
     def get_instrument_json(instrument_id, session):
         """
         Get collection instrument json from the db
+
         :param instrument_id: The id of the instrument we want
+        :param session: database session
         :return: formatted JSON version of the instrument
         """
 
@@ -335,6 +395,7 @@ class CollectionInstrument(object):
     def get_instrument_data(instrument_id, session):
         """
         Get the instrument data from the db using the id
+
         :param instrument_id: The id of the instrument we want
         :param session: database session
         :return: data and file_name
@@ -355,6 +416,7 @@ class CollectionInstrument(object):
     def get_instrument_by_id(instrument_id, session):
         """
         Get the collection instrument from the db using the id
+
         :param instrument_id: The id of the instrument we want
         :param session: database session
         :return: instrument
@@ -367,6 +429,7 @@ class CollectionInstrument(object):
     def _get_instruments_by_classifier(self, json_search_parameters, limit, session):
         """
         Search collection instrument by classifiers.
+
         :param json_search_parameters: dict of (key, value) pairs to search on
         :param limit: the amount of records to return
         :param session: database session
@@ -396,6 +459,7 @@ class CollectionInstrument(object):
     def _build_model_joins(json_search_parameters, session):
         """
         Builds the model joins needed for a search
+
         :param json_search_parameters: dict of (key, value) pairs to join on
         :param session: database session
         :return: query results

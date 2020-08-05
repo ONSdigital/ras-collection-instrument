@@ -22,6 +22,9 @@ seft_file = the instrument's seft file
 
 Three different endpoint views exist: `/collectioninstrument`, which is used for the majority of the endpoints, as well as `/survey_responses` and `/info`.
 
+When a collection instrument is uploaded for a collection exercise it writes a message onto the Seft.Instruments queue for the rm-collection-exercise service
+When a SEFT survey response is uploaded, it writes a message onto the Seft.Responses queue for sdx-seft-consumer service
+
 ## Environment
 
 This requires pipenv to be installed:
