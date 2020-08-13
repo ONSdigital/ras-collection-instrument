@@ -9,7 +9,7 @@
   },
   "variables": {
     "service": "collection-instrument",
-    "defaultVersion": "1.0.0",
+    "defaultVersion": "1.1.2",
     "devDeploymentCluster": "dev",
     "devDeploymentNamespace": "dev"
   },
