@@ -4,7 +4,7 @@ from uuid import uuid4
 from sqlalchemy import Table, Column, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, deferred
 from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
 
 from application.models import GUID
@@ -159,7 +159,7 @@ class SEFTModel(Base):
 
     id = Column(Integer, primary_key=True)
     file_name = Column(String(32))
-    data = Column(LargeBinary)
+    data = deferred(Column(LargeBinary))
     len = Column(Integer)
     instrument_id = Column(GUID, ForeignKey('instrument.instrument_id'))
 
