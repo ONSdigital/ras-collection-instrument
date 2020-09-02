@@ -77,6 +77,49 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 2)
 
+    def test_upload_collection_instrument_without_collection_exercise_duplicate_protection(self):
+
+        # When a post is made to the upload end point
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+            '&classifiers=%7B%22form_type%22%3A%220255%22%2C%22eq_id%22%3A%22rsi%22%7D',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then CI uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 2)
+
+        # When a post is made to the upload end point with identical classifiers
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+            '&classifiers=%7B%22form_type%22%3A%220255%22%2C%22eq_id%22%3A%22rsi%22%7D',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then the file upload fails
+        error = {
+            "errors": ["Cannot upload an instrument with an identical set of classifiers"]
+        }
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json, error)
+        self.assertEqual(len(collection_instruments()), 2)
+
+        # When a post is made to the upload end point for the same survey with the same eq_id but different formtype
+        response = self.client.post(
+            '/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
+            '&classifiers=%7B%22form_type%22%3A%220266%22%2C%22eq_id%22%3A%22rsi%22%7D',
+            headers=self.get_auth_headers(),
+            content_type='multipart/form-data')
+
+        # Then CI uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+        self.assertEqual(len(collection_instruments()), 3)
+
     def test_upload_collection_instrument_if_survey_does_not_exist(self):
 
         # When a post is made to the upload end point

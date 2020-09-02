@@ -162,7 +162,12 @@ class CollectionInstrument(object):
         instrument.survey = survey
 
         if classifiers:
-            instrument.classifiers = loads(classifiers)
+            deserialized_classifiers = loads(classifiers)
+            instruments = self._get_instruments_by_classifier(deserialized_classifiers, None, session)
+            for instrument in instruments:
+                if instrument.classifiers == deserialized_classifiers:
+                    raise RasError("Cannot upload an instrument with an identical set of classifiers", 400)
+            instrument.classifiers = deserialized_classifiers
 
         session.add(instrument)
 
