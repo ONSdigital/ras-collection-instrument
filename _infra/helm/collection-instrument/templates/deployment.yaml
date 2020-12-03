@@ -55,6 +55,8 @@ spec:
               secretKeyRef:
                 name: db-config
                 key: db-port
+          resources:
+            {{ toYaml .Values.resources.proxy | nindent 12 }}
         {{- end }}
         - name: {{ .Chart.Name }}
           {{- if eq .Values.image.tag "latest"}}
@@ -244,4 +246,4 @@ spec:
           - name: RABBITMQ_AMQP_SURVEY_RESPONSE
             value: "amqp://$(SDX_RABBITMQ_USERNAME):$(SDX_RABBITMQ_PASSWORD)@$(SDX_RABBITMQ_HOST):$(SDX_RABBITMQ_PORT)"
           resources:
-            {{ toYaml .Values.resources | nindent 12 }}
+            {{ toYaml .Values.resources.application | nindent 12 }}
