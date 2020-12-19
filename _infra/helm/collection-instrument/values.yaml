@@ -50,8 +50,6 @@ rollingUpdate:
   maxSurge: 1
   maxUnavailable: 1
 
-cryptoKey: "supersecure"
-
 managedRabbitMQ:
   enabled: false
 
@@ -61,8 +59,6 @@ sdx:
     external: true
     host: "127.0.0.1"
     port: "5672"
-    username: guest
-    password: guest
 
 dns:
   enabled: false

@@ -142,7 +142,10 @@ spec:
           - name: CONFIG_YML
             value: "config/config-docker.yaml"
           - name: ONS_CRYPTOKEY
-            value: "{{ .Values.cryptoKey }}"
+            valueFrom:
+              secretKeyRef:
+                name: collection-instrument
+                key: crypto-key
           - name: CASE_URL
             {{- if .Values.dns.enabled }}
             value: "http://case.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.dns.wellKnownPort }}"
