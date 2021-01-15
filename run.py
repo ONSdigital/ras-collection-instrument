@@ -75,7 +75,7 @@ def create_database(db_connection, db_schema):
     def current_request():
         return _app_ctx_stack.__ident_func__()
 
-    engine = create_engine(db_connection)
+    engine = create_engine(db_connection, pool_pre_ping=True)
     session = scoped_session(sessionmaker(), scopefunc=current_request)
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
