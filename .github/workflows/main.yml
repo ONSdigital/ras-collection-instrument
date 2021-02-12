@@ -43,7 +43,7 @@ jobs:
           pip install tox==2.7.0
       - name: Run Tox
         run: pipenv run tox
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: google-github-actions/setup-gcloud@master
         with:
           version: '270.0.0'
           service_account_key: ${{ secrets.GCR_KEY }}
