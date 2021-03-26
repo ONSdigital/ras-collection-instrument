@@ -1,9 +1,5 @@
 # RAS Collection Instrument
 
-[![Build Status](https://travis-ci.org/ONSdigital/ras-collection-instrument.svg?branch=master)](https://travis-ci.org/ONSdigital/ras-collection-instrument) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/e4cee89df456488c95c26c10a07e4f97)](https://www.codacy.com/app/ONSDigital/ras-collection-instrument?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/ras-collection-instrument&amp;utm_campaign=Badge_Grade)
-
-## Overview
-
 This is the RAS Collection Instrument micro-service, responsible for the uploading of collection exercises and instruments. It can also be used to download collection instruments as .xlsx files, and allows for the searching of collection instruments via search filters.
 This service has the ability to link and unlink collection exercises with collection instruments. The relationship between exercises and instruments is one-to-many, so one collection exercise can have multiple collection instruments.
 Each collection instrument in the JSON schema has a sample unit reference, type, and summary ID, as well as additional attributes.
