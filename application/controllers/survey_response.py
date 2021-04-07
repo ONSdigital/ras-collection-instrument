@@ -4,10 +4,13 @@ import uuid
 
 import structlog
 from flask import current_app
+from google.cloud import storage, pubsub_v1
+from google.cloud.exceptions import GoogleCloudError
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
-from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
+from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue, \
+    _encrypt_message
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -27,6 +30,7 @@ class SurveyResponseError(Exception):
 
 
 class SurveyResponse(object):
+
     """
     The survey response from a respondent
     """
@@ -56,6 +60,47 @@ class SurveyResponse(object):
                 log.error("Unable to send file to rabbit queue", filename=file_name,
                           case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
                 raise SurveyResponseError()
+
+            try:
+                self.put_file_into_gcp_bucket(json_message)
+            except GoogleCloudError:
+                log.error("Something went wrong putting into the bucket")
+
+            try:
+                self.put_message_into_pubsub(json_message)
+            except TimeoutError:
+                log.error("Publish to pubsub timed out", exc_info=True)
+                # Delete previously added file from bucket
+                raise SurveyResponseError
+            except Exception:  # noqa
+                log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
+                # Delete previously added from bucket
+                raise SurveyResponseError
+
+    @staticmethod
+    def put_file_into_gcp_bucket(message):
+        client = storage.Client()
+
+        bucket = client.get_bucket("my-new-bucket")
+        blob = bucket.blob('filename')
+        encrypted_message = _encrypt_message(message)
+        blob.upload_from_string(encrypted_message)
+
+    @staticmethod
+    def put_message_into_pubsub(message):
+        publisher = pubsub_v1.PublisherClient()
+        project_id = 'project_id'
+        topic_id = 'topic_id'
+        topic_path = self.publisher.topic_path(project_id, topic_id) # NOQA pylint:disable=no-member
+
+        log.info("About to publish to pubsub")
+        future = publisher.publish(topic_path, data=message.encode())
+        message = future.result(timeout=20)
+        log.info("Publish succeeded", msg_id=message)
+
+
+
+
 
     @staticmethod
     def initialise_messaging():

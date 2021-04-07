@@ -19,8 +19,8 @@ spec:
         app: {{ .Chart.Name }}
         env: {{ .Values.env }}
     spec:
-      {{- if .Values.database.sqlProxyEnabled }}
       volumes:
+      {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-instance-credentials
           secret:
             secretName: cloudsql-proxy-credentials
@@ -29,6 +29,9 @@ spec:
             - key: "credentials.json"
               path: "credentials.json"
       {{- end }}
+      - name: google-cloud-key
+        secret:
+          secretName: google-application-credentials
       containers:
         {{- if .Values.database.sqlProxyEnabled }}
         - name: cloudsql-proxy
@@ -65,6 +68,9 @@ spec:
           image: "{{ .Values.image.devRepo }}/{{ .Chart.Name }}:{{ .Values.image.tag }}"
           {{- end}}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
           ports:
             - name: http-server
               containerPort: {{ .Values.container.port }}
@@ -141,6 +147,8 @@ spec:
             value: "{{ .Values.container.port }}"
           - name: CONFIG_YML
             value: "config/config-docker.yaml"
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /var/secrets/google/credentials.json
           - name: ONS_CRYPTOKEY
             valueFrom:
               secretKeyRef:
