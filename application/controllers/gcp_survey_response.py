@@ -210,7 +210,8 @@ class GcpSurveyResponse(object):
         file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
         # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
-        # clearly defined.  This is fair first attempt at it.
+        # clearly defined.  We might need to write to the bucket, then read it back to find out
+        # how big GCP thinks it is?
         payload = {
             "filename": file_name,
             "tx_id": message['tx_id'],
