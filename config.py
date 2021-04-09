@@ -20,6 +20,7 @@ class Config(object):
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE')
     DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
+    SAVE_SEFT_IN_GCP = os.getenv('SAVE_SEFT_IN_GCP', False)
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 

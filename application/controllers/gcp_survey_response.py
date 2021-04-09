@@ -1,9 +1,13 @@
+import hashlib
 import logging
+import sys
 import time
 import uuid
 
 import structlog
 from flask import current_app
+from google.cloud import storage, pubsub_v1
+from google.cloud.exceptions import GoogleCloudError
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
@@ -27,7 +31,14 @@ class SurveyResponseError(Exception):
     pass
 
 
-class SurveyResponse(object):
+class GcpSurveyResponse(object):
+
+    def __init__(self):
+        self.storage_client = None
+        self.publisher = None
+        self.seft_bucket_name = None
+        self.gcp_project_id = None
+        self.seft_pubsub_topic = None
 
     """
     The survey response from a respondent
@@ -54,10 +65,63 @@ class SurveyResponse(object):
             raise FileTooSmallError()
         else:
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
-            sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
-            if not sent:
-                bound_log.error("Unable to send file to rabbit queue")
-                raise SurveyResponseError()
+
+            if current_app.config['SAVE_SEFT_IN_GCP']:
+                try:
+                    self.put_file_into_gcp_bucket(json_message)
+                except GoogleCloudError:
+                    bound_log.error("Something went wrong putting into the bucket")
+
+                try:
+                    self.put_message_into_pubsub(json_message)
+                except TimeoutError:
+                    bound_log.error("Publish to pubsub timed out", exc_info=True)
+                    # Delete previously added file from bucket
+                    raise SurveyResponseError()
+                except Exception:  # noqa
+                    bound_log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
+                    # Delete previously added from bucket
+                    raise SurveyResponseError()
+
+    def put_file_into_gcp_bucket(self, message):
+        """
+        Takes the message (containing the file) and puts it into a GCP bucket to be later used by SDX.
+
+        Note: The payload will almost certainly change once the encryption method between us and SDX is decided, but
+        for now we'll put the same payload we were using in rabbit as a starting point.
+
+        :param message: A dict with metadata about the collection instrument
+        :type message: dict
+        """
+        if self.storage_client is None:
+            self.storage_client = storage.Client()
+
+        bucket = self.storage_client.get_bucket(self.seft_bucket_name)
+        try:
+            blob = bucket.blob(message['filename'])
+        except KeyError:
+            log.info('Missing filename from the message', message=message)
+            raise
+        encrypted_message = _encrypt_message(message)
+        blob.upload_from_string(encrypted_message)
+
+    def put_message_into_pubsub(self, message):
+        """
+        Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
+
+        :param message: A dict with metadata about the collection instrument
+        :type message: dict
+        """
+        if self.publisher is None:
+            self.publisher = pubsub_v1.PublisherClient()
+
+        topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
+        payload = self.create_pubsub_payload(message)
+
+        log.info("About to publish to pubsub")
+        future = self.publisher.publish(topic_path, data=payload)
+        message = future.result(timeout=15)
+        log.info("Publish succeeded", msg_id=message)
 
     @staticmethod
     def initialise_messaging():
@@ -114,21 +178,9 @@ class SurveyResponse(object):
 
         return True, ""
 
-    def get_file_name_and_survey_ref(self, case_id, file_extension):
-        """
-        Generate the file name for the upload, if an external service can't find the relevant information
-        a None is returned instead.
+    def create_pubsub_payload(self, message):
 
-        .. note:: returns two seemingly disparate values because the survey_ref is needed for filename anyway,
-            and resolving requires calls to http services, doing it in one function minimises network traffic.
-            survey_id as returned by collection exercise is a uuid, this is resolved by a call to
-            survey which returns it as surveyRef which is the 3 digit id that other services refer to as survey_id
-
-        :param case_id: The case id of the upload
-        :param file_extension: The upload file extension
-        :return: file name and survey_ref or None
-        """
-
+        case_id = message['case_id']
         log.info('Generating file name', case_id=case_id)
 
         case_group = get_case_group(case_id)
@@ -144,7 +196,7 @@ class SurveyResponse(object):
         survey_id = collection_exercise.get('surveyId')
         survey_ref = get_survey_ref(survey_id)
         if not survey_ref:
-            return None, None
+            return None
 
         ru = case_group.get('sampleUnitRef')
         exercise_ref = self._format_exercise_ref(exercise_ref)
@@ -152,21 +204,24 @@ class SurveyResponse(object):
         business_party = get_business_party(case_group['partyId'],
                                             collection_exercise_id=collection_exercise_id, verbose=True)
         if not business_party:
-            return None, None
+            return None
         check_letter = business_party['checkletter']
-
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
-        file_name = "{ru}{check_letter}_{exercise_ref}_" \
-                    "{survey_ref}_{time_date_stamp}{file_format}".format(ru=ru,
-                                                                         check_letter=check_letter,
-                                                                         exercise_ref=exercise_ref,
-                                                                         survey_ref=survey_ref,
-                                                                         time_date_stamp=time_date_stamp,
-                                                                         file_format=file_extension)
+        file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
-        log.info('Generated file name for upload', filename=file_name)
+        # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
+        # clearly defined.  This is fair first attempt at it.
+        payload = {
+            "filename": file_name,
+            "tx_id": message['tx_id'],
+            "survey_id": survey_ref,
+            "period": exercise_ref,
+            "ru_ref": ru,
+            "md5sum": hashlib.md5(message),
+            "sizeBytes": sys.getsizeof(message)
+        }
 
-        return file_name, survey_ref
+        return payload
 
     @staticmethod
     def check_if_file_size_too_small(file_size):
