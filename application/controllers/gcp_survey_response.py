@@ -11,8 +11,7 @@ from google.cloud.exceptions import GoogleCloudError
 
 from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
                                             convert_file_object_to_string_base64)
-from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue, \
-    _encrypt_message
+from application.controllers.rabbit_helper import _encrypt_message
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -65,23 +64,28 @@ class GcpSurveyResponse(object):
             raise FileTooSmallError()
         else:
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
+            try:
+                payload = self.create_pubsub_payload(json_message)
+            except SurveyResponseError:
+                bound_log.error("Something went wrong creating the payload", exc_info=True)
+                # What do we do in an error state?
+                raise
 
-            if current_app.config['SAVE_SEFT_IN_GCP']:
-                try:
-                    self.put_file_into_gcp_bucket(json_message)
-                except GoogleCloudError:
-                    bound_log.error("Something went wrong putting into the bucket")
+            try:
+                self.put_file_into_gcp_bucket(json_message)
+            except GoogleCloudError:
+                bound_log.error("Something went wrong putting into the bucket")
 
-                try:
-                    self.put_message_into_pubsub(json_message)
-                except TimeoutError:
-                    bound_log.error("Publish to pubsub timed out", exc_info=True)
-                    # Delete previously added file from bucket
-                    raise SurveyResponseError()
-                except Exception:  # noqa
-                    bound_log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
-                    # Delete previously added from bucket
-                    raise SurveyResponseError()
+            try:
+                self.put_message_into_pubsub(payload)
+            except TimeoutError:
+                bound_log.error("Publish to pubsub timed out", exc_info=True)
+                # Delete previously added file from bucket
+                raise SurveyResponseError()
+            except Exception:  # noqa
+                bound_log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
+                # Delete previously added from bucket
+                raise SurveyResponseError()
 
     def put_file_into_gcp_bucket(self, message):
         """
@@ -105,28 +109,23 @@ class GcpSurveyResponse(object):
         encrypted_message = _encrypt_message(message)
         blob.upload_from_string(encrypted_message)
 
-    def put_message_into_pubsub(self, message):
+    def put_message_into_pubsub(self, payload):
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
-        :param message: A dict with metadata about the collection instrument
-        :type message: dict
+        :param payload: The payload to be put onto the pubsub topic
+        :type payload: dict
         """
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
-        payload = self.create_pubsub_payload(message)
+
 
         log.info("About to publish to pubsub")
         future = self.publisher.publish(topic_path, data=payload)
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
-
-    @staticmethod
-    def initialise_messaging():
-        log.info('Initialising rabbitmq queue for Survey Responses', queue=RABBIT_QUEUE_NAME)
-        return initialise_rabbitmq_queue(RABBIT_QUEUE_NAME)
 
     @staticmethod
     def _create_json_message_for_file(file_name, file, case_id, survey_ref):
@@ -178,25 +177,25 @@ class GcpSurveyResponse(object):
 
         return True, ""
 
-    def create_pubsub_payload(self, message):
+    def create_pubsub_payload(self, message) -> dict:
 
         case_id = message['case_id']
         log.info('Generating file name', case_id=case_id)
 
         case_group = get_case_group(case_id)
         if not case_group:
-            return None, None
+            raise SurveyResponseError()
 
         collection_exercise_id = case_group.get('collectionExerciseId')
         collection_exercise = get_collection_exercise(collection_exercise_id)
         if not collection_exercise:
-            return None, None
+            raise SurveyResponseError("Collection exercise not found")
 
         exercise_ref = collection_exercise.get('exerciseRef')
         survey_id = collection_exercise.get('surveyId')
         survey_ref = get_survey_ref(survey_id)
         if not survey_ref:
-            return None
+            raise SurveyResponseError("Survey ref not found")
 
         ru = case_group.get('sampleUnitRef')
         exercise_ref = self._format_exercise_ref(exercise_ref)
@@ -204,14 +203,14 @@ class GcpSurveyResponse(object):
         business_party = get_business_party(case_group['partyId'],
                                             collection_exercise_id=collection_exercise_id, verbose=True)
         if not business_party:
-            return None
+            raise SurveyResponseError("Business not found in party")
         check_letter = business_party['checkletter']
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
         file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
         # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
         # clearly defined.  We might need to write to the bucket, then read it back to find out
-        # how big GCP thinks it is?
+        # how big GCP thinks it is if getsizeof doesn't give the right size.
         payload = {
             "filename": file_name,
             "tx_id": message['tx_id'],
