@@ -102,13 +102,15 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
-    def patch_instrument(self, instrument_id: str, file, session):
+    def patch_seft_instrument(self, instrument_id: str, file, session):
 
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
-            raise RasError('Not found')
+            log.error('Instrument not found')
+            raise RasError('Instrument not found', 400)
         if instrument.type != 'SEFT':
-            raise RasError('Not a instrument seft')
+            log.error('Not a SEFT instrument')
+            raise RasError('Not a SEFT instrument', 400)
 
         seft_model = self._update_seft_file(instrument.seft_file, file)
         session.add(seft_model)

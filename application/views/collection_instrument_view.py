@@ -47,11 +47,10 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
 def patch_collection_instrument(instrument_id):
     file = request.files['file']
     if not file:
-        return make_response("Missing file", 400)
-    try:
-        CollectionInstrument.patch_instrument(instrument_id, file)
-    except Exception:
-        raise RasError('Failed to patch instrument file', 500)
+        raise RasError("Missing file", 400)
+
+    CollectionInstrument.patch_seft_instrument(instrument_id, file)
+
     return make_response(PATCH_SUCCESSFUL, 200)
 
 
