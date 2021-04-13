@@ -103,7 +103,7 @@ class CollectionInstrument(object):
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
-
+        validate_uuid(instrument_id)
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
             log.error('Instrument not found')

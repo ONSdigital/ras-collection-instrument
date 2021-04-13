@@ -1,17 +1,67 @@
 import json
-from unittest.mock import patch
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
 
 from pika.exceptions import AMQPConnectionError
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
-from application.exceptions import RasDatabaseError
+from application.exceptions import RasDatabaseError, RasError
 from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
 from application.views.collection_instrument_view import publish_uploaded_collection_instrument
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'
+
+
+class TestCollectionInstrumentUnit(TestCase):
+
+    instrument_id = '5f023a96-fdcd-4177-8036-7d13878465eb'
+    file = ''
+
+    def test_patch_seft_instrument_invalid_uuid(self):
+        test_input = 'not-a-uuid'
+        session = MagicMock()
+        instrument = CollectionInstrument()
+
+        with self.assertRaises(RasError) as error:
+            instrument.patch_seft_instrument.__wrapped__(instrument, test_input, self.file, session)
+
+        expected = [f'Value is not a valid UUID ({test_input})']
+        expected_status = 400
+        self.assertEqual(expected, error.exception.errors)
+        self.assertEqual(expected_status, error.exception.status_code)
+
+    @patch('application.controllers.collection_instrument.CollectionInstrument.get_instrument_by_id')
+    def test_patch_seft_instrument_instrument_not_found(self, get_instrument):
+        get_instrument.return_value = None
+        session = MagicMock()
+        instrument = CollectionInstrument()
+
+        with self.assertRaises(RasError) as error:
+            instrument.patch_seft_instrument.__wrapped__(instrument, self.instrument_id, self.file, session)
+
+        expected = ['Instrument not found']
+        expected_status = 400
+        self.assertEqual(expected, error.exception.errors)
+        self.assertEqual(expected_status, error.exception.status_code)
+
+    @patch('application.controllers.collection_instrument.CollectionInstrument.get_instrument_by_id')
+    def test_patch_seft_instrument_instrument_not_seft(self, get_instrument):
+        instrument_model = InstrumentModel()
+        instrument_model.type = 'EQ'
+        get_instrument.return_value = instrument_model
+        session = MagicMock()
+        instrument = CollectionInstrument()
+
+        with self.assertRaises(RasError) as error:
+            instrument.patch_seft_instrument.__wrapped__(instrument, self.instrument_id, self.file, session)
+
+        expected = ['Not a SEFT instrument']
+        expected_status = 400
+        self.assertEqual(expected, error.exception.errors)
+        self.assertEqual(expected_status, error.exception.status_code)
 
 
 class TestCollectionInstrument(TestClient):

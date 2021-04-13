@@ -49,7 +49,7 @@ def patch_collection_instrument(instrument_id):
     if not file:
         raise RasError("Missing file", 400)
 
-    CollectionInstrument.patch_seft_instrument(instrument_id, file)
+    CollectionInstrument().patch_seft_instrument(instrument_id, file)
 
     return make_response(PATCH_SUCCESSFUL, 200)
 
