@@ -18,6 +18,7 @@ collection_instrument_view = Blueprint('collection_instrument_view', __name__)
 COLLECTION_INSTRUMENT_NOT_FOUND = 'Collection instrument not found'
 NO_INSTRUMENT_FOR_EXERCISE = 'There are no collection instruments for that exercise id'
 UPLOAD_SUCCESSFUL = 'The upload was successful'
+PATCH_SUCCESSFUL = 'The patch of the instrument was successful'
 LINK_SUCCESSFUL = 'Linked collection instrument to collection exercise'
 UNLINK_SUCCESSFUL = 'collection instrument and collection exercise unlinked'
 
@@ -40,6 +41,18 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
                   collection_exercise_id=exercise_id, ru_ref=ru_ref)
         raise RasError('Failed to publish upload message', 500)
     return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
+@collection_instrument_view.route('/<instrument_id>', methods=['PATCH'])
+def patch_collection_instrument(instrument_id):
+    file = request.files['file']
+    if not file:
+        return make_response("Missing file", 400)
+    try:
+        CollectionInstrument.patch_instrument(instrument_id, file)
+    except Exception:
+        raise RasError('Failed to patch instrument file', 500)
+    return make_response(PATCH_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route('/upload', methods=['POST'])
