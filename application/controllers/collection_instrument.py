@@ -103,6 +103,14 @@ class CollectionInstrument(object):
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
+        """
+        Replaces the the seft_file for an instrument with the one provided.
+
+        :param instrument_id: The top level instrument id that needs changing
+        :param file: A FileStorage object with the new file
+        :param session: A database session
+        :raises RasError: Raised when instrument id is invalid, instrument not found, or instrument isn't of type SEFT
+        """
         validate_uuid(instrument_id)
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
