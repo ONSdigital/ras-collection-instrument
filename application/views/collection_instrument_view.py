@@ -46,8 +46,8 @@ def upload_collection_instrument(exercise_id, ru_ref=None):
 @collection_instrument_view.route('/<instrument_id>', methods=['PATCH'])
 def patch_collection_instrument(instrument_id):
     file = request.files['file']
-    if file.content_length == 0 or file.filename == '':
-        raise RasError("Missing or empty file", 400)
+    if file.filename == '':
+        raise RasError("Missing filename", 400)
 
     CollectionInstrument().patch_seft_instrument(instrument_id, file)
 

@@ -381,6 +381,8 @@ class CollectionInstrument(object):
         log.info('Updating instrument seft file')
         file_contents = file.read()
         file_size = len(file_contents)
+        if file_size == 0:
+            raise RasError('File is empty', 400)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
         seft_model.data = encrypted_file
