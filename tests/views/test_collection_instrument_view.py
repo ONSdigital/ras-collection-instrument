@@ -665,6 +665,42 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEqual(response_data['errors'][0], 'Unable to find instrument or exercise')
 
+    def test_patch_collection_instrument_empty_file(self):
+        # given we have a collection instrument id
+        instrument_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        # When patch call made
+        data = {'file': (BytesIO(), 'test.xls')}
+
+        response = self.client.patch(f'/collection-instrument-api/1.0.2/{instrument_id}',
+                                     data=data,
+                                     content_type='multipart/form-data',
+                                     headers=self.get_auth_headers())
+
+        # Then 400 not found error returned
+        response_data = json.loads(response.data)
+
+        self.assertEqual(response_data['errors'][0], 'Missing or empty file')
+        self.assertStatus(response, 400)
+
+    def test_patch_collection_instrument_missing_filename(self):
+        # given we have a collection instrument id
+        instrument_id = 'c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d'
+
+        # When patch call made
+        data = {'file': (BytesIO(b'text'), '')}
+
+        response = self.client.patch(f'/collection-instrument-api/1.0.2/{instrument_id}',
+                                     data=data,
+                                     content_type='multipart/form-data',
+                                     headers=self.get_auth_headers())
+
+        # Then 400 not found error returned
+        response_data = json.loads(response.data)
+
+        self.assertEqual(response_data['errors'][0], 'Missing or empty file')
+        self.assertStatus(response, 400)
+
     @staticmethod
     @with_db_session
     def add_instrument_without_exercise(session=None):
