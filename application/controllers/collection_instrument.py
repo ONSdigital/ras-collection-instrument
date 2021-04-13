@@ -107,7 +107,7 @@ class CollectionInstrument(object):
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
             raise RasError('Not found')
-        if instrument.type is not 'SEFT':
+        if instrument.type != 'SEFT':
             raise RasError('Not a instrument seft')
 
         seft_model = self._update_seft_file(instrument.seft_file, file)
