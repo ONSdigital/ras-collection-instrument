@@ -5,7 +5,6 @@ import time
 import uuid
 
 import structlog
-from flask import current_app
 from google.cloud import storage, pubsub_v1
 from google.cloud.exceptions import GoogleCloudError
 
@@ -30,19 +29,24 @@ class SurveyResponseError(Exception):
     pass
 
 
-class GcpSurveyResponse(object):
+class GcpSurveyResponse:
 
-    def __init__(self):
+    def __init__(self, config):
+        self.config = config
+        # Bucket config
+
         self.storage_client = None
+        self.seft_bucket_name = self.config['SEFT_BUCKET_NAME']
+
+        # Pubsub config
         self.publisher = None
-        self.seft_bucket_name = None
-        self.gcp_project_id = None
-        self.seft_pubsub_topic = None
+        self.gcp_project_id = self.config['GOOGLE_CLOUD_PROJECT']
+        self.seft_pubsub_topic = self.config['SEFT_PUBSUB_TOPIC']
 
     """
     The survey response from a respondent
     """
-    def add_survey_response(self, case_id, file, file_name, survey_ref):
+    def add_survey_response(self, case_id: str, file, file_name: str, survey_ref: str):
         """
         Encrypt and upload survey response to rabbitmq
 
@@ -73,18 +77,19 @@ class GcpSurveyResponse(object):
 
             try:
                 self.put_file_into_gcp_bucket(json_message)
-            except GoogleCloudError:
+            except (GoogleCloudError, KeyError):
                 bound_log.error("Something went wrong putting into the bucket")
+                raise SurveyResponseError()
 
             try:
                 self.put_message_into_pubsub(payload)
             except TimeoutError:
                 bound_log.error("Publish to pubsub timed out", exc_info=True)
-                # Delete previously added file from bucket
+                # Delete previously added file from bucket?
                 raise SurveyResponseError()
             except Exception:  # noqa
                 bound_log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
-                # Delete previously added from bucket
+                # Delete previously added from bucket?
                 raise SurveyResponseError()
 
     def put_file_into_gcp_bucket(self, message):
@@ -121,7 +126,6 @@ class GcpSurveyResponse(object):
 
         topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
 
-
         log.info("About to publish to pubsub")
         future = self.publisher.publish(topic_path, data=payload)
         message = future.result(timeout=15)
@@ -156,8 +160,7 @@ class GcpSurveyResponse(object):
 
         return message_json
 
-    @staticmethod
-    def is_valid_file(file_name, file_extension):
+    def is_valid_file(self, file_name, file_extension):
         """
         Check a file is valid
 
@@ -167,11 +170,11 @@ class GcpSurveyResponse(object):
         """
 
         log.info('Checking if file is valid')
-        if not is_valid_file_extension(file_extension, current_app.config.get('UPLOAD_FILE_EXTENSIONS')):
+        if not is_valid_file_extension(file_extension, self.config.get('UPLOAD_FILE_EXTENSIONS')):
             log.info('File extension not valid')
             return False, FILE_EXTENSION_ERROR
 
-        if not is_valid_file_name_length(file_name, current_app.config.get('MAX_UPLOAD_FILE_NAME_LENGTH')):
+        if not is_valid_file_name_length(file_name, self.config.get('MAX_UPLOAD_FILE_NAME_LENGTH')):
             log.info('File name too long')
             return False, FILE_NAME_LENGTH_ERROR
 
@@ -224,11 +227,11 @@ class GcpSurveyResponse(object):
         return payload
 
     @staticmethod
-    def check_if_file_size_too_small(file_size):
+    def check_if_file_size_too_small(file_size) -> bool:
         return file_size < 1
 
     @staticmethod
-    def _format_exercise_ref(exercise_ref):
+    def _format_exercise_ref(exercise_ref: str) -> str:
         """
         There is currently data inconsistency in the code, exercise_ref should look like 201712 not '221_201712',
         this is a work around until the data is corrected
@@ -237,7 +240,6 @@ class GcpSurveyResponse(object):
         :return: formatted exercise reference
         """
         try:
-            formatted_exercise_ref = exercise_ref.split('_')[1]
+            return exercise_ref.split('_')[1]
         except IndexError:
-            formatted_exercise_ref = exercise_ref
-        return formatted_exercise_ref
+            return exercise_ref

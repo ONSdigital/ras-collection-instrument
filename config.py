@@ -20,7 +20,11 @@ class Config(object):
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE')
     DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
+
     SAVE_SEFT_IN_GCP = os.getenv('SAVE_SEFT_IN_GCP', False)
+    SEFT_BUCKET_NAME = os.getenv('SEFT_BUCKET_NAME')
+    GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'ras-rm-sandbox')
+    SEFT_PUBSUB_TOPIC = os.getenv('SEFT_PUBSUB_TOPIC', 'ras-rm-notify-test')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
@@ -47,4 +51,3 @@ class TestingConfig(Config):
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
-    JSON_SECRET_KEYS = open("./tests/files/keys.json").read()

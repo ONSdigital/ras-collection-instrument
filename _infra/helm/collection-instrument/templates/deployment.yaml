@@ -258,5 +258,11 @@ spec:
             value: "amqp://$(SDX_RABBITMQ_USERNAME):$(SDX_RABBITMQ_PASSWORD)@$(SDX_RABBITMQ_HOST):$(SDX_RABBITMQ_PORT)"
           - name: SAVE_SEFT_IN_GCP
             value: {{ .Values.saveSeftInGcp }}
+          - name: SEFT_BUCKET_NAME
+            value: {{ .Values.gcp.seftBucketName }}
+          - name: GOOGLE_CLOUD_PROJECT
+            value: {{ .Values.gcp.project }}
+          - name: SEFT_PUBSUB_TOPIC
+            value: {{ .Values.gcp.seftPubSubTopic }}
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}

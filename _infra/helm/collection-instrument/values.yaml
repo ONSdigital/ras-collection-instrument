@@ -63,5 +63,7 @@ dns:
 
 gcp:
   project: ras-rm-sandbox
+  seftBucketName: bucket
+  seftPubSubTopic: topic
 
 saveSeftInGcp: false
