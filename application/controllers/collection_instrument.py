@@ -101,6 +101,28 @@ class CollectionInstrument(object):
         session.add(instrument)
         return instrument
 
+    @with_db_session
+    def patch_seft_instrument(self, instrument_id: str, file, session):
+        """
+        Replaces the the seft_file for an instrument with the one provided.
+
+        :param instrument_id: The top level instrument id that needs changing
+        :param file: A FileStorage object with the new file
+        :param session: A database session
+        :raises RasError: Raised when instrument id is invalid, instrument not found, or instrument isn't of type SEFT
+        """
+        validate_uuid(instrument_id)
+        instrument = self.get_instrument_by_id(instrument_id, session)
+        if instrument is None:
+            log.error('Instrument not found')
+            raise RasError('Instrument not found', 400)
+        if instrument.type != 'SEFT':
+            log.error('Not a SEFT instrument')
+            raise RasError('Not a SEFT instrument', 400)
+
+        seft_model = self._update_seft_file(instrument.seft_file, file)
+        session.add(seft_model)
+
     @staticmethod
     def validate_one_instrument_for_ru_specific_upload(exercise, business, session):
         """
@@ -347,6 +369,26 @@ class CollectionInstrument(object):
         seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename,
                               length=file_size, data=encrypted_file)
         return seft_file
+
+    @staticmethod
+    def _update_seft_file(seft_model, file):
+        """
+        Updates a seft_file with a new version of the data
+
+        :param file: A file object from which we can read the file contents
+        :return: instrument
+        """
+        log.info('Updating instrument seft file')
+        file_contents = file.read()
+        file_size = len(file_contents)
+        if file_size == 0:
+            raise RasError('File is empty', 400)
+        cryptographer = Cryptographer()
+        encrypted_file = cryptographer.encrypt(file_contents)
+        seft_model.data = encrypted_file
+        seft_model.length = file_size
+        seft_model.file_name = file.filename
+        return seft_model
 
     @staticmethod
     @with_db_session
