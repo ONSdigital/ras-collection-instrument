@@ -37,6 +37,7 @@ class GcpSurveyResponse:
 
         self.storage_client = None
         self.seft_bucket_name = self.config['SEFT_BUCKET_NAME']
+        self.seft_bucket_file_prefix = self.config['SEFT_BUCKET_FILE_PREFIX']
 
         # Pubsub config
         self.publisher = None
@@ -107,7 +108,11 @@ class GcpSurveyResponse:
 
         bucket = self.storage_client.get_bucket(self.seft_bucket_name)
         try:
-            blob = bucket.blob(message['filename'])
+            if self.seft_bucket_file_prefix:
+                filename = f"{self.seft_bucket_file_prefix}/{message['filename']}"
+            else:
+                filename = message['filename']
+            blob = bucket.blob(filename)
         except KeyError:
             log.info('Missing filename from the message', message=message)
             raise

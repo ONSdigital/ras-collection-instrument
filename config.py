@@ -23,6 +23,8 @@ class Config(object):
 
     SAVE_SEFT_IN_GCP = os.getenv('SAVE_SEFT_IN_GCP', False)
     SEFT_BUCKET_NAME = os.getenv('SEFT_BUCKET_NAME')
+    # Prefix only used for dev environments to file in folders within the bucket
+    SEFT_BUCKET_FILE_PREFIX = os.getenv('SEFT_BUCKET_FILE_PREFIX')
     GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'ras-rm-sandbox')
     SEFT_PUBSUB_TOPIC = os.getenv('SEFT_PUBSUB_TOPIC', 'ras-rm-notify-test')
 
