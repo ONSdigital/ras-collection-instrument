@@ -37,7 +37,7 @@ class GcpSurveyResponse:
 
         self.storage_client = None
         self.seft_bucket_name = self.config['SEFT_BUCKET_NAME']
-        self.seft_bucket_file_prefix = self.config['SEFT_BUCKET_FILE_PREFIX']
+        self.seft_bucket_file_prefix = self.config.get('SEFT_BUCKET_FILE_PREFIX')
 
         # Pubsub config
         self.publisher = None
