@@ -228,8 +228,8 @@ class GcpSurveyResponse:
             "survey_id": survey_ref,
             "period": exercise_ref,
             "ru_ref": ru,
-            "md5sum": hashlib.md5(message),
-            "sizeBytes": len(message)
+            "md5sum": 'md5hash here',
+            "sizeBytes": 'length of payload here'
         }
         log.info("Payload created", payload=payload)
 
