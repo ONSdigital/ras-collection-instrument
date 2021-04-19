@@ -61,14 +61,13 @@ class GcpSurveyResponse:
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
         bound_log.info('Putting response into bucket and sending pubsub message')
-        file_contents = file.read()
-        file_size = len(file_contents)
+        file_size = len(file)
 
         if self.check_if_file_size_too_small(file_size):
             bound_log.info('File size is too small')
             raise FileTooSmallError()
         else:
-            json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
+            json_message = self._create_json_message_for_file(file_name, file, case_id, survey_ref)
             try:
                 payload = self.create_pubsub_payload(json_message)
             except SurveyResponseError:
