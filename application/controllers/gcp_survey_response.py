@@ -49,7 +49,7 @@ class GcpSurveyResponse:
     """
     def add_survey_response(self, case_id: str, file, file_name: str, survey_ref: str):
         """
-        Encrypt and upload survey response to rabbitmq
+        Encrypt and upload survey response to gcp
 
         :param case_id: A case id
         :param file: A file object from which we can read the file contents
@@ -60,7 +60,7 @@ class GcpSurveyResponse:
 
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
-        bound_log.info('Adding survey response file')
+        bound_log.info('Putting response into bucket and sending pubsub message')
         file_contents = file.read()
         file_size = len(file_contents)
 
