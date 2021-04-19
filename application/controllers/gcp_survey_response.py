@@ -102,9 +102,11 @@ class GcpSurveyResponse:
         :param message: A dict with metadata about the collection instrument
         :type message: dict
         """
+        log.info("About to create client")
         if self.storage_client is None:
             self.storage_client = storage.Client()
 
+        log.info("About to get bucket", bucket=self.seft_bucket_name)
         bucket = self.storage_client.get_bucket(self.seft_bucket_name)
         try:
             if self.seft_bucket_file_prefix:
@@ -116,6 +118,7 @@ class GcpSurveyResponse:
             log.info('Missing filename from the message', message=message)
             raise
         encrypted_message = _encrypt_message(message)
+        log.info("About to upload encrypted message", filename=filename)
         blob.upload_from_string(encrypted_message)
 
     def put_message_into_pubsub(self, payload):
@@ -125,12 +128,13 @@ class GcpSurveyResponse:
         :param payload: The payload to be put onto the pubsub topic
         :type payload: dict
         """
+        log.info("About to create publisher client")
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
 
-        log.info("About to publish to pubsub")
+        log.info("About to publish to pubsub", topic_path=topic_path)
         future = self.publisher.publish(topic_path, data=payload)
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
@@ -187,7 +191,7 @@ class GcpSurveyResponse:
     def create_pubsub_payload(self, message) -> dict:
 
         case_id = message['case_id']
-        log.info('Generating file name', case_id=case_id)
+        log.info('Creating pubsub payload', case_id=case_id)
 
         case_group = get_case_group(case_id)
         if not case_group:
@@ -227,6 +231,7 @@ class GcpSurveyResponse:
             "md5sum": hashlib.md5(message),
             "sizeBytes": sys.getsizeof(message)
         }
+        log.info("Payload created", payload=payload)
 
         return payload
 
