@@ -16,6 +16,6 @@ class TestGcpSurveyResponse(TestCase):
 
     def test_is_file_size_too_small(self):
         survey_response = GcpSurveyResponse(self.config)
-        test_file = io.BytesIO()
+        test_file_contents = io.BytesIO().read()
         with self.assertRaises(FileTooSmallError):
-            survey_response.add_survey_response('id', test_file, 'filename', 'survey_ref')
+            survey_response.add_survey_response('id', test_file_contents, 'filename', 'survey_ref')
