@@ -67,7 +67,7 @@ class GcpSurveyResponse:
         else:
             json_message = self._create_json_message_for_file(file_name, file, case_id, survey_ref)
             try:
-                payload = self.create_pubsub_payload(json_message)
+                payload = self.create_pubsub_payload(json_message, tx_id)
             except SurveyResponseError:
                 bound_log.error("Something went wrong creating the payload", exc_info=True)
                 # What do we do in an error state?
@@ -186,7 +186,7 @@ class GcpSurveyResponse:
 
         return True, ""
 
-    def create_pubsub_payload(self, message) -> dict:
+    def create_pubsub_payload(self, message, tx_id) -> dict:
 
         case_id = message['case_id']
         log.info('Creating pubsub payload', case_id=case_id)
@@ -222,13 +222,13 @@ class GcpSurveyResponse:
         # how big GCP thinks it is if getsizeof doesn't give the right size.
         log.info("About to create payload for real")
         log.info("filename", file_name=file_name)
-        log.info("tx_id", tx_id=message['tx_id'])
+        log.info("tx_id", tx_id=tx_id)
         log.info("survey_id", survey_id=survey_ref)
         log.info("period", exercise_ref=exercise_ref)
         log.info("ru_ref", ru=ru)
         payload = {
             "filename": file_name,
-            "tx_id": message['tx_id'],
+            "tx_id": tx_id,
             "survey_id": survey_ref,
             "period": exercise_ref,
             "ru_ref": ru,
