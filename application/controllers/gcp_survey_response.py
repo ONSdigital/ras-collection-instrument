@@ -222,6 +222,7 @@ class GcpSurveyResponse:
         # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
         # clearly defined.  We might need to write to the bucket, then read it back to find out
         # how big GCP thinks it is if getsizeof doesn't give the right size.
+        log.info("About to create payload for real")
         payload = {
             "filename": file_name,
             "tx_id": message['tx_id'],
@@ -229,7 +230,7 @@ class GcpSurveyResponse:
             "period": exercise_ref,
             "ru_ref": ru,
             "md5sum": hashlib.md5(message),
-            "sizeBytes": sys.getsizeof(message)
+            "sizeBytes": len(message)
         }
         log.info("Payload created", payload=payload)
 
