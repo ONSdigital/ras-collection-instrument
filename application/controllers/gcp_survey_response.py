@@ -221,6 +221,11 @@ class GcpSurveyResponse:
         # clearly defined.  We might need to write to the bucket, then read it back to find out
         # how big GCP thinks it is if getsizeof doesn't give the right size.
         log.info("About to create payload for real")
+        log.info("filename", file_name=file_name)
+        log.info("tx_id", tx_id=message['tx_id'])
+        log.info("survey_id", survey_id=survey_ref)
+        log.info("period", exercise_ref=exercise_ref)
+        log.info("ru_ref", ru=ru)
         payload = {
             "filename": file_name,
             "tx_id": message['tx_id'],
