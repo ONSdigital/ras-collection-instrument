@@ -76,7 +76,7 @@ class GcpSurveyResponse:
             try:
                 self.put_file_into_gcp_bucket(json_message)
             except (GoogleCloudError, KeyError):
-                bound_log.error("Something went wrong putting into the bucket")
+                bound_log.error("Something went wrong putting into the bucket", exc_info=True)
                 raise SurveyResponseError()
 
             try:
@@ -102,7 +102,7 @@ class GcpSurveyResponse:
         """
         log.info("About to create client")
         if self.storage_client is None:
-            self.storage_client = storage.Client()
+            self.storage_client = storage.Client(project=self.gcp_project_id)
 
         log.info("About to get bucket", bucket=self.seft_bucket_name)
         bucket = self.storage_client.get_bucket(self.seft_bucket_name)
@@ -220,12 +220,6 @@ class GcpSurveyResponse:
         # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
         # clearly defined.  We might need to write to the bucket, then read it back to find out
         # how big GCP thinks it is if getsizeof doesn't give the right size.
-        log.info("About to create payload for real")
-        log.info("filename", file_name=file_name)
-        log.info("tx_id", tx_id=tx_id)
-        log.info("survey_id", survey_id=survey_ref)
-        log.info("period", exercise_ref=exercise_ref)
-        log.info("ru_ref", ru=ru)
         payload = {
             "filename": file_name,
             "tx_id": tx_id,
