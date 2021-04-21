@@ -136,7 +136,7 @@ class GcpSurveyResponse:
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
         future = self.publisher.publish(topic_path, data=payload_bytes)
-        message = future.result()
+        message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
     @staticmethod
