@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 import uuid
@@ -133,9 +134,9 @@ class GcpSurveyResponse:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
-
+        payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
-        future = self.publisher.publish(topic_path, data=payload)
+        future = self.publisher.publish(topic_path, data=payload_bytes)
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
