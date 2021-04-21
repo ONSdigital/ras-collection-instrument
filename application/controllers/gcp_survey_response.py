@@ -105,7 +105,7 @@ class GcpSurveyResponse:
             self.storage_client = storage.Client(project=self.gcp_project_id)
 
         log.info("About to get bucket", bucket=self.seft_bucket_name)
-        bucket = self.storage_client.get_bucket(self.seft_bucket_name)
+        bucket = self.storage_client.bucket(self.seft_bucket_name)
         try:
             if self.seft_bucket_file_prefix:
                 filename = f"{self.seft_bucket_file_prefix}/{message['filename']}"
