@@ -76,17 +76,17 @@ class GcpSurveyResponse:
             try:
                 self.put_file_into_gcp_bucket(json_message)
             except (GoogleCloudError, KeyError):
-                bound_log.error("Something went wrong putting into the bucket", exc_info=True)
+                bound_log.exception("Something went wrong putting into the bucket")
                 raise SurveyResponseError()
 
             try:
                 self.put_message_into_pubsub(payload)
             except TimeoutError:
-                bound_log.error("Publish to pubsub timed out", exc_info=True)
+                bound_log.exception("Publish to pubsub timed out")
                 # Delete previously added file from bucket?
                 raise SurveyResponseError()
-            except Exception:  # noqa
-                bound_log.error("A non-timeout error was raised when publishing to pubsub", exc_info=True)
+            except Exception as e:  # noqa
+                bound_log.exception("A non-timeout error was raised when publishing to pubsub", error=e)
                 # Delete previously added from bucket?
                 raise SurveyResponseError()
 
@@ -105,6 +105,7 @@ class GcpSurveyResponse:
             self.storage_client = storage.Client(project=self.gcp_project_id)
 
         log.info("About to get bucket", bucket=self.seft_bucket_name)
+        self.storage_client.get_bucket()
         bucket = self.storage_client.bucket(self.seft_bucket_name)
         try:
             if self.seft_bucket_file_prefix:
