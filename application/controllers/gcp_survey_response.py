@@ -100,7 +100,7 @@ class GcpSurveyResponse:
         :param message: A dict with metadata about the collection instrument
         :type message: dict
         """
-        log.info("About to create client")
+        log.info("About to create client", project=self.gcp_project_id)
         if self.storage_client is None:
             self.storage_client = storage.Client(project=self.gcp_project_id)
 
@@ -111,9 +111,10 @@ class GcpSurveyResponse:
                 filename = f"{self.seft_bucket_file_prefix}/{message['filename']}"
             else:
                 filename = message['filename']
+            log.info("About to create blob", filename=filename)
             blob = bucket.blob(filename)
         except KeyError:
-            log.info('Missing filename from the message', message=message)
+            log.info('Missing filename from the message', message=message, filename=filename)
             raise
         encrypted_message = _encrypt_message(message)
         log.info("About to upload encrypted message", filename=filename)
