@@ -13,8 +13,6 @@ class Config(object):
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
-    COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
-                                           'application/schemas/collection_instrument_schema.json')
 
     RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE')
@@ -43,6 +41,9 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    JSON_SECRET_KEYS = open(f'{project_root}/ras-collection-instrument/tests/files/keys.json').read()
+
     DEBUG = True
     LOGGING_LEVEL = 'ERROR'
     SECURITY_USER_NAME = 'admin'
