@@ -37,7 +37,7 @@ class TestSurveyResponse(TestClient):
         # Given a survey response
         filename = 'tests.xlsx'
         with open(TEST_FILE_LOCATION, 'rb') as io:
-            file = FileStorage(stream=io, filename=filename)
+            file = FileStorage(stream=io, filename=filename).read()
 
             # When the file is posted to the upload end point with a case_id
             case_id = 'ab548d78-c2f1-400f-9899-79d944b87300'
@@ -53,9 +53,9 @@ class TestSurveyResponse(TestClient):
                     self.fail("Should not raise an exception")
 
     def test_is_file_size_too_small(self):
-        test_file = io.BytesIO()
-        test_file_size = test_file.getbuffer().nbytes
+        test_file = io.BytesIO().read()
+        test_file_size = len(test_file)
         self.assertTrue(SurveyResponse.check_if_file_size_too_small(test_file_size))
-        test_file = io.BytesIO(b'this file contains information')
-        test_file_size = test_file.getbuffer().nbytes
+        test_file = io.BytesIO(b'this file contains information').read()
+        test_file_size = len(test_file)
         self.assertFalse(SurveyResponse.check_if_file_size_too_small(test_file_size))
