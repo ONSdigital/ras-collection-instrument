@@ -136,7 +136,7 @@ class GcpSurveyResponse:
         log.info("Publish succeeded", msg_id=message)
 
     @staticmethod
-    def _create_json_message_for_file(file_name, file, case_id, survey_ref):
+    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref) -> dict:
         """
         Create json message from file
 
@@ -148,7 +148,7 @@ class GcpSurveyResponse:
         :param file_name: The file name
         :param file: The file uploaded
         :param case_id: The case UUID
-        :param survey_ref : The survey reference e.g 134 MWSS
+        :param survey_ref : The survey reference e.g 134 (MWSS)
         :return: Returns json message
         """
 
@@ -164,13 +164,13 @@ class GcpSurveyResponse:
 
         return message_json
 
-    def create_pubsub_payload(self, message, tx_id) -> dict:
+    def create_pubsub_payload(self, message, tx_id: str) -> dict:
         case_id = message['case_id']
         log.info('Creating pubsub payload', case_id=case_id)
 
         case_group = get_case_group(case_id)
         if not case_group:
-            raise SurveyResponseError()
+            raise SurveyResponseError("Case group not found")
 
         collection_exercise_id = case_group.get('collectionExerciseId')
         collection_exercise = get_collection_exercise(collection_exercise_id)
