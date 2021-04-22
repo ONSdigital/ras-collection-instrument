@@ -1,5 +1,7 @@
+import hashlib
 import json
 import logging
+import sys
 import time
 import uuid
 
@@ -71,7 +73,6 @@ class GcpSurveyResponse:
                 payload = self.create_pubsub_payload(json_message, tx_id)
             except SurveyResponseError:
                 bound_log.error("Something went wrong creating the payload", exc_info=True)
-                # What do we do in an error state?
                 raise
 
             try:
@@ -83,12 +84,10 @@ class GcpSurveyResponse:
             try:
                 self.put_message_into_pubsub(payload)
             except TimeoutError:
-                bound_log.exception("Publish to pubsub timed out")
-                # Delete previously added file from bucket?
+                bound_log.exception("Publish to pubsub timed out", payload=payload)
                 raise SurveyResponseError()
             except Exception as e:  # noqa
-                bound_log.exception("A non-timeout error was raised when publishing to pubsub", error=e)
-                # Delete previously added from bucket?
+                bound_log.exception("A non-timeout error was raised when publishing to pubsub", payload=payload)
                 raise SurveyResponseError()
 
     def put_file_into_gcp_bucket(self, message):
@@ -101,25 +100,24 @@ class GcpSurveyResponse:
         :param message: A dict with metadata about the collection instrument
         :type message: dict
         """
-        log.info("About to create client", project=self.gcp_project_id)
+        bound_log = log.bind(project=self.gcp_project_id, bucket=self.seft_bucket_name)
+        bound_log.info('Starting to put file in bucket')
         if self.storage_client is None:
             self.storage_client = storage.Client(project=self.gcp_project_id)
 
-        log.info("About to get bucket", bucket=self.seft_bucket_name)
         bucket = self.storage_client.bucket(self.seft_bucket_name)
         try:
             if self.seft_bucket_file_prefix:
                 filename = f"{self.seft_bucket_file_prefix}/{message['filename']}"
             else:
                 filename = message['filename']
-            log.info("About to create blob", filename=filename)
             blob = bucket.blob(filename)
         except KeyError:
-            log.info('Missing filename from the message', message=message, filename=filename)
+            bound_log.info('Missing filename from the message', message=message)
             raise
         encrypted_message = _encrypt_message(message)
-        log.info("About to upload encrypted message", filename=filename)
         blob.upload_from_string(encrypted_message)
+        bound_log.info('Successfully put file in bucket', filename=filename)
 
     def put_message_into_pubsub(self, payload):
         """
@@ -128,7 +126,6 @@ class GcpSurveyResponse:
         :param payload: The payload to be put onto the pubsub topic
         :type payload: dict
         """
-        log.info("About to create publisher client")
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
@@ -168,28 +165,7 @@ class GcpSurveyResponse:
 
         return message_json
 
-    def is_valid_file(self, file_name, file_extension):
-        """
-        Check a file is valid
-
-        :param file_name: The file_name to check
-        :param file_extension: The file extension
-        :return: (boolean, String)
-        """
-
-        log.info('Checking if file is valid')
-        if not is_valid_file_extension(file_extension, self.config.get('UPLOAD_FILE_EXTENSIONS')):
-            log.info('File extension not valid')
-            return False, FILE_EXTENSION_ERROR
-
-        if not is_valid_file_name_length(file_name, self.config.get('MAX_UPLOAD_FILE_NAME_LENGTH')):
-            log.info('File name too long')
-            return False, FILE_NAME_LENGTH_ERROR
-
-        return True, ""
-
     def create_pubsub_payload(self, message, tx_id) -> dict:
-
         case_id = message['case_id']
         log.info('Creating pubsub payload', case_id=case_id)
 
@@ -220,16 +196,15 @@ class GcpSurveyResponse:
         file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
         # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
-        # clearly defined.  We might need to write to the bucket, then read it back to find out
-        # how big GCP thinks it is if getsizeof doesn't give the right size.
+        # clearly defined.
         payload = {
             "filename": file_name,
             "tx_id": tx_id,
             "survey_id": survey_ref,
             "period": exercise_ref,
             "ru_ref": ru,
-            "md5sum": 'md5hash here',
-            "sizeBytes": 'length of payload here'
+            "md5sum": hashlib.md5(message),
+            "sizeBytes": sys.getsizeof(message)
         }
         log.info("Payload created", payload=payload)
 
