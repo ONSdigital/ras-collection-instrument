@@ -40,7 +40,6 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev --deploy
-          pip install tox==2.7.0
       - name: Run Tox
         run: pipenv run tox
       - uses: google-github-actions/setup-gcloud@master
