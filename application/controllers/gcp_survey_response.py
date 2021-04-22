@@ -9,8 +9,7 @@ import structlog
 from google.cloud import storage, pubsub_v1
 from google.cloud.exceptions import GoogleCloudError
 
-from application.controllers.helper import (is_valid_file_extension, is_valid_file_name_length,
-                                            convert_file_object_to_string_base64)
+from application.controllers.helper import convert_file_object_to_string_base64
 from application.controllers.rabbit_helper import _encrypt_message
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
