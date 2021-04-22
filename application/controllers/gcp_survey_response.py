@@ -49,7 +49,7 @@ class GcpSurveyResponse:
     """
     def add_survey_response(self, case_id: str, file, file_name: str, survey_ref: str):
         """
-        Encrypt and upload survey response to gcp
+        Encrypt and upload survey response to gcp bucket, and put metadata about it in pubsub.
 
         :param case_id: A case id
         :param file: A file object from which we can read the file contents
@@ -89,7 +89,7 @@ class GcpSurveyResponse:
                 bound_log.exception("A non-timeout error was raised when publishing to pubsub", payload=payload)
                 raise SurveyResponseError()
 
-    def put_file_into_gcp_bucket(self, message):
+    def put_file_into_gcp_bucket(self, message: dict):
         """
         Takes the message (containing the file) and puts it into a GCP bucket to be later used by SDX.
 
@@ -97,7 +97,6 @@ class GcpSurveyResponse:
         for now we'll put the same payload we were using in rabbit as a starting point.
 
         :param message: A dict with metadata about the collection instrument
-        :type message: dict
         """
         bound_log = log.bind(project=self.gcp_project_id, bucket=self.seft_bucket_name)
         bound_log.info('Starting to put file in bucket')
@@ -118,12 +117,11 @@ class GcpSurveyResponse:
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 
-    def put_message_into_pubsub(self, payload):
+    def put_message_into_pubsub(self, payload: dict):
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
         :param payload: The payload to be put onto the pubsub topic
-        :type payload: dict
         """
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
