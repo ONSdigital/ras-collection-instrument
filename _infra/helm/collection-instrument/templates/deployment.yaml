@@ -24,13 +24,13 @@ spec:
         secret:
           secretName: google-application-credentials
       {{- if .Values.database.sqlProxyEnabled }}
-        - name: cloudsql-instance-credentials
-          secret:
-            secretName: cloudsql-proxy-credentials
-            defaultMode: 0444
-            items:
-            - key: "credentials.json"
-              path: "credentials.json"
+      - name: cloudsql-instance-credentials
+        secret:
+          secretName: cloudsql-proxy-credentials
+          defaultMode: 0444
+          items:
+          - key: "credentials.json"
+            path: "credentials.json"
       {{- end }}
       containers:
         {{- if .Values.database.sqlProxyEnabled }}
