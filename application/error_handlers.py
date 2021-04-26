@@ -12,6 +12,7 @@ error_blueprint = Blueprint('error_handlers', __name__)
 
 @error_blueprint.app_errorhandler(Exception)
 def handle_error(error):
+    log.exception("An generic exception was raised")
     if isinstance(error, RasError):
         response = jsonify(error.to_dict())
         response.status_code = error.status_code

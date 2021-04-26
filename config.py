@@ -13,13 +13,18 @@ class Config(object):
     SECURITY_USER_NAME = os.getenv('SECURITY_USER_NAME', 'admin')
     SECURITY_USER_PASSWORD = os.getenv('SECURITY_USER_PASSWORD', 'secret')
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv('MAX_UPLOAD_FILE_NAME_LENGTH', 50)
-    COLLECTION_EXERCISE_SCHEMA = os.getenv('COLLECTION_EXERCISE_SCHEMA',
-                                           'application/schemas/collection_instrument_schema.json')
 
     RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE')
     DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
+
+    SAVE_SEFT_IN_GCP = os.getenv('SAVE_SEFT_IN_GCP', False)
+    SEFT_BUCKET_NAME = os.getenv('SEFT_BUCKET_NAME')
+    # Prefix only used for dev environments to file in folders within the bucket
+    SEFT_BUCKET_FILE_PREFIX = os.getenv('SEFT_BUCKET_FILE_PREFIX')
+    GOOGLE_CLOUD_PROJECT = os.getenv('GOOGLE_CLOUD_PROJECT', 'ras-rm-sandbox')
+    SEFT_PUBSUB_TOPIC = os.getenv('SEFT_PUBSUB_TOPIC', 'ras-rm-notify-test')
 
     UPLOAD_FILE_EXTENSIONS = 'xls,xlsx'
 
@@ -36,6 +41,9 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
+    project_root = os.path.dirname(__file__)
+    JSON_SECRET_KEYS = open(f'{project_root}/tests/files/keys.json').read()
+
     DEBUG = True
     LOGGING_LEVEL = 'ERROR'
     SECURITY_USER_NAME = 'admin'
@@ -46,4 +54,3 @@ class TestingConfig(Config):
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'amqp://guest:guest@localhost:5672')
     DATABASE_SCHEMA = 'ras_ci'
     ONS_CRYPTOKEY = 'somethingsecure'
-    JSON_SECRET_KEYS = open("./tests/files/keys.json").read()

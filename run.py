@@ -1,6 +1,5 @@
 import logging
 import os
-from json import loads
 
 import structlog
 from alembic import command
@@ -42,9 +41,6 @@ def create_app(config=None, init_db=True, init_rabbit=True):
 
     logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
     logger.info("Logging configured", log_level=app.config['LOGGING_LEVEL'])
-
-    with open(app.config['COLLECTION_EXERCISE_SCHEMA']) as io:
-        app.config['COLLECTION_EXERCISE_SCHEMA'] = loads(io.read())
 
     if init_db:
         try:

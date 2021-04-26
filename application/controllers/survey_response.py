@@ -27,34 +27,34 @@ class SurveyResponseError(Exception):
 
 
 class SurveyResponse(object):
+
     """
     The survey response from a respondent
     """
-    def add_survey_response(self, case_id, file, file_name, survey_ref):
+    def add_survey_response(self, case_id, file_contents, file_name, survey_ref):
         """
         Encrypt and upload survey response to rabbitmq
 
         :param case_id: A case id
-        :param file: A file object from which we can read the file contents
+        :param file_contents: The contents of the file that has been uploaded
         :param file_name: The filename
         :param survey_ref: The survey ref e.g 134 MWSS
         :return: Returns boolean indicating success of upload of response to rabbitmq
         """
 
         tx_id = str(uuid.uuid4())
-        log.info('Adding survey response file', filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
-        file_contents = file.read()
+        bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
+        bound_log.info('Adding survey response file')
         file_size = len(file_contents)
 
         if self.check_if_file_size_too_small(file_size):
-            log.info('File size is too small')
+            bound_log.info('File size is too small')
             raise FileTooSmallError()
         else:
             json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
             if not sent:
-                log.error("Unable to send file to rabbit queue", filename=file_name,
-                          case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
+                bound_log.error("Unable to send file to rabbit queue")
                 raise SurveyResponseError()
 
     @staticmethod
@@ -63,7 +63,7 @@ class SurveyResponse(object):
         return initialise_rabbitmq_queue(RABBIT_QUEUE_NAME)
 
     @staticmethod
-    def _create_json_message_for_file(generated_file_name, file, case_id, survey_ref):
+    def _create_json_message_for_file(file_name, file, case_id, survey_ref):
         """
         Create json message from file
 
@@ -72,18 +72,18 @@ class SurveyResponse(object):
             a 3 character string holding defining an integer, which other (older) services refer to as survey_id.
             Therefore, when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
 
-        :param generated_file_name: The generated file name
+        :param file_name: The file name
         :param file: The file uploaded
         :param case_id: The case UUID
         :param survey_ref : The survey reference e.g 134 MWSS
         :return: Returns json message
         """
 
-        log.info('Creating json message', filename=generated_file_name, case_id=case_id, survey_id=survey_ref)
+        log.info('Creating json message', filename=file_name, case_id=case_id, survey_id=survey_ref)
         file_as_string = convert_file_object_to_string_base64(file)
 
         message_json = {
-            'filename': generated_file_name,
+            'filename': file_name,
             'file': file_as_string,
             'case_id': case_id,
             'survey_id': survey_ref

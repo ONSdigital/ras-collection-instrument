@@ -21,9 +21,6 @@ service:
   port: 8080
 
 resources:
-  
-
-resources:
   application:
     requests:
       memory: "500Mi"
@@ -66,3 +63,9 @@ dns:
 
 gcp:
   project: ras-rm-sandbox
+  bucket:
+    name: bucket
+    prefix: ""
+  topic: topic
+
+saveSeftInGcp: false
