@@ -41,8 +41,8 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    project_root = os.path.dirname(os.path.dirname(__file__))
-    JSON_SECRET_KEYS = open(f'{project_root}/ras-collection-instrument/tests/files/keys.json').read()
+    project_root = os.path.dirname(__file__)
+    JSON_SECRET_KEYS = open(f'{project_root}/tests/files/keys.json').read()
 
     DEBUG = True
     LOGGING_LEVEL = 'ERROR'
