@@ -15,11 +15,6 @@ from application.controllers.service_helper import (get_business_party, get_case
                                                     get_survey_ref)
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
-UPLOAD_SUCCESSFUL = 'Upload successful'
-FILE_EXTENSION_ERROR = 'The spreadsheet must be in .xls or .xlsx format'
-FILE_NAME_LENGTH_ERROR = 'The file name of your spreadsheet must be less than 50 characters long'
-RABBIT_QUEUE_NAME = 'Seft.Responses'
-
 
 class FileTooSmallError(Exception):
     pass
@@ -30,11 +25,10 @@ class SurveyResponseError(Exception):
 
 
 class GcpSurveyResponse:
-
     def __init__(self, config):
         self.config = config
-        # Bucket config
 
+        # Bucket config
         self.storage_client = None
         self.seft_bucket_name = self.config['SEFT_BUCKET_NAME']
         self.seft_bucket_file_prefix = self.config.get('SEFT_BUCKET_FILE_PREFIX')
@@ -55,7 +49,6 @@ class GcpSurveyResponse:
         :param file: A file object from which we can read the file contents
         :param file_name: The filename
         :param survey_ref: The survey ref e.g 134 MWSS
-        :return: Returns boolean indicating success of upload of response to rabbitmq
         """
 
         tx_id = str(uuid.uuid4())
