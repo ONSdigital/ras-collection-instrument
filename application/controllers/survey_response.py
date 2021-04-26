@@ -31,12 +31,12 @@ class SurveyResponse(object):
     """
     The survey response from a respondent
     """
-    def add_survey_response(self, case_id, file, file_name, survey_ref):
+    def add_survey_response(self, case_id, file_contents, file_name, survey_ref):
         """
         Encrypt and upload survey response to rabbitmq
 
         :param case_id: A case id
-        :param file: A file object from which we can read the file contents
+        :param file_contents: The contents of the file that has been uploaded
         :param file_name: The filename
         :param survey_ref: The survey ref e.g 134 MWSS
         :return: Returns boolean indicating success of upload of response to rabbitmq
@@ -45,13 +45,13 @@ class SurveyResponse(object):
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
         bound_log.info('Adding survey response file')
-        file_size = len(file)
+        file_size = len(file_contents)
 
         if self.check_if_file_size_too_small(file_size):
             bound_log.info('File size is too small')
             raise FileTooSmallError()
         else:
-            json_message = self._create_json_message_for_file(file_name, file, case_id, survey_ref)
+            json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             sent = send_message_to_rabbitmq_queue(json_message, tx_id, RABBIT_QUEUE_NAME)
             if not sent:
                 bound_log.error("Unable to send file to rabbit queue")

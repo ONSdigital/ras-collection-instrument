@@ -41,12 +41,12 @@ class GcpSurveyResponse:
     """
     The survey response from a respondent
     """
-    def add_survey_response(self, case_id: str, file, file_name: str, survey_ref: str):
+    def add_survey_response(self, case_id: str, file_contents, file_name: str, survey_ref: str):
         """
         Encrypt and upload survey response to gcp bucket, and put metadata about it in pubsub.
 
         :param case_id: A case id
-        :param file: A file object from which we can read the file contents
+        :param file_contents: The contents of the file that has been uploaded
         :param file_name: The filename
         :param survey_ref: The survey ref e.g 134 MWSS
         """
@@ -54,13 +54,13 @@ class GcpSurveyResponse:
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
         bound_log.info('Putting response into bucket and sending pubsub message')
-        file_size = len(file)
+        file_size = len(file_contents)
 
         if self.check_if_file_size_too_small(file_size):
             bound_log.info('File size is too small')
             raise FileTooSmallError()
         else:
-            json_message = self._create_json_message_for_file(file_name, file, case_id, survey_ref)
+            json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             try:
                 payload = self.create_pubsub_payload(json_message, tx_id)
             except SurveyResponseError:
