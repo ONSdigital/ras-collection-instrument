@@ -187,11 +187,11 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:010f011c4e27d3d5eb01106fba6aac39d164842dfcd8709955c4638f5b11ccf8",
-                "sha256:f30a672a64d91cc2e3137765d088c5deec26416246f7a9e956eaf69a8d7ed49c"
+                "sha256:588bdb03a41ecb4978472b847881e5518b5d9ec6153d3d679aa127a55e13b39f",
+                "sha256:9ad25fba07f46a628ad4d0ca09f38dcb262830df2ac95b217f9b0129c9e42206"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
-            "version": "==1.29.0"
+            "version": "==1.30.0"
         },
         "google-cloud-core": {
             "hashes": [
@@ -211,11 +211,11 @@
         },
         "google-cloud-storage": {
             "hashes": [
-                "sha256:63a9dab155bf81c51354db3d11f3e83a1db7d58eff453f1ce51ffa565d32617b",
-                "sha256:e06a4797c87ac73c4a74801539fdf0a91761c3014281ff58b7b29f15b34c206e"
+                "sha256:162011d66f64b8dc5d7936609a5daf0066cc521231546aea02c126a5559446c4",
+                "sha256:69499560ec8234339ce831704419a2288c409a422f6e9ed1facc9345412ee637"
             ],
             "index": "pypi",
-            "version": "==1.37.1"
+            "version": "==1.38.0"
         },
         "google-crc32c": {
             "hashes": [
@@ -746,11 +746,11 @@
         },
         "sdc-cryptography": {
             "hashes": [
-                "sha256:1577b3a171837d8bd82329a7f3f74561354a3949befd083632b28bfbc757276e",
-                "sha256:f208a240378ca563f77e1be742d960804e5e4d3078d604b106f878cefc5bb7ff"
+                "sha256:82d538e1b43188fe1535d934bf3293bca5f34d1f5aeb0581f52c89a20bfeb686",
+                "sha256:c7ea96fb72c0edc4a3af07a54e7fd76184dc2cabf3bab2de616edcd86dd3a131"
             ],
             "index": "pypi",
-            "version": "==1.0.0"
+            "version": "==1.0.9"
         },
         "sdc-rabbit": {
             "hashes": [
@@ -888,11 +888,11 @@
         },
         "xlsxwriter": {
             "hashes": [
-                "sha256:e74dca4f2e946a117a541ca3153c06466190a88bb67fcdbd1cba2c1ea7f1fd76",
-                "sha256:eca2e737d0b8df3cd72520fadcda9f48c3581282639965125a86ea8cd04620cf"
+                "sha256:1a6dd98892e8010d3e089d1cb61385baa8f76fa547598df2c221cc37238c72d3",
+                "sha256:82be5a58c09bdc2ff8afc25acc815c465275239ddfc56d6e7b2a7e6c5d2e213b"
             ],
             "index": "pypi",
-            "version": "==1.3.9"
+            "version": "==1.4.0"
         },
         "zope.event": {
             "hashes": [
