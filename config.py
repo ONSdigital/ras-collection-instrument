@@ -20,7 +20,7 @@ class Config(object):
     DATABASE_URI = os.getenv('DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     DATABASE_SCHEMA = os.getenv('DATABASE_SCHEMA', 'ras_ci')
 
-    SAVE_SEFT_IN_GCP = bool(strtobool(os.getenv('SAVE_SEFT_IN_GCP', 'false')))
+    SAVE_SEFT_IN_GCP = bool(strtobool(os.getenv('SAVE_SEFT_IN_GCP', 'False')))
     SEFT_BUCKET_NAME = os.getenv('SEFT_BUCKET_NAME')
     # Prefix only used for dev environments to file in folders within the bucket
     SEFT_BUCKET_FILE_PREFIX = os.getenv('SEFT_BUCKET_FILE_PREFIX')
