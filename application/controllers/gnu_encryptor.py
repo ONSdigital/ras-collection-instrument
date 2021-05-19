@@ -1,11 +1,12 @@
 import gnupg
 
+
 class GNUEncrypter:
 
     def __init__(self, public_key, passphrase=None, always_trust=True):
         self.gpg = gnupg.GPG()
-        import_pubkey = self.gpg.import_keys(public_key)
-        
+        self.gpg.import_keys(public_key)
+
     def encrypt(self, payload, recipient):
         """
         Encrypts the payload using the recipient values
@@ -14,13 +15,13 @@ class GNUEncrypter:
         :param recipient: who is it for 
         :return: string of encrypted data
         """
-        
+
         enc_data = self.gpg.encrypt(payload, recipient, always_trust=True)
         if not enc_data.ok:
             raise ValueError('Failed to GNU encrypt bag: {}.  Have you installed a required public key?'.format(enc_data.status))
         return str(enc_data)
 
-    def decrypt(self, payload, passphrase ):
+    def decrypt(self, payload, passphrase):
         """
         Decrypt the payload using the passphase values
 
@@ -35,4 +36,3 @@ class GNUEncrypter:
         return str(decrypted_data)
 
 
-    
