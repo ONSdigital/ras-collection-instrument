@@ -7,7 +7,7 @@ from sdc.rabbit import DurableExchangePublisher, QueuePublisher
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.json_encrypter import Encrypter
-from application.controllers.gnu_encrypter import GNUEncrypter
+from application.controllers.gnu_encryptor import GNUEncrypter
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
