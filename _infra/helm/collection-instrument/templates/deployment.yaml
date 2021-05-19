@@ -149,7 +149,17 @@ spec:
             value: "config/config-docker.yaml"
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /var/secrets/google/credentials.json
-          - name: ONS_CRYPTOKEY
+          - name: ONS_GNU_PUBLIC_CRYPTOKEY
+            valueFrom:
+              secretKeyRef:
+                name: collection-instrument
+                key: gnu-public-crypto-key
+            - name: ONS_GNU_PRIVATE_CRYPTOKEY
+            valueFrom:
+              secretKeyRef:
+                name: collection-instrument
+                key: gnu-private-crypto-key
+            - name: ONS_CRYPTOKEY
             valueFrom:
               secretKeyRef:
                 name: collection-instrument
