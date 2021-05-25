@@ -68,4 +68,4 @@ gcp:
     prefix: ""
   topic: topic
 
-saveSeftInGcp: false
+saveSeftInGcp: true
