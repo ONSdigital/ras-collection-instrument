@@ -45,7 +45,7 @@ def add_survey_response(case_id):
             return make_response(MISSING_DATA, 404)
         try:
             file_contents = file.read()
-            
+
             if current_app.config['SAVE_SEFT_IN_GCP']:
                 gcp_survey_response = GcpSurveyResponse(current_app.config)
                 gcp_survey_response.add_survey_response(case_id, file_contents, file_name, survey_ref)
