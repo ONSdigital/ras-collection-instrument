@@ -50,7 +50,7 @@ class TestingConfig(Config):
     LOGGING_LEVEL = 'ERROR'
     SECURITY_USER_NAME = 'admin'
     SECURITY_USER_PASSWORD = 'secret'
-    DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgresql://postgres:postgres@localhost:5432/postgres')
+    DATABASE_URI = os.getenv('TEST_DATABASE_URI', 'postgresql://postgres:postgres@localhost:6432/postgres')
     RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv('RABBITMQ_AMQP_COLLECTION_INSTRUMENT',
                                                     'amqp://guest:guest@localhost:5672')
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv('RABBITMQ_AMQP_SURVEY_RESPONSE', 'amqp://guest:guest@localhost:5672')
