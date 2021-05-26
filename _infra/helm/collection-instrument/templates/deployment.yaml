@@ -154,11 +154,6 @@ spec:
               secretKeyRef:
                 name: seft-collection-instrument-key
                 key: gpg-public-crypto-key
-          - name: ONS_GNU_PRIVATE_CRYPTOKEY
-            valueFrom:
-              secretKeyRef:
-                name: seft-collection-instrument-key
-                key: gnu-private-crypto-key
           - name: ONS_CRYPTOKEY
             valueFrom:
               secretKeyRef:
