@@ -6,6 +6,7 @@ class GNUEncrypter:
     def __init__(self, public_key, passphrase=None, always_trust=True):
         self.gpg = gnupg.GPG()
         self.gpg.import_keys(public_key.encode('utf-8'))
+
     def encrypt(self, payload, recipient):
         """
         Encrypts the payload using the recipient values
