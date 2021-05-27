@@ -22,9 +22,9 @@ def _encrypt_message(message_json):
     log.info('Encrypting JSON message')
 
     if current_app.config['SAVE_SEFT_IN_GCP']:
-        json_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
+        gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_recipient = current_app.config['ONS_GNU_RECIPIENT']
-        encrypter = GNUEncrypter(json_secret_keys)
+        encrypter = GNUEncrypter(gnugpg_secret_keys)
         return encrypter.encrypt(message_json, ons_gnu_recipient)
     else:
         json_secret_keys = current_app.config['JSON_SECRET_KEYS']
