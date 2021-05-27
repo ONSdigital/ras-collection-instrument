@@ -1,5 +1,5 @@
 import gnupg
-
+import json
 
 class GNUEncrypter:
 
@@ -15,9 +15,6 @@ class GNUEncrypter:
         :param recipient: who is it for
         :return: string of encrypted data
         """
-        print(type(payload))
-        print(payload)
-        print(type(recipient))
         enc_data = self.gpg.encrypt(json.dumps(payload).encode('utf-8'), recipient, always_trust=True)
         if not enc_data.ok:
             raise ValueError('Failed to GNU encrypt bag: {}.'
