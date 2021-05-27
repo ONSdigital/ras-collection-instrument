@@ -16,7 +16,7 @@ class GNUEncrypter:
         :return: string of encrypted data
         """
 
-        enc_data = self.gpg.encrypt(payload, recipient, always_trust=True)
+        enc_data = self.gpg.encrypt(payload.encode('utf-8'), recipient, always_trust=True)
         if not enc_data.ok:
             raise ValueError('Failed to GNU encrypt bag: {}.'
                              '  Have you installed a required public key?'.format(enc_data.status))
