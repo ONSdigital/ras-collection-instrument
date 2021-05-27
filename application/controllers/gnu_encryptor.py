@@ -16,6 +16,7 @@ class GNUEncrypter:
         :return: string of encrypted data
         """
         print(type(payload))
+        print(payload)
         print(type(recipient))
         enc_data = self.gpg.encrypt(payload.decode(), recipient, always_trust=True)
         if not enc_data.ok:
