@@ -1,6 +1,7 @@
 import gnupg
 import json
 
+
 class GNUEncrypter:
 
     def __init__(self, public_key, passphrase=None, always_trust=True):
