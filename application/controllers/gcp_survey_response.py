@@ -35,7 +35,7 @@ class GcpSurveyResponse:
 
         # Pubsub config
         self.publisher = None
-        self.gcp_project_id = self.config['GOOGLE_CLOUD_PROJECT']
+        self.seft_pubsub_project = self.config['SEFT_PUBSUB_PROJECT']
         self.seft_pubsub_topic = self.config['SEFT_PUBSUB_TOPIC']
 
     """
@@ -91,10 +91,10 @@ class GcpSurveyResponse:
 
         :param message: A dict with metadata about the collection instrument
         """
-        bound_log = log.bind(project=self.gcp_project_id, bucket=self.seft_bucket_name)
+        bound_log = log.bind(project=self.seft_pubsub_project, bucket=self.seft_bucket_name)
         bound_log.info('Starting to put file in bucket')
         if self.storage_client is None:
-            self.storage_client = storage.Client(project=self.gcp_project_id)
+            self.storage_client = storage.Client(project=self.seft_pubsub_project)
 
         bucket = self.storage_client.bucket(self.seft_bucket_name)
         try:
@@ -119,7 +119,7 @@ class GcpSurveyResponse:
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
-        topic_path = self.publisher.topic_path(self.gcp_project_id, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
+        topic_path = self.publisher.topic_path(self.seft_pubsub_project, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
         future = self.publisher.publish(topic_path, data=payload_bytes)
