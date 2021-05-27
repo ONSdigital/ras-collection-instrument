@@ -69,3 +69,5 @@ gcp:
   topic: topic
 
 saveSeftInGcp: true
+
+gnu_recipient: sdx_preprod@ons.gov.uk
