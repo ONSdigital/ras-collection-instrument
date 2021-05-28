@@ -22,10 +22,7 @@ class GNUEncrypter:
             print('ok: ', enc_data.ok)
             print('status: ', enc_data.status)
             print('stderr: ', enc_data.stderr)
-            print('unencrypted_string: ', payload)
-            print('encrypted_string: ', enc_data)
-            print('payload:', payload)
             print('recipient:', recipient)
             raise ValueError('Failed to GNU encrypt bag: {}.'
-                             '  Have you installed a required public key?'.format(enc_data.status))
+                             '  Have you installed a valid public key and or recipient?'.format(enc_data.status))
         return str(enc_data)
