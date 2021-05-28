@@ -52,7 +52,7 @@ class GcpSurveyResponse:
         :param survey_ref: The survey ref e.g 134 MWSS
         """
 
-        file_name = os.path.splitext(file_name)[0] # remove extension from the filename
+        file_name = os.path.splitext(file_name)[0] #  remove extension from the filename
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
         bound_log.info('Putting response into bucket and sending pubsub message')
