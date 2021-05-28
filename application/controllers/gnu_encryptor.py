@@ -38,7 +38,6 @@ class GNUEncrypter:
         :param recipient: who is it for
         :return: string of decrypted data
         """
-        
         decrypted_data = self.gpg.decrypt(payload, passphrase=None)
         if not decrypted_data.ok:
             raise ValueError('Failed to GNU encrypt bag: {}.'
