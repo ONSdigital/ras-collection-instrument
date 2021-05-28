@@ -16,6 +16,7 @@ class GUID(TypeDecorator):
     CHAR(32), storing as stringified hex values.
     """
     impl = CHAR
+    cache_ok = True
 
     @staticmethod
     def load_dialect_impl(dialect):
