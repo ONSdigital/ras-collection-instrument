@@ -16,6 +16,7 @@ class GNUEncrypter:
         :param recipient: who is it for
         :return: string of encrypted data
         """
+        payload = 'hello world'
         enc_data = self.gpg.encrypt(json.dumps(payload).encode('utf-8'), recipient, always_trust=True)
         if not enc_data.ok:
             print('ok: ', enc_data.ok)
@@ -37,7 +38,7 @@ class GNUEncrypter:
         :param recipient: who is it for
         :return: string of decrypted data
         """
-        payload = 'hello world'
+        
         decrypted_data = self.gpg.decrypt(payload, passphrase=None)
         if not decrypted_data.ok:
             raise ValueError('Failed to GNU encrypt bag: {}.'
