@@ -94,3 +94,12 @@ Navigate to /developer_scripts and run import.py, answer the prompts on the comm
 * Apropos the previous point, many of the attributes in the schema have unclear names and purposes, like `entname1/2/3` and `runame1/2/3`, among others. The schema should be redesigned, or have more specific documentation.
 * A couple of the endpoints have fairly useless functionality. For example, all the `/collectioninstrument/count` endpoint does is return the number of collection instruments. Why is this something the service needs to do? Could this not be accomplished by a database query?
 * Given the service's heavy reliance on collection exercises, could this service not be combined with the collection exercise service during the ras-rm redesign?
+
+## Updates
+* The system now uses GNUPG to encrypt seft messages which is controlled by the saveSeftInGcp flagged stored in the values.yml file
+* Due to the version of GNUPG current used in Docker (gpg (GnuPG) 2.2.12 libgcrypt 1.8.4) it does NOT support an email as a recipient, you need to use the fingerprint
+* if you receive a binary public key you MUST convert it to ascii with armor. use the following command.
+```
+ gpg --export -a <  sdx_preprod_binary_key.gpg > sdx_preprod_binary_key.gpg.asc    
+```
+and load this upto the secret key manager - gnu-public-crypto-key
