@@ -12,7 +12,6 @@ from google.cloud.exceptions import GoogleCloudError
 from flask import current_app
 
 from application.controllers.helper import convert_file_object_to_string_base64
-from application.controllers.rabbit_helper import _encrypt_message
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
 from application.controllers.gnu_encryptor import GNUEncrypter
@@ -114,7 +113,7 @@ class GcpSurveyResponse:
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_message =  encrypter.encrypt(message, ons_gnu_fingerprint)
+        encrypted_message = encrypter.encrypt(message, ons_gnu_fingerprint)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 

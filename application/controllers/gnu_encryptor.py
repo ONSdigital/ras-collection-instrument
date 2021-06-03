@@ -23,7 +23,8 @@ class GNUEncrypter:
         payload = 'hello world'
         enc_data = self.gpg.encrypt(json.dumps(payload).encode('utf-8'), recipient, always_trust=True)
         if not enc_data.ok:
-            logger.error("Failed to encrypt with gpg", status=enc_data.status, error=enc_data.stderr, recipient=recipient)
+            logger.error("Failed to encrypt with gpg", status=enc_data.status, error=enc_data.stderr,
+                         recipient=recipient)
             raise ValueError('Failed to GNU encrypt bag: {}.'
                              '  Have you installed a valid public key and or recipient?'.format(enc_data.status))
         return str(enc_data)
