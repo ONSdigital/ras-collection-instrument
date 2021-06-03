@@ -97,9 +97,15 @@ Navigate to /developer_scripts and run import.py, answer the prompts on the comm
 
 ## Updates
 * The system now uses GNUPG to encrypt seft messages which is controlled by the saveSeftInGcp flagged stored in the values.yml file
-* Due to the version of GNUPG current used in Docker (gpg (GnuPG) 2.2.12 libgcrypt 1.8.4) it does NOT support an email as a recipient, you need to use the fingerprint
+* Due to the version of GNUPG current used in Docker (as of 03/06/2021 BST/UK) (gpg (GnuPG) 2.2.12 libgcrypt 1.8.4) it does NOT support an email as a recipient, you need to use the fingerprint
 * if you receive a binary public key you MUST convert it to ascii with armor. use the following command.
 ```
  gpg --export -a <  sdx_preprod_binary_key.gpg > sdx_preprod_binary_key.gpg.asc    
 ```
 and load this upto the secret key manager - gnu-public-crypto-key
+
+* to get the fingerprint. the fingerprint will look like 'A8F49D6EE2DE17F03ACF11A9BF16B2EB4DASE991
+Also, make sure have an empty local trusted db
+```
+gpg --with-fingerprint <~/.gnupg/sdx_preprod_binary_key.gpg.asc
+```

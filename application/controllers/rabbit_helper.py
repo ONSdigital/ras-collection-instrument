@@ -7,7 +7,6 @@ from sdc.rabbit import DurableExchangePublisher, QueuePublisher
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.json_encrypter import Encrypter
-from application.controllers.gnu_encryptor import GNUEncrypter
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -21,15 +20,9 @@ def _encrypt_message(message_json):
     """
     log.info('Encrypting JSON message')
 
-    if current_app.config['SAVE_SEFT_IN_GCP']:
-        gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
-        ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
-        encrypter = GNUEncrypter(gnugpg_secret_keys)
-        return encrypter.encrypt(message_json, ons_gnu_fingerprint)
-    else:
-        json_secret_keys = current_app.config['JSON_SECRET_KEYS']
-        encrypter = Encrypter(json_secret_keys)
-        return encrypter.encrypt(message_json)
+    json_secret_keys = current_app.config['JSON_SECRET_KEYS']
+    encrypter = Encrypter(json_secret_keys)
+    return encrypter.encrypt(message_json)
 
 
 def _initialise_rabbitmq(queue_name, publisher_type, rabbitmq_amqp_config):
