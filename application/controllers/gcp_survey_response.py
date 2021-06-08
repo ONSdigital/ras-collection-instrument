@@ -78,7 +78,7 @@ class GcpSurveyResponse:
                 raise SurveyResponseError()
 
             try:
-                self.put_message_into_pubsub(payload)
+                self.put_message_into_pubsub(payload, tx_id)
             except TimeoutError:
                 bound_log.exception("Publish to pubsub timed out", payload=payload)
                 raise SurveyResponseError()
@@ -117,7 +117,7 @@ class GcpSurveyResponse:
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 
-    def put_message_into_pubsub(self, payload: dict):
+    def put_message_into_pubsub(self, payload: dict, tx_id):
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
@@ -129,7 +129,7 @@ class GcpSurveyResponse:
         topic_path = self.publisher.topic_path(self.seft_pubsub_project, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
-        future = self.publisher.publish(topic_path, data=payload_bytes)
+        future = self.publisher.publish(topic_path, data=payload_bytes, tx_id=tx_id)
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 

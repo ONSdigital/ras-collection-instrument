@@ -1,4 +1,5 @@
 import gnupg
+import gnupg._parsers
 import json
 import logging
 from structlog import wrap_logger
@@ -11,6 +12,7 @@ class GNUEncrypter:
     def __init__(self, public_key, passphrase=None, always_trust=True):
         self.gpg = gnupg.GPG()
         self.gpg.import_keys(public_key.encode('utf-8'))
+        self.gnupg._parsers.Verify.TRUST_LEVELS["ENCRYPTION_COMPLIANCE_MODE"] = 23
 
     def encrypt(self, payload, recipient):
         """
