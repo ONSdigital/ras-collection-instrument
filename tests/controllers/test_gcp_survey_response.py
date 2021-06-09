@@ -91,7 +91,7 @@ class TestGcpSurveyResponse(TestCase):
             publisher.topic_path.return_value = 'projects/test-project/topics/test-topic'
             survey_response = GcpSurveyResponse(self.config)
             survey_response.publisher = publisher
-            result = survey_response.put_message_into_pubsub(self.pubsub_payload)
+            result = survey_response.put_message_into_pubsub(self.pubsub_payload, self.tx_id)
             data = json.dumps(self.pubsub_payload).encode()
 
             publisher.publish.assert_called()
