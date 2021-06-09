@@ -109,3 +109,5 @@ Also, make sure have an empty local trusted db
 ```
 gpg --with-fingerprint <~/.gnupg/sdx_preprod_binary_key.gpg.asc
 ```
+
+* important to check that the subkey next to the fingerprint has not expired and be aware that some public key have been unable and it is worth sanity checking them on the command line
