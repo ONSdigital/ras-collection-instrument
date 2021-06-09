@@ -22,7 +22,6 @@ class GNUEncrypter:
         :param recipient: who is it for
         :return: string of encrypted data
         """
-        payload = 'hello world'
         enc_data = self.gpg.encrypt(json.dumps(payload).encode('utf-8'), recipient, always_trust=True)
         if not enc_data.ok:
             logger.error("Failed to encrypt with gpg", status=enc_data.status, error=enc_data.stderr,
