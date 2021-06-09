@@ -95,5 +95,5 @@ class TestGcpSurveyResponse(TestCase):
             data = json.dumps(self.pubsub_payload).encode()
 
             publisher.publish.assert_called()
-            publisher.publish.assert_called_with('projects/test-project/topics/test-topic', data=data, self.tx_id)
+            publisher.publish.assert_called_with('projects/test-project/topics/test-topic', data=data, tx_id=self.tx_id)
             self.assertIsNone(result)
