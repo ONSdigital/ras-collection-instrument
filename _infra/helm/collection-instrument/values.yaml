@@ -70,5 +70,6 @@ gcp:
 
 saveSeftInGcp: false
 
-gnu_recipient: sdx_preprod@ons.gov.uk
-gnu_fingerprint: A8F49D6EE2DE17F03ACF11A9BF16B2EB4D779991
+gnu:
+  recipient: sdx_preprod@ons.gov.uk
+  fingerprint: A8F49D6EE2DE17F03ACF11A9BF16B2EB4D779991

@@ -117,7 +117,7 @@ class GcpSurveyResponse:
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 
-    def put_message_into_pubsub(self, payload: dict, tx_id):
+    def put_message_into_pubsub(self, payload: dict, tx_id: str):
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
