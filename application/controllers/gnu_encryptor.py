@@ -1,6 +1,5 @@
 import gnupg
 import gnupg._parsers
-import json
 import logging
 from structlog import wrap_logger
 
