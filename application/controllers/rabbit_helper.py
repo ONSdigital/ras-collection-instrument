@@ -3,7 +3,7 @@ import logging
 
 import structlog
 from flask import current_app
-from sdc.rabbit import DurableExchangePublisher, QueuePublisher
+from sdc.rabbit import QueuePublisher
 from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.json_encrypter import Encrypter
@@ -67,10 +67,5 @@ def _send_message_to_rabbitmq(message, tx_id, queue_name, publisher_type, rabbit
 
 initialise_rabbitmq_queue = functools.partial(_initialise_rabbitmq, publisher_type=QueuePublisher,
                                               rabbitmq_amqp_config='RABBITMQ_AMQP_SURVEY_RESPONSE')
-initialise_rabbitmq_exchange = functools.partial(_initialise_rabbitmq, publisher_type=DurableExchangePublisher,
-                                                 rabbitmq_amqp_config='RABBITMQ_AMQP_COLLECTION_INSTRUMENT')
 send_message_to_rabbitmq_queue = functools.partial(_send_message_to_rabbitmq, publisher_type=QueuePublisher,
                                                    rabbitmq_amqp_config='RABBITMQ_AMQP_SURVEY_RESPONSE')
-send_message_to_rabbitmq_exchange = functools.partial(_send_message_to_rabbitmq,
-                                                      publisher_type=DurableExchangePublisher,
-                                                      rabbitmq_amqp_config='RABBITMQ_AMQP_COLLECTION_INSTRUMENT') # NOQA
