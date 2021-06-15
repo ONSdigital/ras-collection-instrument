@@ -72,7 +72,8 @@ class GcpSurveyResponse:
                 raise
 
             try:
-                self.put_file_into_gcp_bucket(json_message)
+                message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref,"B")
+                self.put_file_into_gcp_bucket(message)
             except (GoogleCloudError, KeyError):
                 bound_log.exception("Something went wrong putting into the bucket")
                 raise SurveyResponseError()
@@ -134,7 +135,7 @@ class GcpSurveyResponse:
         log.info("Publish succeeded", msg_id=message)
 
     @staticmethod
-    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref) -> dict:
+    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref,file_mod='A') -> dict:
         """
         Create json message from file
 
@@ -147,15 +148,19 @@ class GcpSurveyResponse:
         :param file: The file uploaded
         :param case_id: The case UUID
         :param survey_ref : The survey reference e.g 134 (MWSS)
+        :param file_mode  : Either A | B    A =Ascii and convert to base64 string  B= binary leave as is
         :return: Returns json message
         """
 
         log.info('Creating json message', filename=file_name, case_id=case_id, survey_id=survey_ref)
-        file_as_string = convert_file_object_to_string_base64(file)
+        if (file_mod == 'A'):
+            file_content = convert_file_object_to_string_base64(file)
+        else: 
+            file_content = file
 
         message_json = {
             'filename': file_name,
-            'file': file_as_string,
+            'file': file_content,
             'case_id': case_id,
             'survey_id': survey_ref
         }
