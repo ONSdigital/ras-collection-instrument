@@ -113,7 +113,7 @@ class GcpSurveyResponse:
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_message = encrypter.encrypt(message, ons_gnu_fingerprint)
+        encrypted_message = encrypter.encrypt(message['file'], ons_gnu_fingerprint)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 
