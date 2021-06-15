@@ -72,7 +72,7 @@ class GcpSurveyResponse:
                 raise
 
             try:
-                message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref,"B")
+                message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref, "B")
                 self.put_file_into_gcp_bucket(message)
             except (GoogleCloudError, KeyError):
                 bound_log.exception("Something went wrong putting into the bucket")
@@ -135,7 +135,7 @@ class GcpSurveyResponse:
         log.info("Publish succeeded", msg_id=message)
 
     @staticmethod
-    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref,file_mod='A') -> dict:
+    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref, file_mod='A') -> dict:
         """
         Create json message from file
 
@@ -155,7 +155,7 @@ class GcpSurveyResponse:
         log.info('Creating json message', filename=file_name, case_id=case_id, survey_id=survey_ref)
         if (file_mod == 'A'):
             file_content = convert_file_object_to_string_base64(file)
-        else: 
+        else:
             file_content = file
 
         message_json = {
