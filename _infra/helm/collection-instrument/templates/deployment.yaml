@@ -149,6 +149,11 @@ spec:
             value: "config/config-docker.yaml"
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /var/secrets/google/credentials.json
+          - name: ONS_GNU_PUBLIC_CRYPTOKEY
+            valueFrom:
+              secretKeyRef:
+                name: seft-collection-instrument-key
+                key: gpg-public-crypto-key
           - name: ONS_CRYPTOKEY
             valueFrom:
               secretKeyRef:
@@ -258,6 +263,10 @@ spec:
             value: "amqp://$(SDX_RABBITMQ_USERNAME):$(SDX_RABBITMQ_PASSWORD)@$(SDX_RABBITMQ_HOST):$(SDX_RABBITMQ_PORT)"
           - name: SAVE_SEFT_IN_GCP
             value: "{{ .Values.saveSeftInGcp }}"
+          - name: ONS_GNU_FINGERPRINT
+            value: "{{ .Values.gnu.fingerprint }}"
+          - name: ONS_GNU_RECIPIENT
+            value: "{{ .Values.gnu.recipient }}"
           - name: SEFT_BUCKET_NAME
             value: "{{ .Values.gcp.bucket.name }}"
           - name: SEFT_BUCKET_FILE_PREFIX

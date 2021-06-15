@@ -19,6 +19,7 @@ def _encrypt_message(message_json):
     :return: jwe as String
     """
     log.info('Encrypting JSON message')
+
     json_secret_keys = current_app.config['JSON_SECRET_KEYS']
     encrypter = Encrypter(json_secret_keys)
     return encrypter.encrypt(message_json)
