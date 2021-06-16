@@ -84,14 +84,14 @@ class GcpSurveyResponse:
                 bound_log.exception("A non-timeout error was raised when publishing to pubsub", payload=payload)
                 raise SurveyResponseError()
 
-    def put_file_into_gcp_bucket(self, message: str, filename: str):
+    def put_file_into_gcp_bucket(self, file_contents, filename: str):
         """
-        Takes the message  and puts it into a GCP bucket in encrypted form to be later used by SDX.
+        Takes the file_contents  and puts it into a GCP bucket in encrypted form to be later used by SDX.
 
         Note: The payload will almost certainly change once the encryption method between us and SDX is decided, but
         for now we'll put the same payload we were using in rabbit as a starting point.
 
-        :param message: contents of the collection instrument
+        :param file_contents: contents of the collection instrument
         :param filename that was uploaded
 
         returns a dict os the size of the encrypted string and an md5
@@ -115,8 +115,8 @@ class GcpSurveyResponse:
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_message = encrypter.encrypt(message, ons_gnu_fingerprint)
-        md5Hash = hashlib.md5(json.dumps(encrypted_message, sort_keys=True).encode()).hexdigest()
+        encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
+        md5Hash = hashlib.md5(encrypted_message).hexdigest()
         sizeInBytes = sys.getsizeof(encrypted_message)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
