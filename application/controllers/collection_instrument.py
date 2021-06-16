@@ -15,8 +15,6 @@ from application.models.models import BusinessModel, ExerciseModel, InstrumentMo
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
-RABBIT_QUEUE_NAME = 'Seft.Instruments'
-
 
 class CollectionInstrument(object):
 
