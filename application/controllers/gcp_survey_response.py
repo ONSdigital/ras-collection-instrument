@@ -116,7 +116,7 @@ class GcpSurveyResponse:
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
         encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
-        md5Hash = hashlib.md5(encrypted_message).hexdigest()
+        md5Hash = hashlib.md5(str(encrypted_message).encode()).hexdigest()
         sizeInBytes = sys.getsizeof(encrypted_message)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
