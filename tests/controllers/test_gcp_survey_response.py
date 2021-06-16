@@ -80,12 +80,13 @@ class TestGcpSurveyResponse(TestCase):
 
     def test_missing_filename_raises_key_error(self):
         survey_response = GcpSurveyResponse(self.config)
+        test_file_contents = io.BytesIO().read()
         survey_response.storage_client = MagicMock()
         test_input = copy.deepcopy(self.bucket_content)
         del test_input['filename']
 
         with self.assertRaises(KeyError):
-            survey_response.put_file_into_gcp_bucket('this is test data', test_input)
+            survey_response.put_file_into_gcp_bucket(test_file_contents, test_input)
 
     def test_successful_send_to_pub_sub(self):
         with self.app.app_context():
