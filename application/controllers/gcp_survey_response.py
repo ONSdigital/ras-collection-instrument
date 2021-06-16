@@ -4,15 +4,18 @@ import logging
 import sys
 import time
 import uuid
+import os
 
 import structlog
 from google.cloud import storage, pubsub_v1
 from google.cloud.exceptions import GoogleCloudError
+from flask import current_app
 
 from application.controllers.helper import convert_file_object_to_string_base64
-from application.controllers.rabbit_helper import _encrypt_message
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
+from application.controllers.gnu_encryptor import GNUEncrypter
+
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
@@ -51,6 +54,7 @@ class GcpSurveyResponse:
         :param survey_ref: The survey ref e.g 134 MWSS
         """
 
+        file_name = os.path.splitext(file_name)[0]  # remove extension from the filename
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
         bound_log.info('Putting response into bucket and sending pubsub message')
@@ -74,7 +78,7 @@ class GcpSurveyResponse:
                 raise SurveyResponseError()
 
             try:
-                self.put_message_into_pubsub(payload)
+                self.put_message_into_pubsub(payload, tx_id)
             except TimeoutError:
                 bound_log.exception("Publish to pubsub timed out", payload=payload)
                 raise SurveyResponseError()
@@ -106,11 +110,14 @@ class GcpSurveyResponse:
         except KeyError:
             bound_log.info('Missing filename from the message', message=message)
             raise
-        encrypted_message = _encrypt_message(message)
+        gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
+        ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
+        encrypter = GNUEncrypter(gnugpg_secret_keys)
+        encrypted_message = encrypter.encrypt(message, ons_gnu_fingerprint)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
 
-    def put_message_into_pubsub(self, payload: dict):
+    def put_message_into_pubsub(self, payload: dict, tx_id: str):
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
@@ -122,7 +129,7 @@ class GcpSurveyResponse:
         topic_path = self.publisher.topic_path(self.seft_pubsub_project, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
-        future = self.publisher.publish(topic_path, data=payload_bytes)
+        future = self.publisher.publish(topic_path, data=payload_bytes, tx_id=tx_id)
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
