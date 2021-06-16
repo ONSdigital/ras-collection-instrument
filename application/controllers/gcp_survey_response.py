@@ -103,6 +103,7 @@ class GcpSurveyResponse:
                 raise ValueError('Error with filename for bucket ')
         except ValueError as e:
             bound_log.info(e, filename=filename)
+            raise
 
         if self.storage_client is None:
             self.storage_client = storage.Client(project=self.seft_pubsub_project)
