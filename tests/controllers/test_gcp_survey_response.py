@@ -64,7 +64,8 @@ class TestGcpSurveyResponse(TestCase):
         with self.app.app_context():
             survey_response = GcpSurveyResponse(self.config)
             with self.assertRaises(HTTPError):
-                survey_response.create_pubsub_payload(self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
+                survey_response.create_pubsub_payload(
+                    self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
 
     @responses.activate
     def test_missing_data_raises_survey_response_error(self):
@@ -72,7 +73,8 @@ class TestGcpSurveyResponse(TestCase):
         with self.app.app_context():
             survey_response = GcpSurveyResponse(self.config)
             with self.assertRaises(SurveyResponseError) as e:
-                survey_response.create_pubsub_payload(self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
+                survey_response.create_pubsub_payload(
+                    self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
 
             self.assertEqual(e.exception.args[0], "Case group not found")
 
