@@ -11,7 +11,6 @@ from google.cloud import storage, pubsub_v1
 from google.cloud.exceptions import GoogleCloudError
 from flask import current_app
 
-from application.controllers.helper import convert_file_object_to_string_base64
 from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
                                                     get_survey_ref)
 from application.controllers.gnu_encryptor import GNUEncrypter
@@ -64,18 +63,17 @@ class GcpSurveyResponse:
             bound_log.info('File size is too small')
             raise FileTooSmallError()
         else:
-            json_message = self._create_json_message_for_file(file_name, file_contents, case_id, survey_ref)
             try:
-                payload = self.create_pubsub_payload(json_message, tx_id)
-            except SurveyResponseError:
-                bound_log.error("Something went wrong creating the payload", exc_info=True)
-                raise
-
-            try:
-                self.put_file_into_gcp_bucket(json_message)
+                results = self.put_file_into_gcp_bucket(file_contents, file_name)
             except (GoogleCloudError, KeyError):
                 bound_log.exception("Something went wrong putting into the bucket")
                 raise SurveyResponseError()
+
+            try:
+                payload = self.create_pubsub_payload(case_id, results['md5sum'], results['fileSizeInBytes'], tx_id)
+            except SurveyResponseError:
+                bound_log.error("Something went wrong creating the payload", exc_info=True)
+                raise
 
             try:
                 self.put_message_into_pubsub(payload, tx_id)
@@ -86,36 +84,48 @@ class GcpSurveyResponse:
                 bound_log.exception("A non-timeout error was raised when publishing to pubsub", payload=payload)
                 raise SurveyResponseError()
 
-    def put_file_into_gcp_bucket(self, message: dict):
+    def put_file_into_gcp_bucket(self, file_contents, filename: str):
         """
-        Takes the message (containing the file) and puts it into a GCP bucket to be later used by SDX.
+        Takes the file_contents  and puts it into a GCP bucket in encrypted form to be later used by SDX.
 
         Note: The payload will almost certainly change once the encryption method between us and SDX is decided, but
         for now we'll put the same payload we were using in rabbit as a starting point.
 
-        :param message: A dict with metadata about the collection instrument
+        :param file_contents: contents of the collection instrument
+        :param filename that was uploaded
+
+        returns a dict os the size of the encrypted string and an md5
         """
         bound_log = log.bind(project=self.seft_pubsub_project, bucket=self.seft_bucket_name)
         bound_log.info('Starting to put file in bucket')
+        try:
+            if not filename.strip():
+                raise ValueError('Error with filename for bucket ')
+        except ValueError as e:
+            bound_log.info(e, filename=filename)
+            raise
+
         if self.storage_client is None:
             self.storage_client = storage.Client(project=self.seft_pubsub_project)
 
         bucket = self.storage_client.bucket(self.seft_bucket_name)
-        try:
-            if self.seft_bucket_file_prefix:
-                filename = f"{self.seft_bucket_file_prefix}/{message['filename']}"
-            else:
-                filename = message['filename']
-            blob = bucket.blob(filename)
-        except KeyError:
-            bound_log.info('Missing filename from the message', message=message)
-            raise
+        if self.seft_bucket_file_prefix:
+            filename = f"{self.seft_bucket_file_prefix}/{filename}"
+        blob = bucket.blob(filename)
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_message = encrypter.encrypt(message, ons_gnu_fingerprint)
+        encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
+        md5sum = hashlib.md5(str(encrypted_message).encode()).hexdigest()
+        sizeInBytes = sys.getsizeof(encrypted_message)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
+        results = {
+            'md5sum': md5sum,
+            'fileSizeInBytes': sizeInBytes
+        }
+
+        return results
 
     def put_message_into_pubsub(self, payload: dict, tx_id: str):
         """
@@ -133,37 +143,7 @@ class GcpSurveyResponse:
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
-    @staticmethod
-    def _create_json_message_for_file(file_name: str, file, case_id, survey_ref) -> dict:
-        """
-        Create json message from file
-
-        .. note:: the confusing use of survey_id and survey_ref. collection_exercise returns uses survey_id as a
-            GUID, which is the GUID as defined in the survey_service. The survey service holds a survey_ref,
-            a 3 character string holding defining an integer, which other (older) services refer to as survey_id.
-            Therefore, when passing to sdx we use the survey_ref not the survey_id in the survey_id field of the json.
-
-        :param file_name: The file name
-        :param file: The file uploaded
-        :param case_id: The case UUID
-        :param survey_ref : The survey reference e.g 134 (MWSS)
-        :return: Returns json message
-        """
-
-        log.info('Creating json message', filename=file_name, case_id=case_id, survey_id=survey_ref)
-        file_as_string = convert_file_object_to_string_base64(file)
-
-        message_json = {
-            'filename': file_name,
-            'file': file_as_string,
-            'case_id': case_id,
-            'survey_id': survey_ref
-        }
-
-        return message_json
-
-    def create_pubsub_payload(self, message, tx_id: str) -> dict:
-        case_id = message['case_id']
+    def create_pubsub_payload(self, case_id, md5sum, sizeBytes, tx_id: str) -> dict:
         log.info('Creating pubsub payload', case_id=case_id)
 
         case_group = get_case_group(case_id)
@@ -192,16 +172,14 @@ class GcpSurveyResponse:
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
         file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
-        # We'll probably need to change how we get the md5 and sizeBytes when the interface with SDX is more
-        # clearly defined.
         payload = {
             "filename": file_name,
             "tx_id": tx_id,
             "survey_id": survey_ref,
             "period": exercise_ref,
             "ru_ref": ru,
-            "md5sum": hashlib.md5(json.dumps(message, sort_keys=True).encode()).hexdigest(),
-            "sizeBytes": sys.getsizeof(message)
+            "md5sum": md5sum,
+            "sizeBytes": sizeBytes
         }
         log.info("Payload created", payload=payload)
 

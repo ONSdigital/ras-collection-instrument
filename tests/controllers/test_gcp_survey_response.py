@@ -1,4 +1,3 @@
-import copy
 import io
 import json
 import os
@@ -64,7 +63,8 @@ class TestGcpSurveyResponse(TestCase):
         with self.app.app_context():
             survey_response = GcpSurveyResponse(self.config)
             with self.assertRaises(HTTPError):
-                survey_response.create_pubsub_payload(self.bucket_content, self.tx_id)
+                survey_response.create_pubsub_payload(
+                    self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
 
     @responses.activate
     def test_missing_data_raises_survey_response_error(self):
@@ -72,18 +72,19 @@ class TestGcpSurveyResponse(TestCase):
         with self.app.app_context():
             survey_response = GcpSurveyResponse(self.config)
             with self.assertRaises(SurveyResponseError) as e:
-                survey_response.create_pubsub_payload(self.bucket_content, self.tx_id)
+                survey_response.create_pubsub_payload(
+                    self.bucket_content['case_id'], self.pubsub_payload['md5sum'], self.bucket_content, self.tx_id)
 
             self.assertEqual(e.exception.args[0], "Case group not found")
 
     def test_missing_filename_raises_key_error(self):
         survey_response = GcpSurveyResponse(self.config)
+        test_file_contents = 'test file contents'
         survey_response.storage_client = MagicMock()
-        test_input = copy.deepcopy(self.bucket_content)
-        del test_input['filename']
-
-        with self.assertRaises(KeyError):
-            survey_response.put_file_into_gcp_bucket(test_input)
+        filename = ''
+        with self.app.app_context():
+            with self.assertRaises(ValueError):
+                survey_response.put_file_into_gcp_bucket(test_file_contents, filename)
 
     def test_successful_send_to_pub_sub(self):
         with self.app.app_context():
