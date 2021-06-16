@@ -107,7 +107,7 @@ class GcpSurveyResponse:
                 filename = f"{self.seft_bucket_file_prefix}/{filename}"
             blob = bucket.blob(filename)
         except KeyError:
-            bound_log.info('Missing filename from the message', filename=filename)
+            bound_log.info('Error with filename for bucket ', filename=filename)
             raise
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']

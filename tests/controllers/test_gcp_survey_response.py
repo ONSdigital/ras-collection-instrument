@@ -83,7 +83,7 @@ class TestGcpSurveyResponse(TestCase):
         test_file_contents = io.BytesIO().read()
         survey_response.storage_client = MagicMock()
         test_input = copy.deepcopy(self.bucket_content)
-        del test_input['filename']
+        test_input=''
 
         with self.assertRaises(KeyError):
             survey_response.put_file_into_gcp_bucket(test_file_contents, test_input)
