@@ -82,9 +82,9 @@ class TestGcpSurveyResponse(TestCase):
         test_file_contents = 'test file contents'
         survey_response.storage_client = MagicMock()
         filename = ''
-
-        with self.assertRaises(KeyError):
-            survey_response.put_file_into_gcp_bucket(test_file_contents, filename)
+        with self.app.app_context():
+            with self.assertRaises(ValueError):
+                survey_response.put_file_into_gcp_bucket(test_file_contents, filename)
 
     def test_successful_send_to_pub_sub(self):
         with self.app.app_context():

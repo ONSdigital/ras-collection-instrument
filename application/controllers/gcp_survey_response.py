@@ -98,17 +98,19 @@ class GcpSurveyResponse:
         """
         bound_log = log.bind(project=self.seft_pubsub_project, bucket=self.seft_bucket_name)
         bound_log.info('Starting to put file in bucket')
+        try:
+            if not filename.strip():
+                raise ValueError('Error with filename for bucket ')
+        except ValueError as e:
+            bound_log.info(e, filename=filename)
+
         if self.storage_client is None:
             self.storage_client = storage.Client(project=self.seft_pubsub_project)
 
         bucket = self.storage_client.bucket(self.seft_bucket_name)
-        try:
-            if self.seft_bucket_file_prefix:
-                filename = f"{self.seft_bucket_file_prefix}/{filename}"
-            blob = bucket.blob(filename)
-        except KeyError:
-            bound_log.info('Error with filename for bucket ', filename=filename)
-            raise
+        if self.seft_bucket_file_prefix:
+            filename = f"{self.seft_bucket_file_prefix}/{filename}"
+        blob = bucket.blob(filename)
         gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
         ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
         encrypter = GNUEncrypter(gnugpg_secret_keys)
