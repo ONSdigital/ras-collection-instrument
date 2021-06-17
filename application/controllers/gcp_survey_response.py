@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import sys
 import time
 import uuid
 import os
