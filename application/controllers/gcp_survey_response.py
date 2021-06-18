@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import sys
 import time
 import uuid
 import os
@@ -117,7 +116,7 @@ class GcpSurveyResponse:
         encrypter = GNUEncrypter(gnugpg_secret_keys)
         encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
         md5sum = hashlib.md5(str(encrypted_message).encode()).hexdigest()
-        sizeInBytes = sys.getsizeof(encrypted_message)
+        sizeInBytes = len(encrypted_message)
         blob.upload_from_string(encrypted_message)
         bound_log.info('Successfully put file in bucket', filename=filename)
         results = {
