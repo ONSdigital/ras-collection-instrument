@@ -2,7 +2,6 @@ import hashlib
 import json
 import logging
 import uuid
-import os
 
 import structlog
 from google.cloud import storage, pubsub_v1
