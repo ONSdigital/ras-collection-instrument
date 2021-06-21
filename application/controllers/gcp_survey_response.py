@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import time
 import uuid
 import os
 
@@ -69,7 +68,8 @@ class GcpSurveyResponse:
                 raise SurveyResponseError()
 
             try:
-                payload = self.create_pubsub_payload(case_id, results['md5sum'], results['fileSizeInBytes'], tx_id)
+                payload = self.create_pubsub_payload(case_id, results['md5sum'], results['fileSizeInBytes'],
+                                                     file_name, tx_id)
             except SurveyResponseError:
                 bound_log.error("Something went wrong creating the payload", exc_info=True)
                 raise
@@ -142,7 +142,7 @@ class GcpSurveyResponse:
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
-    def create_pubsub_payload(self, case_id, md5sum, sizeBytes, tx_id: str) -> dict:
+    def create_pubsub_payload(self, case_id, md5sum, sizeBytes, file_name, tx_id: str) -> dict:
         log.info('Creating pubsub payload', case_id=case_id)
 
         case_group = get_case_group(case_id)
@@ -167,9 +167,6 @@ class GcpSurveyResponse:
                                             collection_exercise_id=collection_exercise_id, verbose=True)
         if not business_party:
             raise SurveyResponseError("Business not found in party")
-        check_letter = business_party['checkletter']
-        time_date_stamp = time.strftime("%Y%m%d%H%M%S")
-        file_name = f"{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}"
 
         payload = {
             "filename": file_name,
