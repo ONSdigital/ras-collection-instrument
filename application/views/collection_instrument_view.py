@@ -1,14 +1,12 @@
 import logging
-import uuid
-from json import dumps
 
 import structlog
 from flask import Blueprint
 from flask import make_response, request, jsonify
 
 from application.controllers.basic_auth import auth
-from application.controllers.collection_instrument import CollectionInstrument, RABBIT_QUEUE_NAME
-from application.controllers.rabbit_helper import send_message_to_rabbitmq_exchange
+from application.controllers.collection_instrument import CollectionInstrument
+from application.controllers.service_helper import collection_instrument_link
 from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -65,7 +63,8 @@ def upload_collection_instrument_without_collection_exercise():
 @collection_instrument_view.route('/link-exercise/<instrument_id>/<exercise_id>', methods=['POST'])
 def link_collection_instrument(instrument_id, exercise_id):
     CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
-    if not publish_uploaded_collection_instrument(exercise_id, instrument_id):
+    response = publish_uploaded_collection_instrument(exercise_id, instrument_id)
+    if response.status_code != 200:
         log.error('Failed to publish upload message', instrument_id=instrument_id,
                   collection_exercise_id=exercise_id)
         raise RasError('Failed to publish upload message', 500)
@@ -149,11 +148,9 @@ def publish_uploaded_collection_instrument(exercise_id, instrument_id):
     :return True if message successfully published to RABBIT_QUEUE_NAME
     """
     log.info('Publishing upload message', exercise_id=exercise_id, instrument_id=instrument_id)
-
-    tx_id = str(uuid.uuid4())
-    json_message = dumps({
+    json_message = {
         'action': 'ADD',
         'exercise_id': str(exercise_id),
         'instrument_id': str(instrument_id)
-    })
-    return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
+    }
+    return collection_instrument_link(json_message)
