@@ -128,9 +128,11 @@ def collection_instrument_link(json_message):
         collection_exercise_url = current_app.config['COLLECTION_EXERCISE_URL']
         url = f'{collection_exercise_url}/collection-instrument/link'
         log.info('Making request to collection exercise to acknowledge instrument load')
+        response = requests.post(url, json=json_message, auth=auth)
+        response.raise_for_status()
     except KeyError:
         raise RasError("collection exercise service not configured", 500)
+    except requests.HTTPError:
+        raise RasError("collection exercise responded with an http error", response.status_code)
 
-    response = requests.post(url, json=json_message, auth=auth)
-    response.raise_for_status()
     return response
