@@ -125,11 +125,9 @@ def retry_if_rabbit_connection_error(exception):
 
 @retry(retry_on_exception=retry_if_rabbit_connection_error, wait_fixed=2000, stop_max_delay=60000, wrap_exception=True)
 def initialise_rabbit(app):
-    from application.controllers import collection_instrument
     from application.controllers import survey_response
 
     with app.app_context():
-        collection_instrument.CollectionInstrument.initialise_messaging()
         survey_response.SurveyResponse.initialise_messaging()
 
 

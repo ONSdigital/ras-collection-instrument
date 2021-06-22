@@ -1,13 +1,12 @@
 import logging
-import uuid
-from json import dumps, loads
+from json import loads
 
 import structlog
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
-from application.controllers.rabbit_helper import initialise_rabbitmq_exchange, send_message_to_rabbitmq_exchange
-from application.controllers.service_helper import service_request
+from application.controllers.service_helper import service_request, \
+    collection_instrument_link
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
     query_instrument_by_id, query_survey_by_id
@@ -15,8 +14,6 @@ from application.exceptions import RasError
 from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel, SEFTModel
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
-
-RABBIT_QUEUE_NAME = 'Seft.Instruments'
 
 
 class CollectionInstrument(object):
@@ -241,16 +238,11 @@ class CollectionInstrument(object):
             bound_logger.info("Removing business/exercise link", business_id=business.id, ru_ref=business.ru_ref)
             business.instruments.remove(instrument)
 
-        if not self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id):
+        response = self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id)
+        if response.status_code != 200:
             raise RasError('Failed to publish upload message', 500)
-
         bound_logger.info('Successfully unlinked instrument to exercise')
         return True
-
-    @staticmethod
-    def initialise_messaging():
-        log.info('Initialising rabbitmq exchange for Collection Instruments', queue=RABBIT_QUEUE_NAME)
-        initialise_rabbitmq_exchange(RABBIT_QUEUE_NAME)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
@@ -262,14 +254,12 @@ class CollectionInstrument(object):
         :return: True if message successfully published to RABBIT_QUEUE_NAME
         """
         log.info('Publishing remove message', exercise_id=exercise_id, instrument_id=instrument_id)
-
-        tx_id = str(uuid.uuid4())
-        json_message = dumps({
+        json_message = {
             'action': 'REMOVE',
             'exercise_id': str(exercise_id),
             'instrument_id': str(instrument_id)
-        })
-        return send_message_to_rabbitmq_exchange(json_message, tx_id, RABBIT_QUEUE_NAME, encrypt=False)
+        }
+        return collection_instrument_link(json_message)
 
     @staticmethod
     def _find_or_create_survey_from_exercise_id(exercise_id, session):
