@@ -4,7 +4,7 @@ import os
 import structlog
 from alembic import command
 from alembic.config import Config
-from flask import Flask, _app_ctx_stack
+from flask import Flask
 from flask_cors import CORS
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
@@ -19,7 +19,7 @@ from application.logger_config import logger_initial_config
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None, init_db=True, init_rabbit=True):
+def create_app(config=None, init_db=True, init_rabbit=False):
     # create and configure the Flask application
     app = Flask(__name__)
     app.name = "ras-collection-instrument"
@@ -60,6 +60,15 @@ def create_app(config=None, init_db=True, init_rabbit=True):
     else:
         logger.debug('Skipped initialising rabbitmq')
 
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        # The session removal is duplicated in the session wrapper but for a good reason;  We need to ensure
+        # that the session ALWAYS gets removed at the end of a request.  Someone could write a database query that
+        # doesn't use the session wrapper and then we could risk issues occurring.
+        app.db.session.remove()
+        if exception:
+            logger.error(exception)
+
     logger.info("App setup complete", config=config_name)
 
     return app
@@ -68,40 +77,31 @@ def create_app(config=None, init_db=True, init_rabbit=True):
 def create_database(db_connection, db_schema):
     from application.models import models
 
-    def current_request():
-        return _app_ctx_stack.__ident_func__()
-
     engine = create_engine(db_connection)
-    session = scoped_session(sessionmaker(), scopefunc=current_request)
-    session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
+    session = scoped_session(sessionmaker())
+    session.configure(bind=engine, autoflush=False, autocommit=False)
     engine.session = session
 
-    if db_connection.startswith('postgres'):
+    for t in models.Base.metadata.sorted_tables:
+        t.schema = db_schema
 
-        for t in models.Base.metadata.sorted_tables:
-            t.schema = db_schema
+    schemata_exists = exists(select([column('schema_name')])
+                             .select_from(text("information_schema.schemata"))
+                             .where(text(f"schema_name = '{db_schema}'")))
 
-        schemata_exists = exists(select([column('schema_name')])
-                                 .select_from(text("information_schema.schemata"))
-                                 .where(text(f"schema_name = '{db_schema}'")))
+    alembic_cfg = Config("alembic.ini")
 
-        alembic_cfg = Config("alembic.ini")
-
-        if not session().query(schemata_exists).scalar():
-            logger.info("Creating schema ", db_schema=db_schema)
-            engine.execute(f"CREATE SCHEMA {db_schema}")
-            logger.info("Creating database tables.")
-            models.Base.metadata.create_all(engine)
-            # If the db is created from scratch we don't need to update with alembic,
-            # however we do need to record (stamp) the latest version for future migrations
-            command.stamp(alembic_cfg, "head")
-        else:
-            logger.info("Updating database with Alembic")
-            command.upgrade(alembic_cfg, "head")
-
-    else:
-        logger.info("Creating database tables")
+    if not session().query(schemata_exists).scalar():
+        logger.info("Creating schema ", db_schema=db_schema)
+        engine.execute(f"CREATE SCHEMA {db_schema}")
+        logger.info("Creating database tables.")
         models.Base.metadata.create_all(engine)
+        # If the db is created from scratch we don't need to update with alembic,
+        # however we do need to record (stamp) the latest version for future migrations
+        command.stamp(alembic_cfg, "head")
+    else:
+        logger.info("Updating database with Alembic")
+        command.upgrade(alembic_cfg, "head")
 
     logger.info("Ok, database tables have been created")
     return engine

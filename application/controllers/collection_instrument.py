@@ -501,8 +501,6 @@ class CollectionInstrument(object):
         :param session: database session
         :return: query results
         """
-        log.info('creating model joins for search')
-
         query = query_instrument(session)
         already_joined = []
         for classifier in json_search_parameters.keys():
