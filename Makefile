@@ -10,8 +10,14 @@ build-kubernetes:
 lint:
 	pipenv run flake8 ./application ./tests
 	pipenv check ./application ./tests
+	pipenv run isort .
 
-test: lint
+lint-check:
+	pipenv run flake8 ./application ./tests
+	pipenv check ./application ./tests
+	pipenv run isort . --check-only -v
+
+test: lint-check
 	pipenv run tox
 
 start:

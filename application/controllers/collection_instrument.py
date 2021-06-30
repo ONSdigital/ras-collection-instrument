@@ -5,13 +5,17 @@ import structlog
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
-from application.controllers.service_helper import service_request, \
-    collection_instrument_link
+from application.controllers.service_helper import (collection_instrument_link,
+                                                    service_request)
 from application.controllers.session_decorator import with_db_session
-from application.controllers.sql_queries import query_business_by_ru, query_exercise_by_id, query_instrument, \
-    query_instrument_by_id, query_survey_by_id
+from application.controllers.sql_queries import (query_business_by_ru,
+                                                 query_exercise_by_id,
+                                                 query_instrument,
+                                                 query_instrument_by_id,
+                                                 query_survey_by_id)
 from application.exceptions import RasError
-from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SurveyModel, SEFTModel
+from application.models.models import (BusinessModel, ExerciseModel,
+                                       InstrumentModel, SEFTModel, SurveyModel)
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

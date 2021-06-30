@@ -4,13 +4,15 @@ import logging
 import uuid
 
 import structlog
-from google.cloud import storage, pubsub_v1
-from google.cloud.exceptions import GoogleCloudError
 from flask import current_app
+from google.cloud import pubsub_v1, storage
+from google.cloud.exceptions import GoogleCloudError
 
-from application.controllers.service_helper import (get_business_party, get_case_group, get_collection_exercise,
-                                                    get_survey_ref)
 from application.controllers.gnu_encryptor import GNUEncrypter
+from application.controllers.service_helper import (get_business_party,
+                                                    get_case_group,
+                                                    get_collection_exercise,
+                                                    get_survey_ref)
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 

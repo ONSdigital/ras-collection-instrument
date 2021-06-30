@@ -1,11 +1,12 @@
 import io
-from os import putenv, environ
-from unittest.mock import patch, Mock
+from os import environ, putenv
+from unittest.mock import Mock, patch
 
 from pika.exceptions import AMQPConnectionError
 from werkzeug.datastructures import FileStorage
 
-from application.controllers.survey_response import SurveyResponse, SurveyResponseError
+from application.controllers.survey_response import (SurveyResponse,
+                                                     SurveyResponseError)
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'

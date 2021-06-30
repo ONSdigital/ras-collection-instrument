@@ -35,8 +35,8 @@ jobs:
         run: |
           pip install pipenv
           pipenv install --dev --deploy
-      - name: Run Tox
-        run: pipenv run tox
+      - name: Run tests
+        run: make test
       - uses: google-github-actions/setup-gcloud@master
         with:
           version: '270.0.0'

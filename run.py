@@ -8,13 +8,12 @@ from flask import Flask
 from flask_cors import CORS
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
-from sqlalchemy import create_engine, column, text
-from sqlalchemy.exc import ProgrammingError, DatabaseError
+from sqlalchemy import column, create_engine, text
+from sqlalchemy.exc import DatabaseError, ProgrammingError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import exists, select
 
 from application.logger_config import logger_initial_config
-
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -30,7 +29,8 @@ def create_app(config=None, init_db=True, init_rabbit=True):
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view
     app.register_blueprint(survey_responses_view, url_prefix='/survey_response-api/v1')
-    from application.views.collection_instrument_view import collection_instrument_view
+    from application.views.collection_instrument_view import \
+        collection_instrument_view
     app.register_blueprint(collection_instrument_view, url_prefix='/collection-instrument-api/1.0.2')
     from application.views.info_view import info_view
     app.register_blueprint(info_view)

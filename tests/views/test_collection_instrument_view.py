@@ -10,9 +10,11 @@ from six import BytesIO
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
+from application.models.models import (BusinessModel, ExerciseModel,
+                                       InstrumentModel, SEFTModel, SurveyModel)
 from application.views.collection_instrument_view import (
-    UPLOAD_SUCCESSFUL, COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE)
+    COLLECTION_INSTRUMENT_NOT_FOUND, NO_INSTRUMENT_FOR_EXERCISE,
+    UPLOAD_SUCCESSFUL)
 from tests.test_client import TestClient
 
 linked_exercise_id = 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
