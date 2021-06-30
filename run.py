@@ -19,7 +19,7 @@ from application.logger_config import logger_initial_config
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None, init_db=True, init_rabbit=False):
+def create_app(config=None, init_db=True, init_rabbit=True):
     # create and configure the Flask application
     app = Flask(__name__)
     app.name = "ras-collection-instrument"
