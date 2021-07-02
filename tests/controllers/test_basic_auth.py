@@ -5,7 +5,6 @@ from tests.test_client import TestClient
 
 
 class TestBasicAuth(TestClient):
-
     def test_getpw(self):
-        password = get_pw(current_app.config.get('SECURITY_USER_NAME'))
-        self.assertEqual(password, current_app.config.get('SECURITY_USER_PASSWORD'))
+        password = get_pw(current_app.config.get("SECURITY_USER_NAME"))
+        self.assertEqual(password, current_app.config.get("SECURITY_USER_PASSWORD"))

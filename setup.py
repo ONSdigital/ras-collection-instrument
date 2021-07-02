@@ -14,5 +14,5 @@ setup(
     keywords=["Collection Instrument API"],
     install_requires=REQUIRES,
     packages=find_packages(),
-    long_description="RAS Collection Instrument microservice."
+    long_description="RAS Collection Instrument microservice.",
 )

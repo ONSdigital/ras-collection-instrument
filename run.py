@@ -23,42 +23,46 @@ def create_app(config=None, init_db=True, init_rabbit=True):
     # create and configure the Flask application
     app = Flask(__name__)
     app.name = "ras-collection-instrument"
-    config_name = config or os.environ.get('APP_SETTINGS', 'Config')
+    config_name = config or os.environ.get("APP_SETTINGS", "Config")
     app_config = f"config.{config_name}"
     app.config.from_object(app_config)
 
     # register view blueprints
     from application.views.survey_responses_view import survey_responses_view
-    app.register_blueprint(survey_responses_view, url_prefix='/survey_response-api/v1')
+
+    app.register_blueprint(survey_responses_view, url_prefix="/survey_response-api/v1")
     from application.views.collection_instrument_view import collection_instrument_view
-    app.register_blueprint(collection_instrument_view, url_prefix='/collection-instrument-api/1.0.2')
+
+    app.register_blueprint(collection_instrument_view, url_prefix="/collection-instrument-api/1.0.2")
     from application.views.info_view import info_view
+
     app.register_blueprint(info_view)
     from application.error_handlers import error_blueprint
+
     app.register_blueprint(error_blueprint)
 
     CORS(app)
 
-    logger_initial_config(service_name='ras-collection-instrument', log_level=app.config['LOGGING_LEVEL'])
-    logger.info("Logging configured", log_level=app.config['LOGGING_LEVEL'])
+    logger_initial_config(service_name="ras-collection-instrument", log_level=app.config["LOGGING_LEVEL"])
+    logger.info("Logging configured", log_level=app.config["LOGGING_LEVEL"])
 
     if init_db:
         try:
             initialise_db(app)
         except RetryError:
-            logger.exception('Failed to initialise database')
+            logger.exception("Failed to initialise database")
             exit(1)
     else:
-        logger.debug('Skipped initialising database')
+        logger.debug("Skipped initialising database")
 
     if init_rabbit:
         try:
             initialise_rabbit(app)
         except RetryError:
-            logger.exception('Failed to initialise rabbitmq')
+            logger.exception("Failed to initialise rabbitmq")
             exit(1)
     else:
-        logger.debug('Skipped initialising rabbitmq')
+        logger.debug("Skipped initialising rabbitmq")
 
     logger.info("App setup complete", config=config_name)
 
@@ -76,14 +80,16 @@ def create_database(db_connection, db_schema):
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
 
-    if db_connection.startswith('postgres'):
+    if db_connection.startswith("postgres"):
 
         for t in models.Base.metadata.sorted_tables:
             t.schema = db_schema
 
-        schemata_exists = exists(select([column('schema_name')])
-                                 .select_from(text("information_schema.schemata"))
-                                 .where(text(f"schema_name = '{db_schema}'")))
+        schemata_exists = exists(
+            select([column("schema_name")])
+            .select_from(text("information_schema.schemata"))
+            .where(text(f"schema_name = '{db_schema}'"))
+        )
 
         alembic_cfg = Config("alembic.ini")
 
@@ -115,8 +121,7 @@ def retry_if_database_error(exception):
 @retry(retry_on_exception=retry_if_database_error, wait_fixed=2000, stop_max_delay=30000, wrap_exception=True)
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
-    app.db = create_database(app.config['DATABASE_URI'],
-                             app.config['DATABASE_SCHEMA'])
+    app.db = create_database(app.config["DATABASE_URI"], app.config["DATABASE_SCHEMA"])
 
 
 def retry_if_rabbit_connection_error(exception):
@@ -131,9 +136,9 @@ def initialise_rabbit(app):
         survey_response.SurveyResponse.initialise_messaging()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = create_app()
 
-    scheme, host, port = app.config['SCHEME'], app.config['HOST'], int(app.config['PORT'])
+    scheme, host, port = app.config["SCHEME"], app.config["HOST"], int(app.config["PORT"])
 
-    app.run(debug=app.config['DEBUG'], host=host, port=port)
+    app.run(debug=app.config["DEBUG"], host=host, port=port)

@@ -2,21 +2,26 @@ import unittest
 
 from werkzeug.datastructures import FileStorage
 
-from application.controllers.helper import validate_uuid, convert_file_object_to_string_base64, to_str, \
-    is_valid_file_extension, is_valid_file_name_length
+from application.controllers.helper import (
+    validate_uuid,
+    convert_file_object_to_string_base64,
+    to_str,
+    is_valid_file_extension,
+    is_valid_file_name_length,
+)
 from application.exceptions import RasError
 
-TEST_FILE_LOCATION = 'tests/files/test.xlsx'
+TEST_FILE_LOCATION = "tests/files/test.xlsx"
 
 
 class TestHelper(unittest.TestCase):
-    """ Helper unit tests"""
+    """Helper unit tests"""
 
     def test_file_object_to_string_base64(self):
 
         # Given a file
-        with open(TEST_FILE_LOCATION, 'rb') as io:
-            file = FileStorage(stream=io, filename='tests.xlsx')
+        with open(TEST_FILE_LOCATION, "rb") as io:
+            file = FileStorage(stream=io, filename="tests.xlsx")
 
             # When it is converted to a string
             f = file.read()
@@ -28,8 +33,8 @@ class TestHelper(unittest.TestCase):
     def test_valid_file_format_true(self):
 
         # Given a valid file extension and a list of extensions
-        file_name = 'tests.xlsx'
-        file_extension = 'xlsx'
+        file_name = "tests.xlsx"
+        file_extension = "xlsx"
 
         # When is valid file format is called
         result = is_valid_file_extension(file_name, file_extension)
@@ -40,8 +45,8 @@ class TestHelper(unittest.TestCase):
     def test_valid_file_format_false(self):
 
         # Given an invalid file extension and a list of extensions
-        file_name = 'tests.txt'
-        file_extension = 'xlsx'
+        file_name = "tests.txt"
+        file_extension = "xlsx"
 
         # When is valid file format is called
         result = is_valid_file_extension(file_name, file_extension)
@@ -52,7 +57,7 @@ class TestHelper(unittest.TestCase):
     def test_is_valid_file_name_length_true(self):
 
         # Given an valid file name length
-        file_name = 'tests.txt'
+        file_name = "tests.txt"
         length = 10
 
         # When is valid file format is called
@@ -64,7 +69,7 @@ class TestHelper(unittest.TestCase):
     def test_is_valid_file_name_length_false(self):
 
         # Given an invalid file name length
-        file_name = 'abcdefghijklmnopqrstuvwxyz.txt'
+        file_name = "abcdefghijklmnopqrstuvwxyz.txt"
         length = 10
 
         # When is valid file format is called
@@ -76,24 +81,24 @@ class TestHelper(unittest.TestCase):
     def test_to_string_with_string(self):
 
         # Given a string is passed
-        string = 'hij'
+        string = "hij"
 
         # When to_str is called
         s = to_str(string)
 
         # Then a string is returned
-        self.assertEqual(s, 'hij')
+        self.assertEqual(s, "hij")
 
     def test_to_string_with_bytes(self):
 
         # Given a bytes stream is passed
-        byte_stream = b'klm'
+        byte_stream = b"klm"
 
         # When to_str is called
         s = to_str(byte_stream)
 
         # Then a string is returned
-        self.assertEqual(s, 'klm')
+        self.assertEqual(s, "klm")
 
     def test_to_string_with_none(self):
 
@@ -107,7 +112,7 @@ class TestHelper(unittest.TestCase):
     def test_validate_uuid(self):
 
         # Given a valid uuid
-        uuid = '6710e50e-224b-4918-9706-c6b28f7481cd'
+        uuid = "6710e50e-224b-4918-9706-c6b28f7481cd"
 
         # When a call is made to validate_uuid
         is_valid_uuid = validate_uuid(uuid)
@@ -118,7 +123,7 @@ class TestHelper(unittest.TestCase):
     def test_validate_uuid_error(self):
 
         # Given a invalid uuid
-        uuid = 'invalid_uuid'
+        uuid = "invalid_uuid"
 
         # When a call is made to validate_uuid
         # Then an RasError is raised

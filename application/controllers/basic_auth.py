@@ -12,7 +12,7 @@ def get_pw(username):
     :param username: basic auth username
     :return: basic auth password
     """
-    config_username = current_app.config['SECURITY_USER_NAME']
-    config_password = current_app.config['SECURITY_USER_PASSWORD']
+    config_username = current_app.config["SECURITY_USER_NAME"]
+    config_password = current_app.config["SECURITY_USER_PASSWORD"]
     if username == config_username:
         return config_password

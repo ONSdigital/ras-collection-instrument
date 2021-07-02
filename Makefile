@@ -10,6 +10,7 @@ build-kubernetes:
 lint:
 	pipenv run flake8 ./application ./tests
 	pipenv check ./application ./tests
+	pipenv run black --line-length 120 .
 
 test: lint
 	pipenv run tox

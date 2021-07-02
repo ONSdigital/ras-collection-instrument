@@ -17,11 +17,11 @@ def get_case_group(case_id):
     """
 
     case_group = None
-    response = service_request(service='case-service', endpoint='cases', search_value=case_id)
+    response = service_request(service="case-service", endpoint="cases", search_value=case_id)
 
     if response.status_code == 200:
         case = response.json()
-        case_group = case.get('caseGroup')
+        case_group = case.get("caseGroup")
     else:
         log.error("Case not found", case_id=case_id)
     return case_group
@@ -35,14 +35,14 @@ def get_collection_exercise(collection_exercise_id):
     """
 
     collection_exercise = None
-    response = service_request(service='collectionexercise-service',
-                               endpoint='collectionexercises',
-                               search_value=collection_exercise_id)
+    response = service_request(
+        service="collectionexercise-service", endpoint="collectionexercises", search_value=collection_exercise_id
+    )
 
     if response.status_code == 200:
         collection_exercise = response.json()
     else:
-        log.info('Collection Exercise not found', collection_exercise_id=collection_exercise_id)
+        log.info("Collection Exercise not found", collection_exercise_id=collection_exercise_id)
     return collection_exercise
 
 
@@ -53,13 +53,13 @@ def get_survey_ref(survey_id):
     """
 
     survey_ref = None
-    response = service_request(service='survey-service', endpoint='surveys', search_value=survey_id)
+    response = service_request(service="survey-service", endpoint="surveys", search_value=survey_id)
 
     if response.status_code == 200:
         survey_service_data = response.json()
-        survey_ref = survey_service_data.get('surveyRef')
+        survey_ref = survey_service_data.get("surveyRef")
     else:
-        log.info('Survey service data not found', survey_id=survey_id)
+        log.info("Survey service data not found", survey_id=survey_id)
 
     return survey_ref
 
@@ -71,17 +71,18 @@ def get_business_party(business_id, collection_exercise_id=None, verbose=False):
     :param verbose: Boolean to decide the verbosity of the party response
     :return: a business party
     """
-    log.info('Retrieving business party', party_id=business_id, collection_exercise_id=collection_exercise_id)
-    response = service_request(service='party-service',
-                               endpoint='party-api/v1/businesses/id',
-                               search_value=f'{business_id}?verbose={verbose}'
-                                            f'&collection_exercise_id={collection_exercise_id}')
+    log.info("Retrieving business party", party_id=business_id, collection_exercise_id=collection_exercise_id)
+    response = service_request(
+        service="party-service",
+        endpoint="party-api/v1/businesses/id",
+        search_value=f"{business_id}?verbose={verbose}" f"&collection_exercise_id={collection_exercise_id}",
+    )
 
     if not response.ok:
-        log.error('Failed to find business', party_id=business_id, collection_exercise_id=collection_exercise_id)
+        log.error("Failed to find business", party_id=business_id, collection_exercise_id=collection_exercise_id)
         return None
 
-    log.info('Successfully retrieved business', party_id=business_id, collection_exercise_id=collection_exercise_id)
+    log.info("Successfully retrieved business", party_id=business_id, collection_exercise_id=collection_exercise_id)
     return response.json()
 
 
@@ -95,17 +96,17 @@ def service_request(service, endpoint, search_value):
     :return: response
     """
 
-    auth = (current_app.config.get('SECURITY_USER_NAME'), current_app.config.get('SECURITY_USER_PASSWORD'))
+    auth = (current_app.config.get("SECURITY_USER_NAME"), current_app.config.get("SECURITY_USER_PASSWORD"))
 
     try:
         service = {
-            'survey-service': current_app.config['SURVEY_URL'],
-            'collectionexercise-service': current_app.config['COLLECTION_EXERCISE_URL'],
-            'case-service': current_app.config['CASE_URL'],
-            'party-service': current_app.config['PARTY_URL']
+            "survey-service": current_app.config["SURVEY_URL"],
+            "collectionexercise-service": current_app.config["COLLECTION_EXERCISE_URL"],
+            "case-service": current_app.config["CASE_URL"],
+            "party-service": current_app.config["PARTY_URL"],
         }[service]
-        service_url = f'{service}/{endpoint}/{search_value}'
-        log.info(f'Making request to {service_url}')
+        service_url = f"{service}/{endpoint}/{search_value}"
+        log.info(f"Making request to {service_url}")
     except KeyError:
         raise RasError(f"service '{service}' not configured", 500)
 
@@ -122,12 +123,12 @@ def collection_instrument_link(json_message):
     :return: response
     """
 
-    auth = (current_app.config.get('SECURITY_USER_NAME'), current_app.config.get('SECURITY_USER_PASSWORD'))
+    auth = (current_app.config.get("SECURITY_USER_NAME"), current_app.config.get("SECURITY_USER_PASSWORD"))
 
     try:
-        collection_exercise_url = current_app.config['COLLECTION_EXERCISE_URL']
-        url = f'{collection_exercise_url}/collection-instrument/link'
-        log.info('Making request to collection exercise to acknowledge instrument load')
+        collection_exercise_url = current_app.config["COLLECTION_EXERCISE_URL"]
+        url = f"{collection_exercise_url}/collection-instrument/link"
+        log.info("Making request to collection exercise to acknowledge instrument load")
         response = requests.post(url, json=json_message, auth=auth)
         response.raise_for_status()
     except KeyError:

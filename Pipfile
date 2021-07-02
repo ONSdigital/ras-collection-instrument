@@ -32,6 +32,7 @@ google-cloud-pubsub = "==1.7.0"
 python-gnupg = "==0.4.7"
 
 [dev-packages]
+black = "==21.6b0"
 coverage = "*"
 flake8 = "*"
 flake8-mock = "*"

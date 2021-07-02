@@ -11,10 +11,9 @@ logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 class TestClient(TestCase):
-
     @staticmethod
     def create_app():
-        return create_app('TestingConfig', init_rabbit=False)
+        return create_app("TestingConfig", init_rabbit=False)
 
     def tearDown(self):
         models.Base.metadata.drop_all(self.app.db)

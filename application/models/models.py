@@ -12,32 +12,39 @@ from application.models import GUID
 Base = declarative_base()
 
 
-instrument_exercise_table = Table('instrument_exercise', Base.metadata,
-                                  Column('instrument_id', Integer, ForeignKey('instrument.id')),
-                                  Column('exercise_id', Integer, ForeignKey('exercise.id')))
+instrument_exercise_table = Table(
+    "instrument_exercise",
+    Base.metadata,
+    Column("instrument_id", Integer, ForeignKey("instrument.id")),
+    Column("exercise_id", Integer, ForeignKey("exercise.id")),
+)
 
-instrument_business_table = Table('instrument_business', Base.metadata,
-                                  Column('instrument_id', Integer, ForeignKey('instrument.id')),
-                                  Column('business_id', Integer, ForeignKey('business.id')))
+instrument_business_table = Table(
+    "instrument_business",
+    Base.metadata,
+    Column("instrument_id", Integer, ForeignKey("instrument.id")),
+    Column("business_id", Integer, ForeignKey("business.id")),
+)
 
 
 class InstrumentModel(Base):
     """
     This models the 'instrument' table which keeps the stored collection instruments
     """
-    __tablename__ = 'instrument'
+
+    __tablename__ = "instrument"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     type = Column(String(8))
     instrument_id = Column(GUID, unique=True, index=True)
     stamp = Column(TIMESTAMP)
-    survey_id = Column(Integer, ForeignKey('survey.id'))
+    survey_id = Column(Integer, ForeignKey("survey.id"))
     classifiers = Column(JSONB)
-    survey = relationship('SurveyModel', back_populates='instruments')
+    survey = relationship("SurveyModel", back_populates="instruments")
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
 
-    exercises = relationship('ExerciseModel', secondary=instrument_exercise_table, back_populates='instruments')
-    businesses = relationship('BusinessModel', secondary=instrument_business_table, back_populates='instruments')
+    exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
+    businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
 
     def __init__(self, classifiers=None, ci_type=None):
         """Initialise the class with optionally supplied defaults"""
@@ -49,15 +56,15 @@ class InstrumentModel(Base):
     @property
     def json(self):
         return {
-            'id': self.instrument_id,
-            'file_name': self.name,
-            'len': self.seft_file.len if self.seft_file else None,
-            'stamp': self.stamp,
-            'survey': self.survey.survey_id,
-            'businesses': self.rurefs,
-            'exercises': self.exids,
-            'classifiers': self.classifiers,
-            'type': self.type
+            "id": self.instrument_id,
+            "file_name": self.name,
+            "len": self.seft_file.len if self.seft_file else None,
+            "stamp": self.stamp,
+            "survey": self.survey.survey_id,
+            "businesses": self.rurefs,
+            "exercises": self.exids,
+            "classifiers": self.classifiers,
+            "type": self.type,
         }
 
     @property
@@ -73,18 +80,19 @@ class InstrumentModel(Base):
         if self.seft_file:
             return self.seft_file.file_name
 
-        return self.classifiers.get('form_type')
+        return self.classifiers.get("form_type")
 
 
 class BusinessModel(Base):
     """
     This models the 'business' table which is a placeholder for the RU code
     """
-    __tablename__ = 'business'
+
+    __tablename__ = "business"
 
     id = Column(Integer, primary_key=True)
     ru_ref = Column(String(32), index=True)
-    instruments = relationship('InstrumentModel', secondary=instrument_business_table, back_populates='businesses')
+    instruments = relationship("InstrumentModel", secondary=instrument_business_table, back_populates="businesses")
 
     def __init__(self, ru_ref=None):
         """Initialise the class with optionally supplied defaults"""
@@ -93,9 +101,9 @@ class BusinessModel(Base):
     @property
     def json(self):
         return {
-            'id': self.id,
-            'ru_ref': self.ru_ref,
-            'instruments': self.instrument_ids,
+            "id": self.id,
+            "ru_ref": self.ru_ref,
+            "instruments": self.instrument_ids,
         }
 
     @property
@@ -107,15 +115,16 @@ class ExerciseModel(Base):
     """
     This models the 'exercise' table which keeps the stored collection instruments
     """
-    __tablename__ = 'exercise'
+
+    __tablename__ = "exercise"
 
     id = Column(Integer, primary_key=True)
     exercise_id = Column(GUID, index=True)
     items = Column(Integer)
-    status = Column(Enum('uploading', 'pending', 'active', name='status'))
-    instruments = relationship('InstrumentModel', secondary=instrument_exercise_table, back_populates='exercises')
+    status = Column(Enum("uploading", "pending", "active", name="status"))
+    instruments = relationship("InstrumentModel", secondary=instrument_exercise_table, back_populates="exercises")
 
-    def __init__(self, exercise_id=None, items=0, status='pending'):
+    def __init__(self, exercise_id=None, items=0, status="pending"):
         """Initialise the class with optionally supplied defaults"""
         self.exercise_id = exercise_id
         self.items = items
@@ -124,11 +133,11 @@ class ExerciseModel(Base):
     @property
     def json(self):
         return {
-            'id': self.id,
-            'exercise_id': self.exercise_id,
-            'items': self.items,
-            'status': self.status,
-            'instruments': self.instrument_ids,
+            "id": self.id,
+            "exercise_id": self.exercise_id,
+            "items": self.items,
+            "status": self.status,
+            "instruments": self.instrument_ids,
         }
 
     @property
@@ -140,11 +149,12 @@ class SurveyModel(Base):
     """
     This models the 'business' table which is a placeholder for the RU code
     """
-    __tablename__ = 'survey'
+
+    __tablename__ = "survey"
 
     id = Column(Integer, primary_key=True)
     survey_id = Column(GUID, index=True)
-    instruments = relationship('InstrumentModel', back_populates='survey')
+    instruments = relationship("InstrumentModel", back_populates="survey")
 
     def __init__(self, survey_id=None):
         """Initialise the class with optionally supplied defaults"""
@@ -155,13 +165,14 @@ class SEFTModel(Base):
     """
     This models the 'seft_instrument' table which keeps the stored seft collection instruments
     """
-    __tablename__ = 'seft_instrument'
+
+    __tablename__ = "seft_instrument"
 
     id = Column(Integer, primary_key=True)
     file_name = Column(String(32))
     data = deferred(Column(LargeBinary))
     len = Column(Integer)
-    instrument_id = Column(GUID, ForeignKey('instrument.instrument_id'))
+    instrument_id = Column(GUID, ForeignKey("instrument.instrument_id"))
 
     instrument = relationship("InstrumentModel", back_populates="seft_file")
 
