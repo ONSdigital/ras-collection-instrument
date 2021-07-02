@@ -1,13 +1,16 @@
 import json
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import requests_mock
+
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasDatabaseError, RasError
-from application.models.models import ExerciseModel, InstrumentModel, BusinessModel, SurveyModel, SEFTModel
-from application.views.collection_instrument_view import publish_uploaded_collection_instrument
+from application.models.models import (BusinessModel, ExerciseModel,
+                                       InstrumentModel, SEFTModel, SurveyModel)
+from application.views.collection_instrument_view import \
+    publish_uploaded_collection_instrument
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = 'tests/files/test.xlsx'

@@ -1,5 +1,6 @@
-import gnupg
 import logging
+
+import gnupg
 from structlog import wrap_logger
 
 logger = wrap_logger(logging.getLogger(__name__))
