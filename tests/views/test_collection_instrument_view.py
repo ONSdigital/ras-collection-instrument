@@ -10,7 +10,13 @@ from six import BytesIO
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
-from application.models.models import BusinessModel, ExerciseModel, InstrumentModel, SEFTModel, SurveyModel
+from application.models.models import (
+    BusinessModel,
+    ExerciseModel,
+    InstrumentModel,
+    SEFTModel,
+    SurveyModel,
+)
 from application.views.collection_instrument_view import (
     COLLECTION_INSTRUMENT_NOT_FOUND,
     NO_INSTRUMENT_FOR_EXERCISE,

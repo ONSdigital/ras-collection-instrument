@@ -10,7 +10,10 @@ from application.controllers.helper import (
     is_valid_file_extension,
     is_valid_file_name_length,
 )
-from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
+from application.controllers.rabbit_helper import (
+    initialise_rabbitmq_queue,
+    send_message_to_rabbitmq_queue,
+)
 from application.controllers.service_helper import (
     get_business_party,
     get_case_group,
