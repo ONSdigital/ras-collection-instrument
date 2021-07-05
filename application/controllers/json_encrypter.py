@@ -9,7 +9,6 @@ KEY_PURPOSE = "inbound"
 
 
 class Encrypter:
-
     def __init__(self, json_secret_keys):
         keys = json.loads(json_secret_keys)
         validate_required_keys(keys, KEY_PURPOSE)

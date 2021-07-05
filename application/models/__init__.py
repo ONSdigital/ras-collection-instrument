@@ -15,12 +15,13 @@ class GUID(TypeDecorator):
     Uses PostgreSQL's UUID type, otherwise uses
     CHAR(32), storing as stringified hex values.
     """
+
     impl = CHAR
     cache_ok = True
 
     @staticmethod
     def load_dialect_impl(dialect):
-        if dialect.name == 'postgresql':
+        if dialect.name == "postgresql":
             return dialect.type_descriptor(UUID())
         else:
             return dialect.type_descriptor(CHAR(32))
@@ -29,7 +30,7 @@ class GUID(TypeDecorator):
     def process_bind_param(value, dialect):
         if value is None:
             return value
-        elif dialect.name == 'postgresql':
+        elif dialect.name == "postgresql":
             return str(value)
         else:
             if not isinstance(value, uuid.UUID):
@@ -52,8 +53,9 @@ class JsonColumn(TypeDecorator):
 
     @staticmethod
     def load_dialect_impl(dialect):
-        if dialect.name == 'postgresql':
+        if dialect.name == "postgresql":
             from sqlalchemy.dialects import postgresql
+
             return dialect.type_descriptor(postgresql.JSONB())
         else:
             return dialect.type_descriptor(String())

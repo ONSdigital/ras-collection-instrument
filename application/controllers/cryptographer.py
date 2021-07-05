@@ -7,10 +7,9 @@ from flask import current_app
 
 
 class Cryptographer:
-
     def __init__(self):
-        key = current_app.config.get('ONS_CRYPTOKEY')
-        self._key = sha256(key.encode('utf-8')).digest()
+        key = current_app.config.get("ONS_CRYPTOKEY")
+        self._key = sha256(key.encode("utf-8")).digest()
 
     @staticmethod
     def pad(data):
@@ -30,7 +29,7 @@ class Cryptographer:
         :param data: Our padded data
         :return: The data 'un'padded
         """
-        return data[0:-data[-1]]
+        return data[0 : -data[-1]]
 
     def encrypt(self, raw_text):
         """

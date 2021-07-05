@@ -7,7 +7,7 @@ class RasError(Exception):
         self.status_code = status_code or RasPartyError.status_code
 
     def to_dict(self):
-        return {'errors': self.errors}
+        return {"errors": self.errors}
 
 
 class RasDatabaseError(RasError):

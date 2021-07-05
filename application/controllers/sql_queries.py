@@ -1,5 +1,9 @@
-from application.models.models import (BusinessModel, ExerciseModel,
-                                       InstrumentModel, SurveyModel)
+from application.models.models import (
+    BusinessModel,
+    ExerciseModel,
+    InstrumentModel,
+    SurveyModel,
+)
 
 
 def query_exercise_by_id(exercise_id, session):

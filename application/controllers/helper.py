@@ -59,5 +59,5 @@ def validate_uuid(*values):
         try:
             UUID(value)
         except ValueError:
-            raise RasError(f'Value is not a valid UUID ({value})', 400)
+            raise RasError(f"Value is not a valid UUID ({value})", 400)
         return True

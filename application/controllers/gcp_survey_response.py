@@ -9,10 +9,12 @@ from google.cloud import pubsub_v1, storage
 from google.cloud.exceptions import GoogleCloudError
 
 from application.controllers.gnu_encryptor import GNUEncrypter
-from application.controllers.service_helper import (get_business_party,
-                                                    get_case_group,
-                                                    get_collection_exercise,
-                                                    get_survey_ref)
+from application.controllers.service_helper import (
+    get_business_party,
+    get_case_group,
+    get_collection_exercise,
+    get_survey_ref,
+)
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -31,17 +33,18 @@ class GcpSurveyResponse:
 
         # Bucket config
         self.storage_client = None
-        self.seft_bucket_name = self.config['SEFT_BUCKET_NAME']
-        self.seft_bucket_file_prefix = self.config.get('SEFT_BUCKET_FILE_PREFIX')
+        self.seft_bucket_name = self.config["SEFT_BUCKET_NAME"]
+        self.seft_bucket_file_prefix = self.config.get("SEFT_BUCKET_FILE_PREFIX")
 
         # Pubsub config
         self.publisher = None
-        self.seft_pubsub_project = self.config['SEFT_PUBSUB_PROJECT']
-        self.seft_pubsub_topic = self.config['SEFT_PUBSUB_TOPIC']
+        self.seft_pubsub_project = self.config["SEFT_PUBSUB_PROJECT"]
+        self.seft_pubsub_topic = self.config["SEFT_PUBSUB_TOPIC"]
 
     """
     The survey response from a respondent
     """
+
     def add_survey_response(self, case_id: str, file_contents, file_name: str, survey_ref: str):
         """
         Encrypt and upload survey response to gcp bucket, and put metadata about it in pubsub.
@@ -52,14 +55,14 @@ class GcpSurveyResponse:
         :param survey_ref: The survey ref e.g 134 MWSS
         """
 
-        file_name = file_name + '.gpg'
+        file_name = file_name + ".gpg"
         tx_id = str(uuid.uuid4())
         bound_log = log.bind(filename=file_name, case_id=case_id, survey_id=survey_ref, tx_id=tx_id)
-        bound_log.info('Putting response into bucket and sending pubsub message')
+        bound_log.info("Putting response into bucket and sending pubsub message")
         file_size = len(file_contents)
 
         if self.check_if_file_size_too_small(file_size):
-            bound_log.info('File size is too small')
+            bound_log.info("File size is too small")
             raise FileTooSmallError()
         else:
             try:
@@ -69,8 +72,9 @@ class GcpSurveyResponse:
                 raise SurveyResponseError()
 
             try:
-                payload = self.create_pubsub_payload(case_id, results['md5sum'], results['fileSizeInBytes'],
-                                                     file_name, tx_id)
+                payload = self.create_pubsub_payload(
+                    case_id, results["md5sum"], results["fileSizeInBytes"], file_name, tx_id
+                )
             except SurveyResponseError:
                 bound_log.error("Something went wrong creating the payload", exc_info=True)
                 raise
@@ -97,10 +101,10 @@ class GcpSurveyResponse:
         returns a dict os the size of the encrypted string and an md5
         """
         bound_log = log.bind(project=self.seft_pubsub_project, bucket=self.seft_bucket_name)
-        bound_log.info('Starting to put file in bucket')
+        bound_log.info("Starting to put file in bucket")
         try:
             if not filename.strip():
-                raise ValueError('Error with filename for bucket ')
+                raise ValueError("Error with filename for bucket ")
         except ValueError as e:
             bound_log.info(e, filename=filename)
             raise
@@ -112,18 +116,15 @@ class GcpSurveyResponse:
         if self.seft_bucket_file_prefix:
             filename = f"{self.seft_bucket_file_prefix}/{filename}"
         blob = bucket.blob(filename)
-        gnugpg_secret_keys = current_app.config['ONS_GNU_PUBLIC_CRYPTOKEY']
-        ons_gnu_fingerprint = current_app.config['ONS_GNU_FINGERPRINT']
+        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
+        ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
         encrypter = GNUEncrypter(gnugpg_secret_keys)
         encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
         md5sum = hashlib.md5(str(encrypted_message).encode()).hexdigest()
         sizeInBytes = len(encrypted_message)
         blob.upload_from_string(encrypted_message)
-        bound_log.info('Successfully put file in bucket', filename=filename)
-        results = {
-            'md5sum': md5sum,
-            'fileSizeInBytes': sizeInBytes
-        }
+        bound_log.info("Successfully put file in bucket", filename=filename)
+        results = {"md5sum": md5sum, "fileSizeInBytes": sizeInBytes}
 
         return results
 
@@ -136,7 +137,9 @@ class GcpSurveyResponse:
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
-        topic_path = self.publisher.topic_path(self.seft_pubsub_project, self.seft_pubsub_topic) # NOQA pylint:disable=no-member
+        topic_path = self.publisher.topic_path(
+            self.seft_pubsub_project, self.seft_pubsub_topic
+        )  # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
         future = self.publisher.publish(topic_path, data=payload_bytes, tx_id=tx_id)
@@ -144,28 +147,29 @@ class GcpSurveyResponse:
         log.info("Publish succeeded", msg_id=message)
 
     def create_pubsub_payload(self, case_id, md5sum, sizeBytes, file_name, tx_id: str) -> dict:
-        log.info('Creating pubsub payload', case_id=case_id)
+        log.info("Creating pubsub payload", case_id=case_id)
 
         case_group = get_case_group(case_id)
         if not case_group:
             raise SurveyResponseError("Case group not found")
 
-        collection_exercise_id = case_group.get('collectionExerciseId')
+        collection_exercise_id = case_group.get("collectionExerciseId")
         collection_exercise = get_collection_exercise(collection_exercise_id)
         if not collection_exercise:
             raise SurveyResponseError("Collection exercise not found")
 
-        exercise_ref = collection_exercise.get('exerciseRef')
-        survey_id = collection_exercise.get('surveyId')
+        exercise_ref = collection_exercise.get("exerciseRef")
+        survey_id = collection_exercise.get("surveyId")
         survey_ref = get_survey_ref(survey_id)
         if not survey_ref:
             raise SurveyResponseError("Survey ref not found")
 
-        ru = case_group.get('sampleUnitRef')
+        ru = case_group.get("sampleUnitRef")
         exercise_ref = self._format_exercise_ref(exercise_ref)
 
-        business_party = get_business_party(case_group['partyId'],
-                                            collection_exercise_id=collection_exercise_id, verbose=True)
+        business_party = get_business_party(
+            case_group["partyId"], collection_exercise_id=collection_exercise_id, verbose=True
+        )
         if not business_party:
             raise SurveyResponseError("Business not found in party")
 
@@ -176,7 +180,7 @@ class GcpSurveyResponse:
             "period": exercise_ref,
             "ru_ref": ru,
             "md5sum": md5sum,
-            "sizeBytes": sizeBytes
+            "sizeBytes": sizeBytes,
         }
         log.info("Payload created", payload=payload)
 
@@ -196,6 +200,6 @@ class GcpSurveyResponse:
         :return: formatted exercise reference
         """
         try:
-            return exercise_ref.split('_')[1]
+            return exercise_ref.split("_")[1]
         except IndexError:
             return exercise_ref

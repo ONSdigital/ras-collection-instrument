@@ -5,23 +5,31 @@ import structlog
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
-from application.controllers.service_helper import (collection_instrument_link,
-                                                    service_request)
+from application.controllers.service_helper import (
+    collection_instrument_link,
+    service_request,
+)
 from application.controllers.session_decorator import with_db_session
-from application.controllers.sql_queries import (query_business_by_ru,
-                                                 query_exercise_by_id,
-                                                 query_instrument,
-                                                 query_instrument_by_id,
-                                                 query_survey_by_id)
+from application.controllers.sql_queries import (
+    query_business_by_ru,
+    query_exercise_by_id,
+    query_instrument,
+    query_instrument_by_id,
+    query_survey_by_id,
+)
 from application.exceptions import RasError
-from application.models.models import (BusinessModel, ExerciseModel,
-                                       InstrumentModel, SEFTModel, SurveyModel)
+from application.models.models import (
+    BusinessModel,
+    ExerciseModel,
+    InstrumentModel,
+    SEFTModel,
+    SurveyModel,
+)
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
 class CollectionInstrument(object):
-
     @with_db_session
     def get_instrument_by_search_string(self, search_string=None, limit=None, session=None):
         """
@@ -33,7 +41,7 @@ class CollectionInstrument(object):
         :return: matching records
         """
 
-        log.info('Searching for instrument', search_string=search_string)
+        log.info("Searching for instrument", search_string=search_string)
 
         if search_string:
             json_search_parameters = loads(search_string)
@@ -46,20 +54,20 @@ class CollectionInstrument(object):
         for instrument in instruments:
 
             classifiers = instrument.classifiers or {}
-            ru = {'RU_REF': []}
-            collection_exercise = {'COLLECTION_EXERCISE': []}
+            ru = {"RU_REF": []}
+            collection_exercise = {"COLLECTION_EXERCISE": []}
 
             for business in instrument.businesses:
-                ru['RU_REF'].append(business.ru_ref)
+                ru["RU_REF"].append(business.ru_ref)
 
             for exercise in instrument.exercises:
-                collection_exercise['COLLECTION_EXERCISE'].append(exercise.exercise_id)
+                collection_exercise["COLLECTION_EXERCISE"].append(exercise.exercise_id)
 
             instrument_json = {
-                'id': instrument.instrument_id,
-                'file_name': instrument.name,
-                'classifiers': {**classifiers, **ru, **collection_exercise},
-                'surveyId': instrument.survey.survey_id
+                "id": instrument.instrument_id,
+                "file_name": instrument.name,
+                "classifiers": {**classifiers, **ru, **collection_exercise},
+                "surveyId": instrument.survey.survey_id,
             }
             result.append(instrument_json)
         return result
@@ -77,10 +85,10 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        log.info('Upload exercise', exercise_id=exercise_id)
+        log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-        instrument = InstrumentModel(ci_type='SEFT')
+        instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
@@ -115,11 +123,11 @@ class CollectionInstrument(object):
         validate_uuid(instrument_id)
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
-            log.error('Instrument not found')
-            raise RasError('Instrument not found', 400)
-        if instrument.type != 'SEFT':
-            log.error('Not a SEFT instrument')
-            raise RasError('Not a SEFT instrument', 400)
+            log.error("Instrument not found")
+            raise RasError("Instrument not found", 400)
+        if instrument.type != "SEFT":
+            log.error("Not a SEFT instrument")
+            raise RasError("Not a SEFT instrument", 400)
 
         seft_model = self._update_seft_file(instrument.seft_file, file)
         session.add(seft_model)
@@ -150,7 +158,7 @@ class CollectionInstrument(object):
             for instrument in business.instruments:
                 instrument_id = str(instrument.id)
                 bound_logger.bind(id_of_instrument=instrument_id, business_id=business_id)
-                bound_logger.info('Reporting unit has had collection instruments uploaded for it in the past')
+                bound_logger.info("Reporting unit has had collection instruments uploaded for it in the past")
 
                 for related_exercise in instrument.exercises:
                     related_exercise_id = related_exercise.exercise_id
@@ -158,11 +166,14 @@ class CollectionInstrument(object):
                     bound_logger.bind(exercise_id=exercise_id, related_exercise_id=related_exercise_id)
                     bound_logger.info("About to check exercise for match")
                     if related_exercise_id == exercise_id:
-                        bound_logger.info('Was about to add a second instrument for a reporting unit for a '
-                                          'collection exercise')
+                        bound_logger.info(
+                            "Was about to add a second instrument for a reporting unit for a " "collection exercise"
+                        )
                         ru_ref = business.ru_ref
-                        error_text = f'Reporting unit {ru_ref} already has an instrument ' \
-                                     f'uploaded for this collection exercise'
+                        error_text = (
+                            f"Reporting unit {ru_ref} already has an instrument "
+                            f"uploaded for this collection exercise"
+                        )
                         raise RasError(error_text, 400)
 
     @with_db_session
@@ -176,10 +187,10 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        log.info('Upload instrument', survey_id=survey_id)
+        log.info("Upload instrument", survey_id=survey_id)
 
         validate_uuid(survey_id)
-        instrument = InstrumentModel(ci_type='EQ')
+        instrument = InstrumentModel(ci_type="EQ")
 
         survey = self._find_or_create_survey_from_survey_id(survey_id, session)
         instrument.survey = survey
@@ -206,7 +217,7 @@ class CollectionInstrument(object):
         :param session: database session
         :return: True if instrument has been successfully linked to exercise
         """
-        log.info('Linking instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        log.info("Linking instrument to exercise", instrument_id=instrument_id, exercise_id=exercise_id)
         validate_uuid(instrument_id)
         validate_uuid(exercise_id)
 
@@ -214,7 +225,7 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        log.info('Successfully linked instrument to exercise', instrument_id=instrument_id, exercise_id=exercise_id)
+        log.info("Successfully linked instrument to exercise", instrument_id=instrument_id, exercise_id=exercise_id)
         return True
 
     @with_db_session
@@ -229,13 +240,13 @@ class CollectionInstrument(object):
         :return: True if instrument has been successfully unlinked to exercise
         """
         bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
-        bound_logger.info('Unlinking instrument and exercise')
+        bound_logger.info("Unlinking instrument and exercise")
 
         instrument = self.get_instrument_by_id(instrument_id, session)
         exercise = self.get_exercise_by_id(exercise_id, session)
         if not instrument or not exercise:
-            bound_logger.info('Failed to unlink, unable to find instrument or exercise')
-            raise RasError('Unable to find instrument or exercise', 404)
+            bound_logger.info("Failed to unlink, unable to find instrument or exercise")
+            raise RasError("Unable to find instrument or exercise", 404)
 
         instrument.exercises.remove(exercise)
         for business in instrument.businesses:
@@ -244,8 +255,8 @@ class CollectionInstrument(object):
 
         response = self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id)
         if response.status_code != 200:
-            raise RasError('Failed to publish upload message', 500)
-        bound_logger.info('Successfully unlinked instrument to exercise')
+            raise RasError("Failed to publish upload message", 500)
+        bound_logger.info("Successfully unlinked instrument to exercise")
         return True
 
     @staticmethod
@@ -257,12 +268,8 @@ class CollectionInstrument(object):
         :param instrument_id: The id (UUID) of collection instrument
         :return: True if message successfully published to RABBIT_QUEUE_NAME
         """
-        log.info('Publishing remove message', exercise_id=exercise_id, instrument_id=instrument_id)
-        json_message = {
-            'action': 'REMOVE',
-            'exercise_id': str(exercise_id),
-            'instrument_id': str(instrument_id)
-        }
+        log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
+        json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
         return collection_instrument_link(json_message)
 
     @staticmethod
@@ -275,14 +282,14 @@ class CollectionInstrument(object):
         :param session: database session
         :return: A survey record
         """
-        response = service_request(service='collectionexercise-service',
-                                   endpoint='collectionexercises',
-                                   search_value=exercise_id)
-        survey_id = response.json().get('surveyId')
+        response = service_request(
+            service="collectionexercise-service", endpoint="collectionexercises", search_value=exercise_id
+        )
+        survey_id = response.json().get("surveyId")
 
         survey = query_survey_by_id(survey_id, session)
         if not survey:
-            log.info('creating survey', survey_id=survey_id)
+            log.info("creating survey", survey_id=survey_id)
             survey = SurveyModel(survey_id=survey_id)
         return survey
 
@@ -298,7 +305,7 @@ class CollectionInstrument(object):
 
         survey = query_survey_by_id(survey_id, session)
         if not survey:
-            log.info('creating survey', survey_id=survey_id)
+            log.info("creating survey", survey_id=survey_id)
             survey = SurveyModel(survey_id=survey_id)
         return survey
 
@@ -314,7 +321,7 @@ class CollectionInstrument(object):
 
         exercise = query_exercise_by_id(exercise_id, session)
         if not exercise:
-            log.info('creating exercise', exercise_id=exercise_id)
+            log.info("creating exercise", exercise_id=exercise_id)
             exercise = ExerciseModel(exercise_id=exercise_id, items=1)
         return exercise
 
@@ -327,7 +334,7 @@ class CollectionInstrument(object):
         :param session: database session
         :return: exercise
         """
-        log.info('Searching for exercise', exercise_id=exercise_id)
+        log.info("Searching for exercise", exercise_id=exercise_id)
         validate_uuid(exercise_id)
         exercise = query_exercise_by_id(exercise_id, session)
         return exercise
@@ -343,7 +350,7 @@ class CollectionInstrument(object):
         """
         business = query_business_by_ru(ru_ref, session)
         if not business:
-            log.info('creating business', ru_ref=ru_ref)
+            log.info("creating business", ru_ref=ru_ref)
             business = BusinessModel(ru_ref=ru_ref)
         return business
 
@@ -355,13 +362,14 @@ class CollectionInstrument(object):
         :param file: A file object from which we can read the file contents
         :return: instrument
         """
-        log.info('creating instrument seft file')
+        log.info("creating instrument seft file")
         file_contents = file.read()
         file_size = len(file_contents)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
-        seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename,
-                              length=file_size, data=encrypted_file)
+        seft_file = SEFTModel(
+            instrument_id=instrument_id, file_name=file.filename, length=file_size, data=encrypted_file
+        )
         return seft_file
 
     @staticmethod
@@ -372,11 +380,11 @@ class CollectionInstrument(object):
         :param file: A file object from which we can read the file contents
         :return: instrument
         """
-        log.info('Updating instrument seft file')
+        log.info("Updating instrument seft file")
         file_contents = file.read()
         file_size = len(file_contents)
         if file_size == 0:
-            raise RasError('File is empty', 400)
+            raise RasError("File is empty", 400)
         cryptographer = Cryptographer()
         encrypted_file = cryptographer.encrypt(file_contents)
         seft_model.data = encrypted_file
@@ -394,25 +402,24 @@ class CollectionInstrument(object):
         :param session: database session
         :return: collection instruments in csv
         """
-        log.info('Getting csv for instruments', exercise_id=exercise_id)
+        log.info("Getting csv for instruments", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         csv_format = '"{count}","{file_name}","{length}","{date_stamp}"\n'
         count = 1
-        csv = csv_format.format(count='Count',
-                                file_name='File Name',
-                                length='Length',
-                                date_stamp='Time Stamp')
+        csv = csv_format.format(count="Count", file_name="File Name", length="Length", date_stamp="Time Stamp")
         exercise = query_exercise_by_id(exercise_id, session)
 
         if not exercise:
             return None
 
         for instrument in exercise.instruments:
-            csv += csv_format.format(count=count,
-                                     file_name=instrument.name,
-                                     length=instrument.seft_file.len if instrument.seft_file else None,
-                                     date_stamp=instrument.stamp)
+            csv += csv_format.format(
+                count=count,
+                file_name=instrument.name,
+                length=instrument.seft_file.len if instrument.seft_file else None,
+                date_stamp=instrument.stamp,
+            )
             count += 1
         return csv
 
@@ -447,7 +454,7 @@ class CollectionInstrument(object):
         data = None
         file_name = None
         if instrument:
-            log.info('Decrypting collection instrument data', instrument_id=instrument_id)
+            log.info("Decrypting collection instrument data", instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.seft_file.data)
             file_name = instrument.seft_file.file_name
@@ -462,7 +469,7 @@ class CollectionInstrument(object):
         :param session: database session
         :return: instrument
         """
-        log.info('Searching for instrument', instrument_id=instrument_id)
+        log.info("Searching for instrument", instrument_id=instrument_id)
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
         return instrument
@@ -480,13 +487,13 @@ class CollectionInstrument(object):
         query = self._build_model_joins(json_search_parameters, session)
 
         for classifier, value in json_search_parameters.items():
-            if classifier == 'RU_REF':
+            if classifier == "RU_REF":
                 query = query.filter(BusinessModel.ru_ref == value)
-            elif classifier == 'COLLECTION_EXERCISE':
+            elif classifier == "COLLECTION_EXERCISE":
                 query = query.filter(ExerciseModel.exercise_id == value)
-            elif classifier == 'SURVEY_ID':
+            elif classifier == "SURVEY_ID":
                 query = query.filter(SurveyModel.survey_id == value)
-            elif classifier == 'TYPE':
+            elif classifier == "TYPE":
                 query = query.filter(InstrumentModel.type == value)
             else:
                 query = query.filter(InstrumentModel.classifiers.contains({classifier.lower(): value}))
@@ -505,18 +512,18 @@ class CollectionInstrument(object):
         :param session: database session
         :return: query results
         """
-        log.info('creating model joins for search')
+        log.info("creating model joins for search")
 
         query = query_instrument(session)
         already_joined = []
         for classifier in json_search_parameters.keys():
-            if classifier == 'RU_REF' and BusinessModel not in already_joined:
+            if classifier == "RU_REF" and BusinessModel not in already_joined:
                 query = query.join((BusinessModel, InstrumentModel.businesses))
                 already_joined.append(BusinessModel)
-            elif classifier == 'COLLECTION_EXERCISE' and ExerciseModel not in already_joined:
+            elif classifier == "COLLECTION_EXERCISE" and ExerciseModel not in already_joined:
                 query = query.join((ExerciseModel, InstrumentModel.exercises))
                 already_joined.append(ExerciseModel)
-            elif classifier == 'SURVEY_ID' and SurveyModel not in already_joined:
+            elif classifier == "SURVEY_ID" and SurveyModel not in already_joined:
                 query = query.join(SurveyModel, InstrumentModel.survey)
                 already_joined.append(SurveyModel)
         return query
