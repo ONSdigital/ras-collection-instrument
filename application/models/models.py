@@ -1,11 +1,11 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Table, Column, Integer, ForeignKey
+from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, deferred
-from sqlalchemy.types import TIMESTAMP, LargeBinary, Enum, String
+from sqlalchemy.orm import deferred, relationship
+from sqlalchemy.types import TIMESTAMP, Enum, LargeBinary, String
 
 from application.models import GUID
 

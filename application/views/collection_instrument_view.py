@@ -1,8 +1,7 @@
 import logging
 
 import structlog
-from flask import Blueprint
-from flask import make_response, request, jsonify
+from flask import Blueprint, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument

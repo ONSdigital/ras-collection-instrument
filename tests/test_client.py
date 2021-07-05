@@ -6,7 +6,6 @@ from flask_testing import TestCase
 from application.models import models
 from run import create_app
 
-
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 

@@ -6,9 +6,9 @@ import structlog
 from flask import current_app
 
 from application.controllers.helper import (
+    convert_file_object_to_string_base64,
     is_valid_file_extension,
     is_valid_file_name_length,
-    convert_file_object_to_string_base64,
 )
 from application.controllers.rabbit_helper import initialise_rabbitmq_queue, send_message_to_rabbitmq_queue
 from application.controllers.service_helper import (

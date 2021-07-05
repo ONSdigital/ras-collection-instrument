@@ -1,8 +1,7 @@
 import json
 
 from sdc.crypto.encrypter import encrypt
-from sdc.crypto.key_store import KeyStore
-from sdc.crypto.key_store import validate_required_keys
+from sdc.crypto.key_store import KeyStore, validate_required_keys
 
 from application.controllers.helper import to_str
 

@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Blueprint, make_response, current_app, jsonify
+from flask import Blueprint, current_app, jsonify, make_response
 
 info_view = Blueprint("info_view", __name__)
 

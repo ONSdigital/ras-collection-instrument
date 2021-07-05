@@ -1,6 +1,6 @@
 import io
-from os import putenv, environ
-from unittest.mock import patch, Mock
+from os import environ, putenv
+from unittest.mock import Mock, patch
 
 from pika.exceptions import AMQPConnectionError
 from werkzeug.datastructures import FileStorage

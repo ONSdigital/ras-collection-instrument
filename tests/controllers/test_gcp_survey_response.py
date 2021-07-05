@@ -1,13 +1,13 @@
 import io
 import json
 import os
-
 from unittest import TestCase
 from unittest.mock import MagicMock
+
 import responses
 from requests.exceptions import HTTPError
 
-from application.controllers.gcp_survey_response import GcpSurveyResponse, FileTooSmallError, SurveyResponseError
+from application.controllers.gcp_survey_response import FileTooSmallError, GcpSurveyResponse, SurveyResponseError
 from run import create_app
 
 project_root = os.path.dirname(os.path.dirname(__file__))
