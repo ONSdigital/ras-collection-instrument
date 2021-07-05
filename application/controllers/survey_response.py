@@ -162,7 +162,7 @@ class SurveyResponse(object):
         check_letter = business_party["checkletter"]
 
         time_date_stamp = time.strftime("%Y%m%d%H%M%S")
-        file_name = "{ru}{check_letter}_{exercise_ref}_" "{survey_ref}_{time_date_stamp}{file_format}".format(
+        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}{file_format}".format(
             ru=ru,
             check_letter=check_letter,
             exercise_ref=exercise_ref,

@@ -75,7 +75,7 @@ def get_business_party(business_id, collection_exercise_id=None, verbose=False):
     response = service_request(
         service="party-service",
         endpoint="party-api/v1/businesses/id",
-        search_value=f"{business_id}?verbose={verbose}" f"&collection_exercise_id={collection_exercise_id}",
+        search_value=f"{business_id}?verbose={verbose}&collection_exercise_id={collection_exercise_id}",
     )
 
     if not response.ok:
