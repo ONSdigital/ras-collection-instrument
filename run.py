@@ -4,7 +4,7 @@ import os
 import structlog
 from alembic import command
 from alembic.config import Config
-from flask import Flask, _app_ctx_stack
+from flask import Flask
 from flask_cors import CORS
 from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
@@ -72,11 +72,9 @@ def create_app(config=None, init_db=True, init_rabbit=True):
 def create_database(db_connection, db_schema):
     from application.models import models
 
-    def current_request():
-        return _app_ctx_stack.__ident_func__()
-
     engine = create_engine(db_connection)
-    session = scoped_session(sessionmaker(), scopefunc=current_request)
+    session_factory = sessionmaker(bind=engine)
+    session = scoped_session(session_factory)
     session.configure(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
     engine.session = session
 
