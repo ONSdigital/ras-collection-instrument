@@ -83,7 +83,7 @@ jobs:
           export CHART_VERSION=$(grep -E "version:\s+" $CHART_DIRECTORY/Chart.yaml | cut -d" " -f2 | sed -r 's/"//g')
           echo "appVersion: $APP_VERSION"
           echo "chartVersion: $CHART_VERSION"
-          if [ ${{ steps.vars.outputs.tag }} = $APP_VERSION ] || ${{ steps.vars.outputs.tag }} = $CHART_VERSION; then
+          if [ ${{ steps.vars.outputs.tag }} = $APP_VERSION ]; then
             echo "versions match, incrementing patch"
             OLD_PATCH=$(echo ${{ steps.vars.outputs.tag }} | cut -d '.' -f3)
             echo "OLD patch: $OLD_PATCH"
