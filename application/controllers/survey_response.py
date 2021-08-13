@@ -110,11 +110,11 @@ class SurveyResponse(object):
 
         log.info("Checking if file is valid")
         if not is_valid_file_extension(file_extension, current_app.config.get("UPLOAD_FILE_EXTENSIONS")):
-            log.info("File extension not valid")
+            log.info("File extension not valid", file_extension=file_extension)
             return False, FILE_EXTENSION_ERROR
 
         if not is_valid_file_name_length(file_name, current_app.config.get("MAX_UPLOAD_FILE_NAME_LENGTH")):
-            log.info("File name too long")
+            log.info("File name too long", file_name=file_name)
             return False, FILE_NAME_LENGTH_ERROR
 
         return True, ""
