@@ -62,4 +62,5 @@ def add_survey_response(case_id):
             return make_response(UPLOAD_UNSUCCESSFUL, 500)
 
     else:
+        log.info("Either case_id, file or file attributes are missing.")
         return make_response(INVALID_UPLOAD, 400)
