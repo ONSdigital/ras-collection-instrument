@@ -113,8 +113,7 @@ class CollectionInstrument(object):
         try:
             self.send_instrument_to_bucket(instrument)
         except Exception:
-            log.error("An error occurred when trying to put SEFT collection instrument in bucket",
-                      instrument=instrument)
+            log.error("An error occurred when trying to put SEFT CI in bucket", instrument=instrument)
 
         session.add(instrument)
         return instrument
