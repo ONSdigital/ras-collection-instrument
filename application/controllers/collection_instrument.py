@@ -123,7 +123,7 @@ class CollectionInstrument(object):
         bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
         blob_name = "SEFT CIs"
 
-        bucket = storage_client.bucket(bucket_name)
+        bucket = storage_client.get_bucket(bucket_name)
         blob = bucket.blob(blob_name)
         with open(file, "rb") as f:
             blob.upload_from_file(f)
