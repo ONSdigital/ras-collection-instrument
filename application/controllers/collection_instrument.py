@@ -87,6 +87,11 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
+        try:
+            self.send_instrument_to_bucket(file)
+        except Exception:
+            log.error("An error occurred when trying to put SEFT CI in bucket")
+
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
@@ -109,35 +114,19 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
-        try:
-            self.send_instrument_to_bucket(instrument)
-        except Exception as e:
-            log.error("An error occurred when trying to put SEFT CI in bucket", instrument=instrument)
-            log.error("Here is the error: " + e)
-
         session.add(instrument)
         return instrument
 
-    def send_instrument_to_bucket(self, instrument):
+    def send_instrument_to_bucket(self, file):
         storage_client = storage.Client()
-
-        log.info("GOT STORAGE CLIENT!!!!!")
 
         bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
         blob_name = "SEFT CIs"
 
-        log.info("GOT BUCKET NAME!!!!!!!")
-
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
-
-        log.info("DID BLOB STUFF!!!!!")
-        # gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
-        # ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
-        # encrypter = GNUEncrypter(gnugpg_secret_keys)
-        # encrypted_instrument = encrypter.encrypt(instrument, ons_gnu_fingerprint)
-        # blob.upload_from_string(encrypted_instrument)
-        blob.upload_from_string(instrument)
+        with open(file, "rb") as f:
+            blob.upload_from_file(f)
         log.info("Successfully put SEFT collection instrument in bucket")
 
         return

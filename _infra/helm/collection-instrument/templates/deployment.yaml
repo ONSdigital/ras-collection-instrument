@@ -277,7 +277,5 @@ spec:
             value: "{{ .Values.gcp.seftTopic }}"
           - name: SEFT_CI_BUCKET_NAME
             value: "{{ .Values.seftCIBucket.name }}"
-          - name: SEFT_CI_BUCKET_FILE_PREFIX
-            value: "{{ .Values.seftCIBucket.prefix }}"
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}

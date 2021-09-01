@@ -30,7 +30,6 @@ class Config(object):
     SEFT_PUBSUB_PROJECT = os.getenv("SEFT_PUBSUB_PROJECT", "ras-rm-sandbox")
     SEFT_PUBSUB_TOPIC = os.getenv("SEFT_PUBSUB_TOPIC", "ras-rm-notify-test")
     SEFT_CI_BUCKET_NAME = os.getenv("SEFT_CI_BUCKET_NAME")
-    SEFT_CI_BUCKET_FILE_PREFIX = os.getenv("SEFT_CI_BUCKET_FILE_PREFIX")
 
     UPLOAD_FILE_EXTENSIONS = "xls,xlsx"
 
