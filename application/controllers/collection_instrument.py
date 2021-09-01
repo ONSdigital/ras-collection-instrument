@@ -6,7 +6,6 @@ from flask import current_app
 from google.cloud import storage
 
 from application.controllers.cryptographer import Cryptographer
-from application.controllers.gnu_encryptor import GNUEncrypter
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
@@ -112,8 +111,9 @@ class CollectionInstrument(object):
 
         try:
             self.send_instrument_to_bucket(instrument)
-        except Exception:
+        except Exception as e:
             log.error("An error occurred when trying to put SEFT CI in bucket", instrument=instrument)
+            log.error("Here is the error: " + e)
 
         session.add(instrument)
         return instrument
@@ -121,16 +121,23 @@ class CollectionInstrument(object):
     def send_instrument_to_bucket(self, instrument):
         storage_client = storage.Client()
 
+        log.info("GOT STORAGE CLIENT!!!!!")
+
         bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
         blob_name = "SEFT CIs"
 
+        log.info("GOT BUCKET NAME!!!!!!!")
+
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
-        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
-        ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
-        encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_instrument = encrypter.encrypt(instrument, ons_gnu_fingerprint)
-        blob.upload_from_string(encrypted_instrument)
+
+        log.info("DID BLOB STUFF!!!!!")
+        # gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
+        # ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
+        # encrypter = GNUEncrypter(gnugpg_secret_keys)
+        # encrypted_instrument = encrypter.encrypt(instrument, ons_gnu_fingerprint)
+        # blob.upload_from_string(encrypted_instrument)
+        blob.upload_from_string(instrument)
         log.info("Successfully put SEFT collection instrument in bucket")
 
         return
