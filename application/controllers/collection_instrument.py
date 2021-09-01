@@ -2,8 +2,11 @@ import logging
 from json import loads
 
 import structlog
+from flask import current_app
+from google.cloud import storage
 
 from application.controllers.cryptographer import Cryptographer
+from application.controllers.gnu_encryptor import GNUEncrypter
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
@@ -107,8 +110,31 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
+        try:
+            self.send_instrument_to_bucket(instrument)
+        except Exception:
+            log.error("An error occurred when trying to put SEFT collection instrument in bucket",
+                      instrument=instrument)
+
         session.add(instrument)
         return instrument
+
+    def send_instrument_to_bucket(self, instrument):
+        storage_client = storage.Client()
+
+        bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
+        blob_name = "SEFT CIs"
+
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
+        ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
+        encrypter = GNUEncrypter(gnugpg_secret_keys)
+        encrypted_instrument = encrypter.encrypt(instrument, ons_gnu_fingerprint)
+        blob.upload_from_string(encrypted_instrument)
+        log.info("Successfully put SEFT collection instrument in bucket")
+
+        return
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):

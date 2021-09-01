@@ -68,6 +68,10 @@ gcp:
     prefix: ""
   topic: topic
 
+seftCIBucket:
+  name: ras-rm-seft-ci-bucket-dev
+  prefix: ""
+
 saveSeftInGcp: false
 
 gnu:
