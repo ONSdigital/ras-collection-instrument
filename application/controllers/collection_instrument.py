@@ -99,8 +99,6 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
-        file.filename
-
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
 
