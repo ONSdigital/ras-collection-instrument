@@ -90,8 +90,9 @@ class CollectionInstrument(object):
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file, file_name=ru_ref)
-        except Exception:
+        except Exception as e:
             log.error("An error occurred when trying to put SEFT CI in bucket")
+            log.error(e)
 
         log.info("Upload exercise", exercise_id=exercise_id)
 

@@ -202,7 +202,9 @@ class GoogleCloudSEFTCIBucket:
             path = self.prefix + "/" + file_name
         else:
             path = file_name
+        log.info("Found path: " + path)
         blob = self.bucket.blob(path)
+        log.info("Did blob stuff!")
         with open(file, "rb") as f:
             blob.upload_from_file(f)
         log.info("Successfully put SEFT CI in bucket")
