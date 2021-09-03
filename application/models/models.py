@@ -206,6 +206,6 @@ class GoogleCloudSEFTCIBucket:
         blob = self.bucket.blob(path)
         log.info("Did blob stuff!")
         with open(file, "rb") as f:
-            file_data = f.read().decode("utf-8")
+            file_data = f.read()
             blob.upload_from_file(file_data)
         log.info("Successfully put SEFT CI in bucket")
