@@ -3,7 +3,6 @@ from json import loads
 
 import structlog
 from flask import current_app
-from google.cloud import storage
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
@@ -23,6 +22,7 @@ from application.exceptions import RasError
 from application.models.models import (
     BusinessModel,
     ExerciseModel,
+    GoogleCloudSEFTCIBucket,
     InstrumentModel,
     SEFTModel,
     SurveyModel,
@@ -88,7 +88,8 @@ class CollectionInstrument(object):
         """
 
         try:
-            self.send_instrument_to_bucket(file)
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            seft_ci_bucket.upload_file_to_bucket(file=file, file_name=ru_ref)
         except Exception:
             log.error("An error occurred when trying to put SEFT CI in bucket")
 
@@ -117,19 +118,19 @@ class CollectionInstrument(object):
         session.add(instrument)
         return instrument
 
-    def send_instrument_to_bucket(self, file):
-        storage_client = storage.Client()
-
-        bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
-        blob_name = "SEFT CIs"
-
-        bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.blob(blob_name)
-        with open(file, "rb") as f:
-            blob.upload_from_file(f)
-        log.info("Successfully put SEFT collection instrument in bucket")
-
-        return
+    # def send_instrument_to_bucket(self, file):
+    #     storage_client = storage.Client()
+    #
+    #     bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
+    #     blob_name = "SEFT CIs"
+    #
+    #     bucket = storage_client.get_bucket(bucket_name)
+    #     blob = bucket.blob(blob_name)
+    #     with open(file, "rb") as f:
+    #         blob.upload_from_file(f)
+    #     log.info("Successfully put SEFT collection instrument in bucket")
+    #
+    #     return
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):

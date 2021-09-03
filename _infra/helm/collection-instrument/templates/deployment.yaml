@@ -276,6 +276,10 @@ spec:
           - name: SEFT_PUBSUB_TOPIC
             value: "{{ .Values.gcp.seftTopic }}"
           - name: SEFT_CI_BUCKET_NAME
-            value: "{{ .Values.seftCIBucket.name }}"
+            value: "{{ .Values.gcpDev.bucket.name }}"
+          - name: GOOGLE_CLOUD_PROJECT
+            value: "{{ .Values.gcpDev.project }}"
+          - name: SEFT_CI_BUCKET_FILE_PREFIX
+            value: "{{ .Values.gcpDev.bucket.prefix }}"
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}
