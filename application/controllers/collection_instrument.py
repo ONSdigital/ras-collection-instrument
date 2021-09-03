@@ -89,7 +89,7 @@ class CollectionInstrument(object):
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file, file_name=ru_ref)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
         except Exception as e:
             log.error("An error occurred when trying to put SEFT CI in bucket")
             log.error(e)
@@ -98,6 +98,8 @@ class CollectionInstrument(object):
 
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
+
+        file.filename
 
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
