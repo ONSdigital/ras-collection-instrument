@@ -94,6 +94,8 @@ class CollectionInstrument(object):
             log.error("An error occurred when trying to put SEFT CI in bucket")
             log.error(e)
 
+        # Stuff below isn't necessary anymore
+
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
