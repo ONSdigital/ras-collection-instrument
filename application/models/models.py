@@ -46,6 +46,7 @@ class InstrumentModel(Base):
     classifiers = Column(JSONB)
     survey = relationship("SurveyModel", back_populates="instruments")
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
+    file_location = Column(String(255))
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
     businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
@@ -69,6 +70,7 @@ class InstrumentModel(Base):
             "exercises": self.exids,
             "classifiers": self.classifiers,
             "type": self.type,
+            "file_location": self.file_location
         }
 
     @property
@@ -168,6 +170,7 @@ class SurveyModel(Base):
 class SEFTModel(Base):
     """
     This models the 'seft_instrument' table which keeps the stored seft collection instruments
+    THIS CAN BE DELETED LATER
     """
 
     __tablename__ = "seft_instrument"
@@ -205,3 +208,5 @@ class GoogleCloudSEFTCIBucket:
         blob = self.bucket.blob(path)
         blob.upload_from_file(file.stream)
         log.info("Successfully put SEFT CI in bucket")
+
+        return path

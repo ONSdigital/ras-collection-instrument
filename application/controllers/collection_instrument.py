@@ -89,18 +89,17 @@ class CollectionInstrument(object):
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file)
+            path = seft_ci_bucket.upload_file_to_bucket(file=file)
         except Exception as e:
             log.error("An error occurred when trying to put SEFT CI in bucket")
             log.error(e)
-
-        # Stuff below isn't necessary anymore
 
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
+        # DELETE THIS SEFT FILE STUFF LATER ALONG WITH THE METHOD IT CALLSS
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
 
@@ -109,6 +108,8 @@ class CollectionInstrument(object):
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
+
+        instrument.file_location = path
 
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)
@@ -120,20 +121,6 @@ class CollectionInstrument(object):
 
         session.add(instrument)
         return instrument
-
-    # def send_instrument_to_bucket(self, file):
-    #     storage_client = storage.Client()
-    #
-    #     bucket_name = current_app.config.get("SEFT_CI_BUCKET_NAME")
-    #     blob_name = "SEFT CIs"
-    #
-    #     bucket = storage_client.get_bucket(bucket_name)
-    #     blob = bucket.blob(blob_name)
-    #     with open(file, "rb") as f:
-    #         blob.upload_from_file(f)
-    #     log.info("Successfully put SEFT collection instrument in bucket")
-    #
-    #     return
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
