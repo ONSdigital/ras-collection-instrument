@@ -1,9 +1,6 @@
-import logging
 from datetime import datetime
 from uuid import uuid4
 
-import structlog
-from google.cloud import storage
 from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,8 +10,6 @@ from sqlalchemy.types import TIMESTAMP, Enum, LargeBinary, String
 from application.models import GUID
 
 Base = declarative_base()
-
-log = structlog.wrap_logger(logging.getLogger(__name__))
 
 instrument_exercise_table = Table(
     "instrument_exercise",
@@ -70,7 +65,7 @@ class InstrumentModel(Base):
             "exercises": self.exids,
             "classifiers": self.classifiers,
             "type": self.type,
-            "file_location": self.file_location
+            "file_location": self.file_location,
         }
 
     @property
@@ -189,24 +184,3 @@ class SEFTModel(Base):
         self.file_name = file_name
         self.len = length
         self.data = data
-
-
-class GoogleCloudSEFTCIBucket:
-    def __init__(self, config):
-        self.project_id = config["GOOGLE_CLOUD_PROJECT"]
-        self.bucket_name = config["SEFT_CI_BUCKET_NAME"]
-        self.client = storage.Client(project=self.project_id)
-        self.bucket = self.client.bucket(self.bucket_name)
-        self.prefix = config["SEFT_CI_BUCKET_FILE_PREFIX"]
-
-    def upload_file_to_bucket(self, file):
-        log.info("Uploading SEFT CI to GCP bucket: " + file.filename)
-        if self.prefix != "":
-            path = self.prefix + "/" + file.filename
-        else:
-            path = file.filename
-        blob = self.bucket.blob(path)
-        blob.upload_from_file(file.stream)
-        log.info("Successfully put SEFT CI in bucket")
-
-        return path

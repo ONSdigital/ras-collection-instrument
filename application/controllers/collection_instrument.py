@@ -19,10 +19,10 @@ from application.controllers.sql_queries import (
     query_survey_by_id,
 )
 from application.exceptions import RasError
+from application.models.google_cloud_bucket import GoogleCloudSEFTCIBucket
 from application.models.models import (
     BusinessModel,
     ExerciseModel,
-    GoogleCloudSEFTCIBucket,
     InstrumentModel,
     SEFTModel,
     SurveyModel,
@@ -99,7 +99,7 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
-        # DELETE THIS SEFT FILE STUFF LATER ALONG WITH THE METHOD IT CALLSS
+        # DELETE THIS SEFT FILE STUFF LATER ALONG WITH THE METHOD IT CALLS
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
 

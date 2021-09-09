@@ -62,3 +62,6 @@ class TestingConfig(Config):
     RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv("RABBITMQ_AMQP_SURVEY_RESPONSE", "amqp://guest:guest@localhost:5672")
     DATABASE_SCHEMA = "ras_ci"
     ONS_CRYPTOKEY = "somethingsecure"
+    SEFT_CI_BUCKET_NAME = "TEST_BUCKET"
+    GOOGLE_CLOUD_PROJECT = "TEST_PROJECT"
+    SEFT_CI_BUCKET_FILE_PREFIX = ""
