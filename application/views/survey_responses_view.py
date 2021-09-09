@@ -7,9 +7,9 @@ from werkzeug.utils import secure_filename
 
 from application.controllers.basic_auth import auth
 from application.controllers.gcp_survey_response import (
-    GcpSurveyResponse,
     FileTooSmallError,
-    SurveyResponseError
+    GcpSurveyResponse,
+    SurveyResponseError,
 )
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
