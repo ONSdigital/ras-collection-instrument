@@ -6,10 +6,9 @@ from flask import current_app
 from requests.models import Response
 from sdc.rabbit.exceptions import PublishMessageError
 
-from application.controllers.survey_response import (
+from application.controllers.gcp_survey_response import (
     FILE_EXTENSION_ERROR,
     FILE_NAME_LENGTH_ERROR,
-    SurveyResponseError,
 )
 from application.views.survey_responses_view import (
     INVALID_UPLOAD,
@@ -65,7 +64,7 @@ class TestSurveyResponseView(TestClient):
             self.assertStatus(response, 200)
             try:
                 self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
-            except SurveyResponseError:
+            except Exception:
                 self.fail("Should not raise an exception")
 
     def test_add_survey_response_writes_expected_filename_in_log(self):

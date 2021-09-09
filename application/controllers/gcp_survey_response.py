@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import time
 import uuid
 
 import structlog
@@ -16,7 +17,15 @@ from application.controllers.service_helper import (
     get_survey_ref,
 )
 
+from application.controllers.helper import (
+    is_valid_file_extension,
+    is_valid_file_name_length,
+)
+
 log = structlog.wrap_logger(logging.getLogger(__name__))
+
+FILE_EXTENSION_ERROR = "The spreadsheet must be in .xls or .xlsx format"
+FILE_NAME_LENGTH_ERROR = "The file name of your spreadsheet must be less than 50 characters long"
 
 
 class FileTooSmallError(Exception):
@@ -185,6 +194,83 @@ class GcpSurveyResponse:
         log.info("Payload created", payload=payload)
 
         return payload
+
+    def get_file_name_and_survey_ref(self, case_id, file_extension):
+        """
+        Generate the file name for the upload, if an external service can't find the relevant information
+        a None is returned instead.
+
+        .. note:: returns two seemingly disparate values because the survey_ref is needed for filename anyway,
+            and resolving requires calls to http services, doing it in one function minimises network traffic.
+            survey_id as returned by collection exercise is a uuid, this is resolved by a call to
+            survey which returns it as surveyRef which is the 3 digit id that other services refer to as survey_id
+
+        :param case_id: The case id of the upload
+        :param file_extension: The upload file extension
+        :return: file name and survey_ref or None
+        """
+
+        log.info("Generating file name", case_id=case_id)
+
+        case_group = get_case_group(case_id)
+        if not case_group:
+            return None, None
+
+        collection_exercise_id = case_group.get("collectionExerciseId")
+        collection_exercise = get_collection_exercise(collection_exercise_id)
+        if not collection_exercise:
+            return None, None
+
+        exercise_ref = collection_exercise.get("exerciseRef")
+        survey_id = collection_exercise.get("surveyId")
+        survey_ref = get_survey_ref(survey_id)
+        if not survey_ref:
+            return None, None
+
+        ru = case_group.get("sampleUnitRef")
+        exercise_ref = self._format_exercise_ref(exercise_ref)
+
+        business_party = get_business_party(
+            case_group["partyId"], collection_exercise_id=collection_exercise_id, verbose=True
+        )
+        if not business_party:
+            return None, None
+        check_letter = business_party["checkletter"]
+
+        time_date_stamp = time.strftime("%Y%m%d%H%M%S")
+        file_name = "{ru}{check_letter}_{exercise_ref}_{survey_ref}_{time_date_stamp}{file_format}".format(
+            ru=ru,
+            check_letter=check_letter,
+            exercise_ref=exercise_ref,
+            survey_ref=survey_ref,
+            time_date_stamp=time_date_stamp,
+            file_format=file_extension,
+        )
+
+        log.info("Generated file name for upload", filename=file_name)
+
+        return file_name, survey_ref
+
+    @staticmethod
+    def is_valid_file(file_name, file_extension):
+        """
+        Check a file is valid
+
+        :param file_name: The file_name to check
+        :param file_extension: The file extension
+        :return: (boolean, String)
+        """
+
+        log.info("Checking if file is valid")
+        if not is_valid_file_extension(file_extension, current_app.config.get("UPLOAD_FILE_EXTENSIONS")):
+            log.info("File extension not valid", file_extension=file_extension)
+            return False, FILE_EXTENSION_ERROR
+
+        if not is_valid_file_name_length(file_name, current_app.config.get("MAX_UPLOAD_FILE_NAME_LENGTH")):
+            log.info("File name too long", file_name=file_name)
+            return False, FILE_NAME_LENGTH_ERROR
+
+        return True, ""
 
     @staticmethod
     def check_if_file_size_too_small(file_size) -> bool:
