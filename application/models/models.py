@@ -165,7 +165,7 @@ class SurveyModel(Base):
 class SEFTModel(Base):
     """
     This models the 'seft_instrument' table which keeps the stored seft collection instruments
-    THIS CAN BE DELETED LATER
+    This table can be deleted once the SEFT CIs are migrated over to the bucket from the database
     """
 
     __tablename__ = "seft_instrument"

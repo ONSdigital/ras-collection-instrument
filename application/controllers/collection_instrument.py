@@ -24,7 +24,6 @@ from application.models.models import (
     BusinessModel,
     ExerciseModel,
     InstrumentModel,
-    SEFTModel,
     SurveyModel,
 )
 
@@ -98,10 +97,6 @@ class CollectionInstrument(object):
 
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
-
-        # DELETE THIS SEFT FILE STUFF LATER ALONG WITH THE METHOD IT CALLS
-        seft_file = self._create_seft_file(instrument.instrument_id, file)
-        instrument.seft_file = seft_file
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
@@ -365,24 +360,6 @@ class CollectionInstrument(object):
             log.info("creating business", ru_ref=ru_ref)
             business = BusinessModel(ru_ref=ru_ref)
         return business
-
-    @staticmethod
-    def _create_seft_file(instrument_id, file):
-        """
-        Creates a seft_file with an encrypted version of the file
-
-        :param file: A file object from which we can read the file contents
-        :return: instrument
-        """
-        log.info("creating instrument seft file")
-        file_contents = file.read()
-        file_size = len(file_contents)
-        cryptographer = Cryptographer()
-        encrypted_file = cryptographer.encrypt(file_contents)
-        seft_file = SEFTModel(
-            instrument_id=instrument_id, file_name=file.filename, length=file_size, data=encrypted_file
-        )
-        return seft_file
 
     @staticmethod
     def _update_seft_file(seft_model, file):
