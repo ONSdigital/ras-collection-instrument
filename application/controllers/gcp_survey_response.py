@@ -100,8 +100,7 @@ class GcpSurveyResponse:
         """
         Takes the file_contents  and puts it into a GCP bucket in encrypted form to be later used by SDX.
 
-        Note: The payload will almost certainly change once the encryption method between us and SDX is decided, but
-        for now we'll put the same payload we were using in rabbit as a starting point.
+        Note: The payload will almost certainly change once the encryption method between us and SDX is decided.
 
         :param file_contents: contents of the collection instrument
         :param filename that was uploaded

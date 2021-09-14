@@ -23,7 +23,7 @@ with open(f"{project_root}/test_data/case_without_case_group.json") as fp:
 class TestGcpSurveyResponse(TestCase):
     """Survey response unit tests"""
 
-    app = create_app("TestingConfig", False, False)
+    app = create_app("TestingConfig", False)
     file_name = "file_name"
     tx_id = "abb3edd9-21d7-4389-886a-587e4c186a99"
     survey_ref = "066"

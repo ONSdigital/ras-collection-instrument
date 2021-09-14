@@ -1,14 +1,15 @@
 import base64
+import hashlib
 from io import BytesIO
 from unittest.mock import patch
 
 from flask import current_app
 from requests.models import Response
-from sdc.rabbit.exceptions import PublishMessageError
 
 from application.controllers.gcp_survey_response import (
     FILE_EXTENSION_ERROR,
     FILE_NAME_LENGTH_ERROR,
+    SurveyResponseError,
 )
 from application.views.survey_responses_view import (
     INVALID_UPLOAD,
@@ -46,12 +47,16 @@ class TestSurveyResponseView(TestClient):
         mock_party_service = Response()
         mock_party_service.status_code = 200
         mock_party_service._content = b'{"checkletter": "A"}'
-
+        md5sum = hashlib.md5(str("success encrypted message").encode()).hexdigest()
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
-        ), patch("pika.BlockingConnection"):
-
+        ), patch("pika.BlockingConnection"), patch(
+            "application.controllers.gcp_survey_response.GcpSurveyResponse" ".put_file_into_gcp_bucket",
+            return_value={"md5sum": md5sum, "fileSizeInBytes": len("success encrypted message")},
+        ), patch(
+            "application.controllers.gcp_survey_response.GcpSurveyResponse" ".add_survey_response"
+        ):
             # When that file is post to the survey response end point
             response = self.client.post(
                 f"/survey_response-api/v1/survey_responses/{case_id}",
@@ -95,7 +100,7 @@ class TestSurveyResponseView(TestClient):
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
-        ), patch("application.controllers.rabbit_helper.QueuePublisher"):
+        ):
             with self.assertLogs(level="INFO") as cm:
                 # When that file is post to the survey response end point
                 self.client.post(
@@ -117,10 +122,7 @@ class TestSurveyResponseView(TestClient):
         mock_case_service = Response()
         mock_case_service.status_code = 404
 
-        with patch("application.controllers.service_helper.service_request", side_effect=[mock_case_service]), patch(
-            "application.controllers.rabbit_helper.QueuePublisher"
-        ):
-
+        with patch("application.controllers.service_helper.service_request", side_effect=[mock_case_service]):
             # When that file is post to the survey response end point
             response = self.client.post(
                 "/survey_response-api/v1/survey_responses/{case_id}".format(
@@ -156,8 +158,7 @@ class TestSurveyResponseView(TestClient):
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service],
-        ), patch("application.controllers.rabbit_helper.QueuePublisher"):
-
+        ):
             # When that file is post to the survey response end point
             response = self.client.post(
                 "/survey_response-api/v1/survey_responses/{case_id}".format(
@@ -189,8 +190,7 @@ class TestSurveyResponseView(TestClient):
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service],
-        ), patch("application.controllers.rabbit_helper.QueuePublisher"):
-
+        ):
             # When that file is post to the survey response end point
             response = self.client.post(
                 "/survey_response-api/v1/survey_responses/{case_id}".format(
@@ -250,7 +250,6 @@ class TestSurveyResponseView(TestClient):
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
         ), patch("pika.BlockingConnection"):
-
             # When that file is post to the survey response end point
             response = self.client.post(
                 "/survey_response-api/v1/survey_responses/{case_id}".format(
@@ -299,8 +298,7 @@ class TestSurveyResponseView(TestClient):
         self.assertStatus(response, 400)
         self.assertEqual(response.data.decode(), FILE_NAME_LENGTH_ERROR)
 
-    def test_add_survey_response_rabbit_exception(self):
-        # Given a file with mocked services and failing rabbitmq
+    def test_add_survey_response_exception(self):
         data = dict(file=(BytesIO(b"upload_test"), "upload_test.xls"))
 
         mock_case_service = Response()
@@ -327,7 +325,8 @@ class TestSurveyResponseView(TestClient):
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
         ), patch(
-            "application.controllers.rabbit_helper.QueuePublisher.publish_message", side_effect=PublishMessageError
+            "application.controllers.gcp_survey_response.GcpSurveyResponse.put_file_into_gcp_bucket",
+            side_effect=SurveyResponseError,
         ):
             # When that file is post to the survey response end point
             response = self.client.post(

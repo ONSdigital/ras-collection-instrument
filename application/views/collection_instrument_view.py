@@ -145,10 +145,10 @@ def instrument_size(instrument_id):
 
 def publish_uploaded_collection_instrument(exercise_id, instrument_id):
     """
-    Publish message to a rabbitmq exchange with details of collection exercise and instrument
+    Publish message to collection instrument link
     :param exercise_id: An exercise id (UUID)
     :param instrument_id: The id (UUID) for the newly created collection instrument
-    :return True if message successfully published to RABBIT_QUEUE_NAME
+    :return True if message successfully linked
     """
     log.info("Publishing upload message", exercise_id=exercise_id, instrument_id=instrument_id)
     json_message = {"action": "ADD", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}

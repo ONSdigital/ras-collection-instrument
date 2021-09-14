@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 
 
 class Config(object):
@@ -17,13 +16,10 @@ class Config(object):
     SECURITY_USER_NAME = os.getenv("SECURITY_USER_NAME", "admin")
     SECURITY_USER_PASSWORD = os.getenv("SECURITY_USER_PASSWORD", "secret")
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv("MAX_UPLOAD_FILE_NAME_LENGTH", 50)
-
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv("RABBITMQ_AMQP_COLLECTION_INSTRUMENT")
-    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv("RABBITMQ_AMQP_SURVEY_RESPONSE")
     DATABASE_URI = os.getenv("DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
     DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA", "ras_ci")
 
-    SEFT_BUCKET_NAME = os.getenv("SEFT_BUCKET_NAME")
+    SEFT_BUCKET_NAME = os.getenv("SEFT_BUCKET_NAME", "test-bucket")
     # Prefix only used for dev environments to file in folders within the bucket
     SEFT_BUCKET_FILE_PREFIX = os.getenv("SEFT_BUCKET_FILE_PREFIX")
     SEFT_PUBSUB_PROJECT = os.getenv("SEFT_PUBSUB_PROJECT", "ras-rm-sandbox")
@@ -52,9 +48,5 @@ class TestingConfig(Config):
     SECURITY_USER_NAME = "admin"
     SECURITY_USER_PASSWORD = "secret"
     DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
-    RABBITMQ_AMQP_COLLECTION_INSTRUMENT = os.getenv(
-        "RABBITMQ_AMQP_COLLECTION_INSTRUMENT", "amqp://guest:guest@localhost:5672"
-    )
-    RABBITMQ_AMQP_SURVEY_RESPONSE = os.getenv("RABBITMQ_AMQP_SURVEY_RESPONSE", "amqp://guest:guest@localhost:5672")
     DATABASE_SCHEMA = "ras_ci"
     ONS_CRYPTOKEY = "somethingsecure"

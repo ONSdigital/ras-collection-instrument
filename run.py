@@ -6,7 +6,6 @@ from alembic import command
 from alembic.config import Config
 from flask import Flask
 from flask_cors import CORS
-from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import column, create_engine, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
@@ -111,10 +110,6 @@ def retry_if_database_error(exception):
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
     app.db = create_database(app.config["DATABASE_URI"], app.config["DATABASE_SCHEMA"])
-
-
-def retry_if_rabbit_connection_error(exception):
-    return isinstance(exception, AMQPConnectionError)
 
 
 if __name__ == "__main__":

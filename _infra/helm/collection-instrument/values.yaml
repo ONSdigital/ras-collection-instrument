@@ -47,16 +47,6 @@ rollingUpdate:
   maxSurge: 1
   maxUnavailable: 1
 
-managedRabbitMQ:
-  enabled: false
-
-sdx:
-  rabbitMQ:
-    enabled: false
-    external: true
-    host: "127.0.0.1"
-    port: "5672"
-
 dns:
   enabled: false
   wellKnownPort: 8080
