@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("instrument", sa.Column("file_location"), String(255), schema="ras_ci")
+    op.add_column("instrument", sa.Column("file_location", String(255)), schema="ras_ci")
 
 
 def downgrade():
