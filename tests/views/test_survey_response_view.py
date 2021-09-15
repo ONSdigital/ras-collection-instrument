@@ -51,7 +51,7 @@ class TestSurveyResponseView(TestClient):
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
-        ), patch("pika.BlockingConnection"), patch(
+        ), patch(
             "application.controllers.gcp_survey_response.GcpSurveyResponse" ".put_file_into_gcp_bucket",
             return_value={"md5sum": md5sum, "fileSizeInBytes": len("success encrypted message")},
         ), patch(
@@ -249,7 +249,7 @@ class TestSurveyResponseView(TestClient):
         with patch(
             "application.controllers.service_helper.service_request",
             side_effect=[mock_case_service, mock_collection_service, mock_survey_service, mock_party_service],
-        ), patch("pika.BlockingConnection"):
+        ):
             # When that file is post to the survey response end point
             response = self.client.post(
                 "/survey_response-api/v1/survey_responses/{case_id}".format(
