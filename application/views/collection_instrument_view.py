@@ -111,11 +111,12 @@ def count_collection_instruments_by_search_string():
 
 @collection_instrument_view.route("/collectioninstrument/id/<instrument_id>", methods=["GET"])
 def collection_instrument_by_id(instrument_id):
+    log.info("YOU ACCESSed the /collectioninstrument/id/<instrument_id> endpoint")
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
-
+    log.info("YOU got out of the get_instrument_json function and re-entered the colinst/id/<ins_id> end")
     if instrument_json:
         return make_response(jsonify(instrument_json), 200)
-
+    log.info("YOU didn't find the collection instrument in the colinst function")
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
 
 
@@ -135,11 +136,12 @@ def instrument_data(instrument_id):
 
 @collection_instrument_view.route("/instrument_size/<instrument_id>", methods=["GET"])
 def instrument_size(instrument_id):
+    log.info("YOU accessed the instrument_size endpoint function")
     instrument = CollectionInstrument().get_instrument_json(instrument_id)
-
+    log.info("YOU EXITED THE get_instrument_json function and re-entered the instrument_size function!!!!")
     if instrument and "len" in instrument:
         return make_response(str(instrument["len"]), 200)
-
+    log.info("COLLECTION INSTRUMENT NOT FOUND")
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
 
 
