@@ -494,6 +494,9 @@ class CollectionInstrument(object):
         log.info("YOU GOT TO THE get_instrument_by_id function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 111111111111")
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
+        if instrument:
+            log.info("YOU FOUND the instrument path", instrument_id=instrument_id)
+            log.info(instrument.file_location)
         return instrument
 
     def _get_instruments_by_classifier(self, json_search_parameters, limit, session):
