@@ -6,10 +6,9 @@ from flask import Blueprint, current_app, make_response, request
 from werkzeug.utils import secure_filename
 
 from application.controllers.basic_auth import auth
-from application.controllers.gcp_survey_response import GcpSurveyResponse
-from application.controllers.survey_response import (
+from application.controllers.gcp_survey_response import (
     FileTooSmallError,
-    SurveyResponse,
+    GcpSurveyResponse,
     SurveyResponseError,
 )
 
@@ -36,24 +35,19 @@ def add_survey_response(case_id):
 
     if case_id and file and hasattr(file, "filename"):
         file_name, file_extension = os.path.splitext(secure_filename(file.filename))
-        survey_response = SurveyResponse()
-        is_valid_file, msg = survey_response.is_valid_file(file_name, file_extension)
+        gcp_survey_response = GcpSurveyResponse(current_app.config)
+        is_valid_file, msg = gcp_survey_response.is_valid_file(file_name, file_extension)
 
         if not is_valid_file:
             return make_response(msg, 400)
 
-        file_name, survey_ref = survey_response.get_file_name_and_survey_ref(case_id, file_extension)
+        file_name, survey_ref = gcp_survey_response.get_file_name_and_survey_ref(case_id, file_extension)
 
         if not file_name:
             return make_response(MISSING_DATA, 404)
         try:
             file_contents = file.read()
-
-            if current_app.config["SAVE_SEFT_IN_GCP"]:
-                gcp_survey_response = GcpSurveyResponse(current_app.config)
-                gcp_survey_response.add_survey_response(case_id, file_contents, file_name, survey_ref)
-            else:
-                survey_response.add_survey_response(case_id, file_contents, file_name, survey_ref)
+            gcp_survey_response.add_survey_response(case_id, file_contents, file_name, survey_ref)
 
             return make_response(UPLOAD_SUCCESSFUL, 200)
         except FileTooSmallError:
