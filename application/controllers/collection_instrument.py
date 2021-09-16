@@ -399,6 +399,23 @@ class CollectionInstrument(object):
         csv = csv_format.format(count="Count", file_name="File Name", length="Length", date_stamp="Time Stamp")
         exercise = query_exercise_by_id(exercise_id, session)
 
+        try:
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+
+            for instrument in exercise.instruments:
+                file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+                csv += csv_format.format(
+                    count=count,
+                    file_name=instrument.file_location,
+                    length=len(file),
+                    date_stamp=instrument.stamp,
+                )
+                count += 1
+            return csv
+        except Exception as e:
+            log.error("Couldn't find SEFT CI from bucket")
+            log.error(e)
+
         if not exercise:
             return None
 
@@ -442,6 +459,15 @@ class CollectionInstrument(object):
 
         data = None
         file_name = None
+
+        try:
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+            return file, instrument.file_location
+        except Exception as e:
+            log.error("Couldn't find SEFT CI in GCP bucket; will try database instead")
+            log.error(e)
+
         if instrument:
             log.info("Decrypting collection instrument data", instrument_id=instrument_id)
             cryptographer = Cryptographer()
