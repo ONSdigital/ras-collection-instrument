@@ -133,7 +133,6 @@ class TestCollectionInstrument(TestClient):
     def test_publish_uploaded_collection_instrument(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         # Given there is an instrument in the db
-        # When publishing to a rabbit exchange that a collection instrument has been uploaded
         c_id = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
         result = publish_uploaded_collection_instrument(c_id, self.instrument_id)
 
@@ -141,10 +140,9 @@ class TestCollectionInstrument(TestClient):
         self.assertEqual(result.status_code, 200)
 
     @requests_mock.mock()
-    def test_publish_uploaded_collection_instrument_rabbit_fails(self, mock_request):
+    def test_publish_uploaded_collection_instrument_fails(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=500)
         # Given there is an instrument in the db
-        # When publishing to a rabbit exchange that a collection instrument has been uploaded
         c_id = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
         with self.assertRaises(Exception):
             publish_uploaded_collection_instrument(c_id, self.instrument_id)

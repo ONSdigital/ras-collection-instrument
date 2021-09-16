@@ -4,7 +4,6 @@ This is the RAS Collection Instrument micro-service, responsible for the uploadi
 This service has the ability to link and unlink collection exercises with collection instruments. The relationship between exercises and instruments is one-to-many, so one collection exercise can have multiple collection instruments.
 Each collection instrument in the JSON schema has a sample unit reference, type, and summary ID, as well as additional attributes.
 This service commmunicates primarily with the collection exercise service, as well as the party, case, and survey services.
-Logging information about the collection instruments is sent to rabbitmq.
 
 Collection instruments are stored in an instrument table with the following fields:
 
@@ -31,7 +30,7 @@ pip install pipenv
 
 ## Tests
 
-To run the tests a rabbitmq and database server is required. The tox script creates and runs these dependencies inside Docker containers, which are destroyed after the unit tests are run.
+To run the tests a database server is required. The tox script creates and runs these dependencies inside Docker containers, which are destroyed after the unit tests are run.
 
 ```bash
 pipenv install --dev
@@ -41,7 +40,7 @@ pipenv run tox
 To run the service with the required dependencies:
 
 ```bash
-docker-compose up -d db rabbitmq
+docker-compose up -d db 
 pipenv run python run.py
 ```
 
@@ -78,8 +77,7 @@ Environment variables available for configuration are listed below:
 | COLLECTION_EXERCISE_URL             | URL for the collection exercise service | 'http://localhost:8145'
 | SURVEY_SERVICE_URL                  | URL for the survey service | 'http://localhost:8080'
 | PARTY_URL                           | URL for the party service | 'http://localhost:8081'
-| RABBITMQ_AMQP_COLLECTION_INSTRUMENT | URI for rabbitmq | None
-| RABBITMQ_AMQP_SURVEY_RESPONSE       | URI for rabbitmq | None
+
 
 
 These are set in [config.py](config.py)
