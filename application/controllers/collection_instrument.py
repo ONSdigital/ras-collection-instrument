@@ -262,11 +262,11 @@ class CollectionInstrument(object):
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
         """
-        Publish message to a rabbitmq exchange with details of collection exercise and instrument unlinked
+        Publish message to collection exercise for instrument unlinked
 
         :param exercise_id: An exercise id (UUID)
         :param instrument_id: The id (UUID) of collection instrument
-        :return: True if message successfully published to RABBIT_QUEUE_NAME
+        :return: True if message successfully sent to collection exercise
         """
         log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
         json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}

@@ -6,7 +6,6 @@ from alembic import command
 from alembic.config import Config
 from flask import Flask
 from flask_cors import CORS
-from pika.exceptions import AMQPConnectionError
 from retrying import RetryError, retry
 from sqlalchemy import column, create_engine, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
@@ -18,7 +17,7 @@ from application.logger_config import logger_initial_config
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def create_app(config=None, init_db=True, init_rabbit=True):
+def create_app(config=None, init_db=True):
     # create and configure the Flask application
     app = Flask(__name__)
     app.name = "ras-collection-instrument"
@@ -54,15 +53,6 @@ def create_app(config=None, init_db=True, init_rabbit=True):
             exit(1)
     else:
         logger.debug("Skipped initialising database")
-
-    if init_rabbit:
-        try:
-            initialise_rabbit(app)
-        except RetryError:
-            logger.exception("Failed to initialise rabbitmq")
-            exit(1)
-    else:
-        logger.debug("Skipped initialising rabbitmq")
 
     logger.info("App setup complete", config=config_name)
 
@@ -120,18 +110,6 @@ def retry_if_database_error(exception):
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
     app.db = create_database(app.config["DATABASE_URI"], app.config["DATABASE_SCHEMA"])
-
-
-def retry_if_rabbit_connection_error(exception):
-    return isinstance(exception, AMQPConnectionError)
-
-
-@retry(retry_on_exception=retry_if_rabbit_connection_error, wait_fixed=2000, stop_max_delay=60000, wrap_exception=True)
-def initialise_rabbit(app):
-    from application.controllers import survey_response
-
-    with app.app_context():
-        survey_response.SurveyResponse.initialise_messaging()
 
 
 if __name__ == "__main__":
