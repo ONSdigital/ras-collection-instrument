@@ -131,7 +131,6 @@ class CollectionInstrument(object):
         :raises RasError: Raised when instrument id is invalid, instrument not found, or instrument isn't of type SEFT
         """
         validate_uuid(instrument_id)
-        log.info("YOU TRIGGERED the patch_seft_instrument function")
         instrument = self.get_instrument_by_id(instrument_id, session)
         if instrument is None:
             log.error("Instrument not found")
@@ -229,7 +228,6 @@ class CollectionInstrument(object):
         :return: True if instrument has been successfully linked to exercise
         """
         log.info("Linking instrument to exercise", instrument_id=instrument_id, exercise_id=exercise_id)
-        log.info("YOU TRIGGERED the link_instrument_to_exercise function")
         validate_uuid(instrument_id)
         validate_uuid(exercise_id)
 
@@ -254,7 +252,6 @@ class CollectionInstrument(object):
         bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
         bound_logger.info("Unlinking instrument and exercise")
 
-        log.info("YOU TRIGGERED THE unlink_instrument_from_exercise function")
         instrument = self.get_instrument_by_id(instrument_id, session)
         exercise = self.get_exercise_by_id(exercise_id, session)
         if not instrument or not exercise:
@@ -446,7 +443,6 @@ class CollectionInstrument(object):
         :return: formatted JSON version of the instrument
         """
 
-        log.info("YOU TRIGGERED THE get_instrument_json function!!!!!!!")
         instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
         instrument_json = instrument.json if instrument else None
         return instrument_json
@@ -461,7 +457,6 @@ class CollectionInstrument(object):
         :param session: database session
         :return: data and file_name
         """
-        log.info("YOU TRIGGERED the get_instrument_data function!!!!!!")
 
         instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
 
@@ -469,7 +464,6 @@ class CollectionInstrument(object):
         file_name = None
 
         try:
-            log.info("YOU ENTERED the try loop for getting the bucket stuff")
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
             return file, instrument.file_location
@@ -494,7 +488,6 @@ class CollectionInstrument(object):
         :return: instrument
         """
         log.info("Searching for instrument", instrument_id=instrument_id)
-        log.info("YOU GOT TO THE get_instrument_by_id function!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 111111111111")
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
         if instrument:
