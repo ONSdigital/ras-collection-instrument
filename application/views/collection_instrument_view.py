@@ -114,7 +114,6 @@ def collection_instrument_by_id(instrument_id):
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
 
     if instrument_json:
-        log.info(instrument_json)
         return make_response(jsonify(instrument_json), 200)
 
     return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
