@@ -42,6 +42,7 @@ class InstrumentModel(Base):
     survey = relationship("SurveyModel", back_populates="instruments")
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
     file_location = Column(String(255))
+    file_length = Column(Integer)
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
     businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
@@ -52,13 +53,14 @@ class InstrumentModel(Base):
         self.instrument_id = uuid4()
         self.classifiers = classifiers
         self.type = ci_type
+        self.file_length = None
 
     @property
     def json(self):
         return {
             "id": self.instrument_id,
             "file_name": self.name,
-            "len": self.seft_file.len if self.seft_file else None,
+            "len": self.len,
             "stamp": self.stamp,
             "survey": self.survey.survey_id,
             "businesses": self.rurefs,
@@ -82,6 +84,15 @@ class InstrumentModel(Base):
             return self.seft_file.file_name
 
         return self.classifiers.get("form_type")
+
+    @property
+    def len(self):
+        if self.file_length is not None:
+            return self.file_length
+        elif self.seft_file:
+            return self.seft_file.len
+        else:
+            return None
 
 
 class BusinessModel(Base):

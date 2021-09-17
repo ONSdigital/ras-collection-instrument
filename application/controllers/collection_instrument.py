@@ -106,6 +106,9 @@ class CollectionInstrument(object):
 
         instrument.file_location = path
 
+        file_contents = file.read()
+        instrument.file_length = len(file_contents)
+
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)
             self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
