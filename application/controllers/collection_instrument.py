@@ -490,9 +490,6 @@ class CollectionInstrument(object):
         log.info("Searching for instrument", instrument_id=instrument_id)
         validate_uuid(instrument_id)
         instrument = query_instrument_by_id(instrument_id, session)
-        if instrument:
-            log.info("YOU FOUND the instrument path", instrument_id=instrument_id)
-            log.info(instrument.file_location)
         return instrument
 
     def _get_instruments_by_classifier(self, json_search_parameters, limit, session):
