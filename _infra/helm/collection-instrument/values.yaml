@@ -52,19 +52,14 @@ dns:
   wellKnownPort: 8080
 
 gcp:
-  project: ras-rm-sandbox
+  project: ras-rm-dev
   bucket:
     name: bucket
     prefix: ""
   topic: topic
-
-gcpDev:
-  project: ras-rm-dev
-  bucket:
+  collectionInstrumentBucket:
     name: "ras-rm-seft-ci-dev"
     prefix: ""
-
-saveSeftInGcp: false
 
 gnu:
   recipient: dev@example.com

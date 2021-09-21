@@ -88,10 +88,9 @@ class CollectionInstrument(object):
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path = seft_ci_bucket.upload_file_to_bucket(file=file)
-        except Exception as e:
-            log.error("An error occurred when trying to put SEFT CI in bucket")
-            log.error(e)
+            path, key = seft_ci_bucket.upload_file_to_bucket(file=file)
+        except Exception:
+            log.exception("An error occurred when trying to put SEFT CI in bucket")
 
         log.info("Upload exercise", exercise_id=exercise_id)
 
@@ -105,6 +104,7 @@ class CollectionInstrument(object):
         instrument.survey = survey
 
         instrument.file_location = path
+        instrument.encoded_key = key
 
         file_contents = file.read()
         instrument.file_length = len(file_contents)
@@ -402,33 +402,29 @@ class CollectionInstrument(object):
         csv = csv_format.format(count="Count", file_name="File Name", length="Length", date_stamp="Time Stamp")
         exercise = query_exercise_by_id(exercise_id, session)
 
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-
-            for instrument in exercise.instruments:
-                file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
-                csv += csv_format.format(
-                    count=count,
-                    file_name=instrument.file_location,
-                    length=len(file),
-                    date_stamp=instrument.stamp,
-                )
-                count += 1
-            return csv
-        except Exception as e:
-            log.error("Couldn't find SEFT CI from bucket")
-            log.error(e)
-
         if not exercise:
             return None
 
         for instrument in exercise.instruments:
-            csv += csv_format.format(
-                count=count,
-                file_name=instrument.name,
-                length=instrument.seft_file.len if instrument.seft_file else None,
-                date_stamp=instrument.stamp,
-            )
+            if instrument.file_location is not None:
+                try:
+                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location, instrument.encoded_key)
+                    csv += csv_format.format(
+                        count=count,
+                        file_name=instrument.file_location,
+                        length=len(file),
+                        date_stamp=instrument.stamp,
+                    )
+                except Exception:
+                    log.exception("Couldn't find SEFT CI from bucket")
+            else:
+                csv += csv_format.format(
+                    count=count,
+                    file_name=instrument.name,
+                    length=instrument.seft_file.len if instrument.seft_file else None,
+                    date_stamp=instrument.stamp,
+                )
             count += 1
         return csv
 
@@ -463,15 +459,15 @@ class CollectionInstrument(object):
         data = None
         file_name = None
 
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
-            return file, instrument.file_location
-        except Exception as e:
-            log.error("Couldn't find SEFT CI in GCP bucket; will try database instead")
-            log.error(e)
-
         if instrument:
+            if instrument.file_location is not None:
+                try:
+                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location, instrument.encoded_key)
+                    return file, instrument.file_location
+                except Exception:
+                    log.exception("Couldn't find SEFT CI in GCP bucket; will try database instead")
+
             log.info("Decrypting collection instrument data", instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.seft_file.data)

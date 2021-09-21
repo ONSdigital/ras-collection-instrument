@@ -1,4 +1,6 @@
+import base64
 import logging
+import os
 
 import structlog
 from google.cloud import storage
@@ -20,15 +22,22 @@ class GoogleCloudSEFTCIBucket:
             path = self.prefix + "/" + file.filename
         else:
             path = file.filename
-        blob = self.bucket.blob(path)
+        key = self.generate_encryption_key()
+        encryption_key = base64.b64decode(key)
+        blob = self.bucket.blob(path, encryption_key=encryption_key)
         blob.upload_from_file(file.stream)
         log.info("Successfully put SEFT CI in bucket")
+        return path, key
 
-        return path
-
-    def download_file_from_bucket(self, file_location):
-        log.info("Downloading SEFT CI from GCP bucket")
-        blob = self.bucket.blob(file_location)
+    def download_file_from_bucket(self, file_location, key):
+        log.info("Downloading SEFT CI from GCP bucket: " + file_location)
+        encryption_key = base64.b64decode(key)
+        blob = self.bucket.blob(file_location, encryption_key=encryption_key)
         file = blob.download_as_bytes()
         log.info("Successfully downloaded SEFT CI from GCP bucket")
         return file
+
+    def generate_encryption_key(self):
+        key = os.urandom(32)
+        encoded_key = base64.b64encode(key).decode("utf-8")
+        return encoded_key

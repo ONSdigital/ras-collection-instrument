@@ -55,7 +55,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx", "key"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
@@ -153,7 +153,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx", "key"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
@@ -180,7 +180,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_only_allows_single_one(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx", "key"
         """Verify that uploading a collection instrument for a reporting unit twice for the same collection exercise
         will result in an error"""
         # Given an upload file and a patched survey_id response
@@ -226,7 +226,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx", "key"
         """Verify that uploading a collection exercise, bound to a reporting unit, for two separate collection exercises
         results in them both being saved"""
         # Given an upload file and a patched survey_id response

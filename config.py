@@ -22,7 +22,6 @@ class Config(object):
     SEFT_BUCKET_NAME = os.getenv("SEFT_BUCKET_NAME", "test-bucket")
     # Prefix only used for dev environments to file in folders within the bucket
     SEFT_BUCKET_FILE_PREFIX = os.getenv("SEFT_BUCKET_FILE_PREFIX")
-    SEFT_PUBSUB_PROJECT = os.getenv("SEFT_PUBSUB_PROJECT", "ras-rm-sandbox")
     SEFT_PUBSUB_TOPIC = os.getenv("SEFT_PUBSUB_TOPIC", "ras-rm-notify-test")
     SEFT_CI_BUCKET_NAME = os.getenv("SEFT_CI_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
