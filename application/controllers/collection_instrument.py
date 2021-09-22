@@ -86,11 +86,12 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path = seft_ci_bucket.upload_file_to_bucket(file=file)
-        except Exception:
-            log.exception("An error occurred when trying to put SEFT CI in bucket")
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+            try:
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                path = seft_ci_bucket.upload_file_to_bucket(file=file)
+            except Exception:
+                log.exception("An error occurred when trying to put SEFT CI in bucket")
 
         log.info("Upload exercise", exercise_id=exercise_id)
 
@@ -103,7 +104,8 @@ class CollectionInstrument(object):
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
 
-        instrument.file_location = path
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+            instrument.file_location = path
 
         file_contents = file.read()
         instrument.file_length = len(file_contents)
@@ -406,17 +408,18 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             if instrument.file_location is not None:
-                try:
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
-                    csv += csv_format.format(
-                        count=count,
-                        file_name=instrument.file_location,
-                        length=len(file),
-                        date_stamp=instrument.stamp,
-                    )
-                except Exception:
-                    log.exception("Couldn't find SEFT CI from bucket")
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+                    try:
+                        seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                        file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+                        csv += csv_format.format(
+                            count=count,
+                            file_name=instrument.file_location,
+                            length=len(file),
+                            date_stamp=instrument.stamp,
+                        )
+                    except Exception:
+                        log.exception("Couldn't find SEFT CI from bucket")
             else:
                 csv += csv_format.format(
                     count=count,
@@ -460,12 +463,13 @@ class CollectionInstrument(object):
 
         if instrument:
             if instrument.file_location is not None:
-                try:
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
-                    return file, instrument.file_location
-                except Exception:
-                    log.exception("Couldn't find SEFT CI in GCP bucket; will try database instead")
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+                    try:
+                        seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                        file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+                        return file, instrument.file_location
+                    except Exception:
+                        log.exception("Couldn't find SEFT CI in GCP bucket; will try database instead")
 
             log.info("Decrypting collection instrument data", instrument_id=instrument_id)
             cryptographer = Cryptographer()
