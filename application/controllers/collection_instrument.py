@@ -88,7 +88,7 @@ class CollectionInstrument(object):
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path, key = seft_ci_bucket.upload_file_to_bucket(file=file)
+            path = seft_ci_bucket.upload_file_to_bucket(file=file)
         except Exception:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
 
@@ -104,7 +104,6 @@ class CollectionInstrument(object):
         instrument.survey = survey
 
         instrument.file_location = path
-        instrument.encoded_key = key
 
         file_contents = file.read()
         instrument.file_length = len(file_contents)
@@ -409,7 +408,7 @@ class CollectionInstrument(object):
             if instrument.file_location is not None:
                 try:
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location, instrument.encoded_key)
+                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
                     csv += csv_format.format(
                         count=count,
                         file_name=instrument.file_location,
@@ -463,7 +462,7 @@ class CollectionInstrument(object):
             if instrument.file_location is not None:
                 try:
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location, instrument.encoded_key)
+                    file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
                     return file, instrument.file_location
                 except Exception:
                     log.exception("Couldn't find SEFT CI in GCP bucket; will try database instead")

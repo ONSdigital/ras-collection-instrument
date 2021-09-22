@@ -43,7 +43,6 @@ class InstrumentModel(Base):
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
     file_location = Column(String(255))
     file_length = Column(Integer)
-    encoded_key = Column(String(255))
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
     businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
