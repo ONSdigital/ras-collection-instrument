@@ -52,11 +52,14 @@ dns:
   wellKnownPort: 8080
 
 gcp:
-  project: ras-rm-dev
+  project: ras-rm-sandbox
   bucket:
     name: bucket
     prefix: ""
   topic: topic
+
+gcpDev:
+  project: ras-rm-dev
   collectionInstrumentBucket:
     name: "ras-rm-seft-ci-dev"
     prefix: ""

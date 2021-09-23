@@ -46,7 +46,7 @@ class GcpSurveyResponse:
 
         # Pubsub config
         self.publisher = None
-        self.seft_pubsub_project = self.config["GOOGLE_CLOUD_PROJECT"]
+        self.seft_pubsub_project = self.config["SEFT_PUBSUB_PROJECT"]
         self.seft_pubsub_topic = self.config["SEFT_PUBSUB_TOPIC"]
 
     """

@@ -24,6 +24,7 @@ from application.models.models import (
     BusinessModel,
     ExerciseModel,
     InstrumentModel,
+    SEFTModel,
     SurveyModel,
 )
 
@@ -86,7 +87,7 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
             try:
                 seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                 path = seft_ci_bucket.upload_file_to_bucket(file=file)
@@ -98,13 +99,17 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is False:
+            seft_file = self._create_seft_file(instrument.instrument_id, file)
+            instrument.seft_file = seft_file
+
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
 
-        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
             instrument.file_location = path
 
         file_contents = file.read()
@@ -366,6 +371,23 @@ class CollectionInstrument(object):
         return business
 
     @staticmethod
+    def _create_seft_file(instrument_id, file):
+        """
+        Creates a seft_file with an encrypted version of the file
+        :param file: A file object from which we can read the file contents
+        :return: instrument
+        """
+        log.info("creating instrument seft file")
+        file_contents = file.read()
+        file_size = len(file_contents)
+        cryptographer = Cryptographer()
+        encrypted_file = cryptographer.encrypt(file_contents)
+        seft_file = SEFTModel(
+            instrument_id=instrument_id, file_name=file.filename, length=file_size, data=encrypted_file
+        )
+        return seft_file
+
+    @staticmethod
     def _update_seft_file(seft_model, file):
         """
         Updates a seft_file with a new version of the data
@@ -407,8 +429,8 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-            if instrument.file_location is not None:
-                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+            if instrument.file_location:
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
                     try:
                         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                         file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
@@ -462,8 +484,8 @@ class CollectionInstrument(object):
         file_name = None
 
         if instrument:
-            if instrument.file_location is not None:
-                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is True:
+            if instrument.file_location:
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
                     try:
                         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                         file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)

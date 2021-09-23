@@ -49,7 +49,7 @@ class TestGcpSurveyResponse(TestCase):
 
     config = {
         "SEFT_BUCKET_NAME": "test-bucket",
-        "GOOGLE_CLOUD_PROJECT": "test-project",
+        "SEFT_PUBSUB_PROJECT": "test-project",
         "SEFT_PUBSUB_TOPIC": "test-topic",
     }
 
