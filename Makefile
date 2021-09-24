@@ -8,10 +8,10 @@ build-kubernetes:
 	docker build -f _infra/docker/Dockerfile .
 
 lint:
-	pipenv run flake8 ./application ./tests
 	pipenv check ./application ./tests
 	pipenv run isort .
 	pipenv run black --line-length 120 .
+	pipenv run flake8 ./application ./tests
 
 test: lint
 	pipenv run tox
