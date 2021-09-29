@@ -65,7 +65,7 @@ gcpDev:
     prefix: ""
 
 seftGCS:
-  enabled: true
+  enabled: false
 
 gnu:
   recipient: dev@example.com
