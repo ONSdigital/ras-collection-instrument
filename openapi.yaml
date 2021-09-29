@@ -250,33 +250,6 @@ paths:
               example: 'adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx'
         '404':
           description: Collection instrument not found
-  "/collection-instrument-api/1.0.2/instrument_size/{instrument_id}":
-    get:
-      summary: Get the size of a collection instrument
-      tags:
-        - collection-instrument
-      parameters:
-        - in: path
-          name: instrument_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
-          description: The ID of the collection instrument.
-      responses:
-        '200':
-          description: Returned size of collection instrument
-          content:
-            text/plain:
-              schema:
-                type: object
-                properties:
-                  size:
-                    type: integer
-                    example: '52224'
-        '404':
-          description: Collection instrument not found
   "/collection-instrument-api/1.0.2/collectioninstrument/count":
     get:
       summary: Get count of collection instruments
