@@ -28,7 +28,7 @@ class Config(object):
     SEFT_CI_BUCKET_NAME = os.getenv("SEFT_CI_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     SEFT_CI_BUCKET_FILE_PREFIX = os.getenv("SEFT_CI_BUCKET_FILE_PREFIX")
-    SEFT_GCS_ENABLED = strtobool(os.getenv("SEFT_GCS_ENABLED", "False"))
+    SEFT_GCS_ENABLED = bool(strtobool(os.getenv("SEFT_GCS_ENABLED", "False")))
 
     UPLOAD_FILE_EXTENSIONS = "xls,xlsx"
 
