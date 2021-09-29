@@ -133,16 +133,6 @@ def instrument_data(instrument_id):
     return response
 
 
-@collection_instrument_view.route("/instrument_size/<instrument_id>", methods=["GET"])
-def instrument_size(instrument_id):
-    instrument = CollectionInstrument().get_instrument_json(instrument_id)
-
-    if instrument and "len" in instrument:
-        return make_response(str(instrument["len"]), 200)
-
-    return make_response(COLLECTION_INSTRUMENT_NOT_FOUND, 404)
-
-
 def publish_uploaded_collection_instrument(exercise_id, instrument_id):
     """
     Publish message to collection instrument link

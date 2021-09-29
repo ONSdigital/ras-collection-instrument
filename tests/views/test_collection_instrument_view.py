@@ -487,31 +487,6 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEqual(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
 
-    def test_get_instrument_size(self):
-        # Given an instrument which is in the db
-        # When the collection instrument size end point is called with an id
-        response = self.client.get(
-            "/collection-instrument-api/1.0.2/instrument_size/{instrument_id}".format(instrument_id=self.instrument_id),
-            headers=self.get_auth_headers(),
-        )
-
-        # Then the response returns the correct size
-        self.assertStatus(response, 200)
-        self.assertIn("999", response.data.decode())
-
-    def test_get_instrument_size_missing_instrument(self):
-        # Given an instrument id which doesn't exist in the db
-        instrument = "655488ea-ccaa-4d02-8f73-3d20bceed706"
-
-        # When the collection instrument end point is called with an id
-        response = self.client.get(
-            "/collection-instrument-api/1.0.2/instrument_size/{instrument_id}".format(instrument_id=instrument),
-            headers=self.get_auth_headers(),
-        )
-
-        # Then the response returns a 404
-        self.assertStatus(response, 404)
-
     def test_get_instrument_download(self):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
