@@ -87,13 +87,21 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+            try:
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                path = seft_ci_bucket.upload_file_to_bucket(file=file)
+            except Exception:
+                log.exception("An error occurred when trying to put SEFT CI in bucket")
+
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
-        seft_file = self._create_seft_file(instrument.instrument_id, file)
-        instrument.seft_file = seft_file
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is False:
+            seft_file = self._create_seft_file(instrument.instrument_id, file)
+            instrument.seft_file = seft_file
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
@@ -101,51 +109,8 @@ class CollectionInstrument(object):
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
 
-        file_contents = file.read()
-        instrument.file_length = len(file_contents)
-
-        if ru_ref:
-            business = self._find_or_create_business(ru_ref, session)
-            self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
-            instrument.businesses.append(business)
-
-        if classifiers:
-            instrument.classifiers = loads(classifiers)
-
-        session.add(instrument)
-        return instrument
-
-    @with_db_session
-    def upload_instrument_to_bucket(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
-        """
-        Encrypt and upload a collection instrument to the db
-
-        :param exercise_id: An exercise id (UUID)
-        :param ru_ref: The name of the file we're receiving
-        :param classifiers: Classifiers associated with the instrument
-        :param file: A file object from which we can read the file contents
-        :param session: database session
-        :return: a collection instrument instance
-        """
-
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path = seft_ci_bucket.upload_file_to_bucket(file=file)
-        except Exception:
-            log.exception("An error occurred when trying to put SEFT CI in bucket")
-
-        log.info("Upload exercise", exercise_id=exercise_id)
-
-        validate_uuid(exercise_id)
-        instrument = InstrumentModel(ci_type="SEFT")
-
-        exercise = self._find_or_create_exercise(exercise_id, session)
-        instrument.exercises.append(exercise)
-
-        survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
-        instrument.survey = survey
-
-        instrument.file_location = path
+        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+            instrument.file_location = path
 
         file_contents = file.read()
         instrument.file_length = len(file_contents)
@@ -464,48 +429,26 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-            csv += csv_format.format(
-                count=count,
-                file_name=instrument.name,
-                length=instrument.seft_file.len if instrument.seft_file else None,
-                date_stamp=instrument.stamp,
-            )
-            count += 1
-        return csv
-
-    @staticmethod
-    @with_db_session
-    def get_instruments_by_exercise_id_csv_from_bucket(exercise_id, session=None):
-        """
-        Finds all collection instruments associated with an exercise and returns them in csv format
-
-        :param exercise_id
-        :param session: database session
-        :return: collection instruments in csv
-        """
-        log.info("Getting csv for instruments", exercise_id=exercise_id)
-
-        validate_uuid(exercise_id)
-        csv_format = '"{count}","{file_name}","{length}","{date_stamp}"\n'
-        count = 1
-        csv = csv_format.format(count="Count", file_name="File Name", length="Length", date_stamp="Time Stamp")
-        exercise = query_exercise_by_id(exercise_id, session)
-
-        if not exercise:
-            return None
-
-        for instrument in exercise.instruments:
-            try:
-                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+            if instrument.file_location:
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+                    try:
+                        seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                        file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+                        csv += csv_format.format(
+                            count=count,
+                            file_name=instrument.file_location,
+                            length=len(file),
+                            date_stamp=instrument.stamp,
+                        )
+                    except Exception:
+                        log.exception("Couldn't find SEFT CI from bucket")
+            else:
                 csv += csv_format.format(
                     count=count,
-                    file_name=instrument.file_location,
-                    length=len(file),
+                    file_name=instrument.name,
+                    length=instrument.seft_file.len if instrument.seft_file else None,
                     date_stamp=instrument.stamp,
                 )
-            except Exception:
-                log.exception("Couldn't find SEFT CI from bucket")
             count += 1
         return csv
 
@@ -541,35 +484,19 @@ class CollectionInstrument(object):
         file_name = None
 
         if instrument:
+            if instrument.file_location:
+                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+                    try:
+                        seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                        file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
+                        return file, instrument.file_location
+                    except Exception:
+                        log.exception("Couldn't find SEFT CI in GCP bucket; will try database instead")
+
             log.info("Decrypting collection instrument data", instrument_id=instrument_id)
             cryptographer = Cryptographer()
             data = cryptographer.decrypt(instrument.seft_file.data)
             file_name = instrument.seft_file.file_name
-        return data, file_name
-
-    @staticmethod
-    @with_db_session
-    def get_instrument_data_from_database(instrument_id, session):
-        """
-        Get the instrument data from the db using the id
-
-        :param instrument_id: The id of the instrument we want
-        :param session: database session
-        :return: data and file_name
-        """
-
-        instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
-
-        data = None
-        file_name = None
-
-        if instrument.file_location:
-            try:
-                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
-                return file, instrument.file_location
-            except Exception:
-                log.exception("Couldn't find SEFT CI in GCP bucket")
         return data, file_name
 
     @staticmethod
