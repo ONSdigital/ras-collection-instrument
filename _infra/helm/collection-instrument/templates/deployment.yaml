@@ -201,7 +201,7 @@ spec:
             value: "{{ .Values.gcpDev.project }}"
           - name: SEFT_CI_BUCKET_FILE_PREFIX
             value: "{{ .Values.gcpDev.collectionInstrumentBucket.prefix }}"
-          - name: SEFT_CI_DATABASE_TABLE_DEPRECATED
-            value: "{{ .Values.seftCIDatabaseTable.deprecated }}"
+          - name: SEFT_GCS_ENABLED
+            value: "{{ .Values.seftGCS.enabled }}"
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}

@@ -64,8 +64,8 @@ gcpDev:
     name: "ras-rm-seft-ci-dev"
     prefix: ""
 
-seftCIDatabaseTable:
-  deprecated: false
+seftGCS:
+  enabled: false
 
 gnu:
   recipient: dev@example.com
