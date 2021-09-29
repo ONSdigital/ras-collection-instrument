@@ -87,7 +87,7 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+        if current_app.config["SEFT_GCS_ENABLED"]:
             try:
                 seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                 path = seft_ci_bucket.upload_file_to_bucket(file=file)
@@ -99,7 +99,7 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
-        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"] is False:
+        if current_app.config["SEFT_GCS_ENABLED"] is False:
             seft_file = self._create_seft_file(instrument.instrument_id, file)
             instrument.seft_file = seft_file
 
@@ -109,7 +109,7 @@ class CollectionInstrument(object):
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
 
-        if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+        if current_app.config["SEFT_GCS_ENABLED"]:
             instrument.file_location = path
 
         file_contents = file.read()
@@ -430,7 +430,7 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             if instrument.file_location:
-                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+                if current_app.config["SEFT_GCS_ENABLED"]:
                     try:
                         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                         file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
@@ -485,7 +485,7 @@ class CollectionInstrument(object):
 
         if instrument:
             if instrument.file_location:
-                if current_app.config["SEFT_CI_DATABASE_TABLE_DEPRECATED"]:
+                if current_app.config["SEFT_GCS_ENABLED"]:
                     try:
                         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                         file = seft_ci_bucket.download_file_from_bucket(instrument.file_location)
