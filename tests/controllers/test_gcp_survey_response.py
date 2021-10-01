@@ -48,9 +48,9 @@ class TestGcpSurveyResponse(TestCase):
     }
 
     config = {
-        "SEFT_BUCKET_NAME": "test-bucket",
-        "SEFT_PUBSUB_PROJECT": "test-project",
-        "SEFT_PUBSUB_TOPIC": "test-topic",
+        "SEFT_UPLOAD_BUCKET_NAME": "test-bucket",
+        "SEFT_UPLOAD_PROJECT": "test-project",
+        "SEFT_UPLOAD_PUBSUB_TOPIC": "test-topic",
     }
 
     url_get_case_by_id = f"{app.config['CASE_URL']}/cases/{bucket_content['case_id']}"
