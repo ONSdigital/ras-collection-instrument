@@ -125,12 +125,6 @@ class CollectionInstrument(object):
         :return: a collection instrument instance
         """
 
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file)
-        except Exception:
-            log.exception("An error occurred when trying to put SEFT CI in bucket")
-
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
@@ -138,7 +132,13 @@ class CollectionInstrument(object):
 
         seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
-        instrument.seft_file.gcs = True
+
+        try:
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
+            instrument.seft_file.gcs = True
+        except Exception:
+            log.exception("An error occurred when trying to put SEFT CI in bucket")
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
