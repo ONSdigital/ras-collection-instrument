@@ -101,9 +101,6 @@ class CollectionInstrument(object):
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
 
-        file_contents = file.read()
-        instrument.file_length = len(file_contents)
-
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)
             self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
@@ -130,7 +127,7 @@ class CollectionInstrument(object):
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path = seft_ci_bucket.upload_file_to_bucket(file=file)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
         except Exception:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
 
@@ -139,16 +136,14 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
         instrument = InstrumentModel(ci_type="SEFT")
 
+        seft_file = self._create_seft_file(instrument.instrument_id, file)
+        instrument.seft_file = seft_file
+
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
-
-        instrument.file_location = path
-
-        file_contents = file.read()
-        instrument.file_length = len(file_contents)
 
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)

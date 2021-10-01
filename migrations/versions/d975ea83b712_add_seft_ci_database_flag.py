@@ -7,7 +7,7 @@ Create Date: 2021-09-06 10:40:27.089307
 """
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Boolean
 
 # revision identifiers, used by Alembic.
 revision = "d975ea83b712"
@@ -17,10 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("instrument", sa.Column("file_location", String(255)), schema="ras_ci")
-    op.add_column("instrument", sa.Column("file_length", Integer), schema="ras_ci")
+    op.add_column("seft_instrument", sa.Column("GCS", Boolean), schema="ras_ci")
 
 
 def downgrade():
-    op.drop_column("instrument", "file_location")
-    op.drop_column("instrument", "file_length")
+    op.drop_column("seft_instrument", "GCS")

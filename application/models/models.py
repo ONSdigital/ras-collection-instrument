@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import deferred, relationship
-from sqlalchemy.types import TIMESTAMP, Enum, LargeBinary, String
+from sqlalchemy.types import TIMESTAMP, Boolean, Enum, LargeBinary, String
 
 from application.models import GUID
 
@@ -41,8 +41,6 @@ class InstrumentModel(Base):
     classifiers = Column(JSONB)
     survey = relationship("SurveyModel", back_populates="instruments")
     seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
-    file_location = Column(String(255))
-    file_length = Column(Integer)
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
     businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
@@ -53,21 +51,19 @@ class InstrumentModel(Base):
         self.instrument_id = uuid4()
         self.classifiers = classifiers
         self.type = ci_type
-        self.file_length = None
 
     @property
     def json(self):
         return {
             "id": self.instrument_id,
             "file_name": self.name,
-            "len": self.len,
+            "len": self.seft_file.len if self.seft_file else None,
             "stamp": self.stamp,
             "survey": self.survey.survey_id,
             "businesses": self.rurefs,
             "exercises": self.exids,
             "classifiers": self.classifiers,
             "type": self.type,
-            "file_location": self.file_location,
         }
 
     @property
@@ -84,15 +80,6 @@ class InstrumentModel(Base):
             return self.seft_file.file_name
 
         return self.classifiers.get("form_type")
-
-    @property
-    def len(self):
-        if self.file_length is not None:
-            return self.file_length
-        elif self.seft_file:
-            return self.seft_file.len
-        else:
-            return None
 
 
 class BusinessModel(Base):
@@ -186,6 +173,7 @@ class SEFTModel(Base):
     data = deferred(Column(LargeBinary))
     len = Column(Integer)
     instrument_id = Column(GUID, ForeignKey("instrument.instrument_id"))
+    gcs = Column(Boolean)
 
     instrument = relationship("InstrumentModel", back_populates="seft_file")
 
@@ -195,3 +183,4 @@ class SEFTModel(Base):
         self.file_name = file_name
         self.len = length
         self.data = data
+        self.gcs = False

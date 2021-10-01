@@ -23,7 +23,7 @@ class GoogleCloudSEFTCIBucket:
         blob = self.bucket.blob(path)
         blob.upload_from_file(file.stream)
         log.info("Successfully put SEFT CI in bucket")
-        return path
+        return
 
     def download_file_from_bucket(self, file_location):
         log.info("Downloading SEFT CI from GCP bucket: " + file_location)
