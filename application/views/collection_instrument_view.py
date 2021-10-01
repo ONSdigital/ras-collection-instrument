@@ -84,10 +84,7 @@ def unlink_collection_instrument(instrument_id, exercise_id):
 
 @collection_instrument_view.route("/download_csv/<exercise_id>", methods=["GET"])
 def download_csv(exercise_id):
-    if current_app.config["SEFT_GCS_ENABLED"] is False:
-        csv = CollectionInstrument().get_instruments_by_exercise_id_csv(exercise_id)
-    else:
-        csv = CollectionInstrument().get_instruments_by_exercise_id_csv_from_bucket(exercise_id)
+    csv = CollectionInstrument().get_instruments_by_exercise_id_csv(exercise_id)
 
     if csv:
         response = make_response(csv, 200)
@@ -127,10 +124,7 @@ def collection_instrument_by_id(instrument_id):
 
 @collection_instrument_view.route("/download/<instrument_id>", methods=["GET"])
 def instrument_data(instrument_id):
-    if current_app.config["SEFT_GCS_ENABLED"] is False:
-        data, file_name = CollectionInstrument().get_instrument_data(instrument_id)
-    else:
-        data, file_name = CollectionInstrument().get_instrument_data_from_database(instrument_id)
+    data, file_name = CollectionInstrument().get_instrument_data(instrument_id)
 
     if data and file_name:
         response = make_response(data, 200)

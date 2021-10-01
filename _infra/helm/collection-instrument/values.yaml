@@ -58,7 +58,7 @@ gcp:
     prefix: ""
   topic: topic
 
-gcpDev:
+gcpSEFTCI:
   project: ras-rm-dev
   collectionInstrumentBucket:
     name: "ras-rm-seft-ci-dev"
