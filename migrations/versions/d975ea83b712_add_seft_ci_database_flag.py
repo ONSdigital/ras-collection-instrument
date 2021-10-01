@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("seft_instrument", sa.Column("GCS", Boolean), schema="ras_ci")
+    op.add_column("seft_instrument", sa.Column("gcs", Boolean), schema="ras_ci")
 
 
 def downgrade():
-    op.drop_column("seft_instrument", "GCS")
+    op.drop_column("seft_instrument", "gcs")
