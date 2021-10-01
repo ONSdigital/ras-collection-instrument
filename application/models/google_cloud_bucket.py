@@ -21,7 +21,7 @@ class GoogleCloudSEFTCIBucket:
         else:
             path = file.filename
         blob = self.bucket.blob(path)
-        blob.upload_from_file(file.stream)
+        blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
         return
 
