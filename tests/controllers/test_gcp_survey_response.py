@@ -48,7 +48,7 @@ class TestGcpSurveyResponse(TestCase):
     }
 
     config = {
-        "SEFT_BUCKET_NAME": "test-bucket",
+        "SEFT_UPLOAD_BUCKET_NAME": "test-bucket",
         "SEFT_UPLOAD_PROJECT": "test-project",
         "SEFT_UPLOAD_PUBSUB_TOPIC": "test-topic",
     }

@@ -41,13 +41,13 @@ class GcpSurveyResponse:
 
         # Bucket config
         self.storage_client = None
-        self.SEFT_UPLOAD_BUCKET_NAME = self.config["SEFT_UPLOAD_BUCKET_NAME"]
-        self.SEFT_UPLOAD_BUCKET_FILE_PREFIX = self.config.get("SEFT_UPLOAD_BUCKET_FILE_PREFIX")
+        self.seft_upload_bucket_name = self.config["SEFT_UPLOAD_BUCKET_NAME"]
+        self.seft_upload_bucket_file_prefix = self.config.get("SEFT_UPLOAD_BUCKET_FILE_PREFIX")
 
         # Pubsub config
         self.publisher = None
-        self.SEFT_UPLOAD_PROJECT = self.config["SEFT_UPLOAD_PROJECT"]
-        self.SEFT_UPLOAD_PUBSUB_TOPIC = self.config["SEFT_UPLOAD_PUBSUB_TOPIC"]
+        self.seft_upload_project = self.config["SEFT_UPLOAD_PROJECT"]
+        self.seft_upload_pubsub_topic = self.config["SEFT_UPLOAD_PUBSUB_TOPIC"]
 
     """
     The survey response from a respondent
@@ -107,7 +107,7 @@ class GcpSurveyResponse:
 
         returns a dict os the size of the encrypted string and an md5
         """
-        bound_log = log.bind(project=self.SEFT_UPLOAD_PROJECT, bucket=self.seft_bucket_name)
+        bound_log = log.bind(project=self.seft_upload_project, bucket=self.seft_upload_bucket_name)
         bound_log.info("Starting to put file in bucket")
         try:
             if not filename.strip():
@@ -117,11 +117,11 @@ class GcpSurveyResponse:
             raise
 
         if self.storage_client is None:
-            self.storage_client = storage.Client(project=self.SEFT_UPLOAD_PROJECT)
+            self.storage_client = storage.Client(project=self.seft_upload_project)
 
-        bucket = self.storage_client.bucket(self.seft_bucket_name)
-        if self.seft_bucket_file_prefix:
-            filename = f"{self.seft_bucket_file_prefix}/{filename}"
+        bucket = self.storage_client.bucket(self.seft_upload_bucket_name)
+        if self.seft_upload_bucket_file_prefix:
+            filename = f"{self.seft_upload_bucket_file_prefix}/{filename}"
         blob = bucket.blob(filename)
         gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
         ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
@@ -139,13 +139,14 @@ class GcpSurveyResponse:
         """
         Takes some metadata about the collection instrument and puts a message on pubsub for SDX to consume.
 
+        :param tx_id: An id used by SDX to identify the transaction
         :param payload: The payload to be put onto the pubsub topic
         """
         if self.publisher is None:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(
-            self.SEFT_UPLOAD_PROJECT, self.SEFT_UPLOAD_PUBSUB_TOPIC
+            self.seft_upload_project, self.seft_upload_pubsub_topic
         )  # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
@@ -153,7 +154,7 @@ class GcpSurveyResponse:
         message = future.result(timeout=15)
         log.info("Publish succeeded", msg_id=message)
 
-    def create_pubsub_payload(self, case_id, md5sum, sizeBytes, file_name, tx_id: str) -> dict:
+    def create_pubsub_payload(self, case_id, md5sum, size_bytes, file_name, tx_id: str) -> dict:
         log.info("Creating pubsub payload", case_id=case_id)
 
         case_group = get_case_group(case_id)
@@ -187,7 +188,7 @@ class GcpSurveyResponse:
             "period": exercise_ref,
             "ru_ref": ru,
             "md5sum": md5sum,
-            "sizeBytes": sizeBytes,
+            "sizeBytes": size_bytes,
         }
         log.info("Payload created", payload=payload)
 
