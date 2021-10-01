@@ -53,16 +53,19 @@ dns:
 
 gcp:
   project: ras-rm-sandbox
-  bucket:
-    name: bucket
-    prefix: ""
+  seftUpload:
+    bucket:
+      name: bucket
+      prefix: ""
   topic: topic
+  collectionInstrument:
+    bucket:
+      name: "ras-rm-seft-ci-dev"
+      prefix: ""
+
 
 gcpSEFTCI:
   project: ras-rm-dev
-  collectionInstrumentBucket:
-    name: "ras-rm-seft-ci-dev"
-    prefix: ""
 
 seftGCS:
   enabled: false

@@ -41,13 +41,13 @@ class GcpSurveyResponse:
 
         # Bucket config
         self.storage_client = None
-        self.seft_bucket_name = self.config["SEFT_BUCKET_NAME"]
-        self.seft_bucket_file_prefix = self.config.get("SEFT_BUCKET_FILE_PREFIX")
+        self.SEFT_UPLOAD_BUCKET_NAME = self.config["SEFT_UPLOAD_BUCKET_NAME"]
+        self.SEFT_UPLOAD_BUCKET_FILE_PREFIX = self.config.get("SEFT_UPLOAD_BUCKET_FILE_PREFIX")
 
         # Pubsub config
         self.publisher = None
-        self.seft_pubsub_project = self.config["SEFT_PUBSUB_PROJECT"]
-        self.seft_pubsub_topic = self.config["SEFT_PUBSUB_TOPIC"]
+        self.SEFT_UPLOAD_PROJECT = self.config["SEFT_UPLOAD_PROJECT"]
+        self.SEFT_UPLOAD_PUBSUB_TOPIC = self.config["SEFT_UPLOAD_PUBSUB_TOPIC"]
 
     """
     The survey response from a respondent
@@ -107,7 +107,7 @@ class GcpSurveyResponse:
 
         returns a dict os the size of the encrypted string and an md5
         """
-        bound_log = log.bind(project=self.seft_pubsub_project, bucket=self.seft_bucket_name)
+        bound_log = log.bind(project=self.SEFT_UPLOAD_PROJECT, bucket=self.seft_bucket_name)
         bound_log.info("Starting to put file in bucket")
         try:
             if not filename.strip():
@@ -117,7 +117,7 @@ class GcpSurveyResponse:
             raise
 
         if self.storage_client is None:
-            self.storage_client = storage.Client(project=self.seft_pubsub_project)
+            self.storage_client = storage.Client(project=self.SEFT_UPLOAD_PROJECT)
 
         bucket = self.storage_client.bucket(self.seft_bucket_name)
         if self.seft_bucket_file_prefix:
@@ -145,7 +145,7 @@ class GcpSurveyResponse:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(
-            self.seft_pubsub_project, self.seft_pubsub_topic
+            self.SEFT_UPLOAD_PROJECT, self.SEFT_UPLOAD_PUBSUB_TOPIC
         )  # NOQA pylint:disable=no-member
         payload_bytes = json.dumps(payload).encode()
         log.info("About to publish to pubsub", topic_path=topic_path)
