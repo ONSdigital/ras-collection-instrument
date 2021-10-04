@@ -5,12 +5,11 @@ from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import deferred, relationship
-from sqlalchemy.types import TIMESTAMP, Enum, LargeBinary, String
+from sqlalchemy.types import TIMESTAMP, Boolean, Enum, LargeBinary, String
 
 from application.models import GUID
 
 Base = declarative_base()
-
 
 instrument_exercise_table = Table(
     "instrument_exercise",
@@ -164,6 +163,7 @@ class SurveyModel(Base):
 class SEFTModel(Base):
     """
     This models the 'seft_instrument' table which keeps the stored seft collection instruments
+    This table can be deleted once the SEFT CIs are migrated over to the bucket from the database
     """
 
     __tablename__ = "seft_instrument"
@@ -173,6 +173,7 @@ class SEFTModel(Base):
     data = deferred(Column(LargeBinary))
     len = Column(Integer)
     instrument_id = Column(GUID, ForeignKey("instrument.instrument_id"))
+    gcs = Column(Boolean)
 
     instrument = relationship("InstrumentModel", back_populates="seft_file")
 
@@ -182,3 +183,4 @@ class SEFTModel(Base):
         self.file_name = file_name
         self.len = length
         self.data = data
+        self.gcs = False
