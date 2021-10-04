@@ -115,6 +115,8 @@ def count_collection_instruments_by_search_string():
 @collection_instrument_view.route("/<instrument_id>", methods=["GET"])
 @collection_instrument_view.route("/collectioninstrument/id/<instrument_id>", methods=["GET"])
 def collection_instrument_by_id(instrument_id):
+    # The /collectioninstrument/id/<id> endpoint needs to be removed once things that call it are replaced by
+    # the simpler /<id> call above it
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
 
     if instrument_json:
