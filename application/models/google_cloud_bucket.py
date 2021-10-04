@@ -15,19 +15,23 @@ class GoogleCloudSEFTCIBucket:
         self.prefix = config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"]
 
     def upload_file_to_bucket(self, file):
-        log.info("Uploading SEFT CI to GCP bucket: " + file.filename)
         if self.prefix != "":
             path = self.prefix + "/" + file.filename
         else:
             path = file.filename
+        log.info("Uploading SEFT CI to GCP bucket: " + path)
         blob = self.bucket.blob(path)
         blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
         return
 
-    def download_file_from_bucket(self, file_location):
-        log.info("Downloading SEFT CI from GCP bucket: " + file_location)
-        blob = self.bucket.blob(file_location)
+    def download_file_from_bucket(self, file_location: str):
+        if self.prefix != "":
+            path = self.prefix + "/" + file_location
+        else:
+            path = file_location
+        log.info("Downloading SEFT CI from GCP bucket: " + path)
+        blob = self.bucket.blob(path)
         file = blob.download_as_bytes()
         log.info("Successfully downloaded SEFT CI from GCP bucket")
         return file
