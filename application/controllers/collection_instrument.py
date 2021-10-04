@@ -471,7 +471,7 @@ class CollectionInstrument(object):
                         date_stamp=instrument.stamp,
                     )
                 except Exception:
-                    log.exception("Couldn't find SEFT CI from bucket")
+                    log.exception("Couldn't find SEFT CI in bucket")
             else:
                 csv += csv_format.format(
                     count=count,

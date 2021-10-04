@@ -9,10 +9,10 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 class GoogleCloudSEFTCIBucket:
     def __init__(self, config):
         self.project_id = config["GOOGLE_CLOUD_PROJECT"]
-        self.bucket_name = config["COLLECTION_INSTRUMENT_BUCKET_NAME"]
+        self.bucket_name = config["SEFT_DOWNLOAD_BUCKET_NAME"]
         self.client = storage.Client(project=self.project_id)
         self.bucket = self.client.bucket(self.bucket_name)
-        self.prefix = config["COLLECTION_INSTRUMENT_BUCKET_FILE_PREFIX"]
+        self.prefix = config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"]
 
     def upload_file_to_bucket(self, file):
         log.info("Uploading SEFT CI to GCP bucket: " + file.filename)
