@@ -468,6 +468,18 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn("test_ru_ref", response.data.decode())
         self.assertIn("cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", response.data.decode())
 
+        # Given an instrument which is in the db
+        # When the collection instrument end point is called with an id
+        response = self.client.get(
+            "/collection-instrument-api/1.0.2/{instrument_id}".format(instrument_id=self.instrument_id),
+            headers=self.get_auth_headers(),
+        )
+
+        # Then the response returns the correct data
+        self.assertStatus(response, 200)
+        self.assertIn("test_ru_ref", response.data.decode())
+        self.assertIn("cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", response.data.decode())
+
     def test_get_instrument_by_id_no_instrument(self):
         # Given a instrument which doesn't exist
         missing_instrument_id = "ffb8a5e8-03ef-45f0-a85a-3276e98f66b8"
@@ -477,6 +489,16 @@ class TestCollectionInstrumentView(TestClient):
             "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}".format(
                 instrument_id=missing_instrument_id
             ),
+            headers=self.get_auth_headers(),
+        )
+
+        # Then the response returns no data
+        self.assertStatus(response, 404)
+        self.assertEqual(response.data.decode(), COLLECTION_INSTRUMENT_NOT_FOUND)
+
+        # When the collection instrument end point is called with an id
+        response = self.client.get(
+            "/collection-instrument-api/1.0.2/{instrument_id}".format(instrument_id=missing_instrument_id),
             headers=self.get_auth_headers(),
         )
 

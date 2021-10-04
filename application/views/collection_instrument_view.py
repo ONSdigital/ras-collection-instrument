@@ -112,6 +112,7 @@ def count_collection_instruments_by_search_string():
     return make_response(str(len(instruments)), 200)
 
 
+@collection_instrument_view.route("/<instrument_id>", methods=["GET"])
 @collection_instrument_view.route("/collectioninstrument/id/<instrument_id>", methods=["GET"])
 def collection_instrument_by_id(instrument_id):
     instrument_json = CollectionInstrument().get_instrument_json(instrument_id)
