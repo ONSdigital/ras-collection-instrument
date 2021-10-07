@@ -15,11 +15,9 @@ class GoogleCloudSEFTCIBucket:
         self.prefix = config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"]
 
     def upload_file_to_bucket(self, file, survey_ref, exercise_id):
+        path = survey_ref + "/" + exercise_id + "/" + file.filename
         if self.prefix != "":
-            path = self.prefix + "/" + file.filename
-        else:
-            path = file.filename
-        path = survey_ref + "/" + exercise_id + "/" + path
+            path = self.prefix + "/" + path
         log.info("Uploading SEFT CI to GCP bucket: " + path)
         blob = self.bucket.blob(path)
         blob.upload_from_file(file_obj=file.stream, rewind=True)
