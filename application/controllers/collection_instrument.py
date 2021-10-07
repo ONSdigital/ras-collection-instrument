@@ -432,11 +432,18 @@ class CollectionInstrument(object):
         file_size = len(file_contents)
         if file_size == 0:
             raise RasError("File is empty", 400)
-        cryptographer = Cryptographer()
-        encrypted_file = cryptographer.encrypt(file_contents)
-        seft_model.data = encrypted_file
         seft_model.length = file_size
-        seft_model.file_name = file.filename
+        if current_app.config["SEFT_GCS_ENABLED"] is False:
+            cryptographer = Cryptographer()
+            encrypted_file = cryptographer.encrypt(file_contents)
+            seft_model.file_name = file.filename
+            seft_model.data = encrypted_file
+        else:
+            # ToDo : Add logic for path for file
+            seft_model.file_name = file.filename
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
+            seft_model.gcs = True
         return seft_model
 
     @staticmethod
