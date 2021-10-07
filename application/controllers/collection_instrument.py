@@ -148,10 +148,6 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
-        log.info("HERE IS THE EXERCISE_ID!!!!!!!!")
-        log.info(instrument.exids)
-        log.info(instrument.exercises)
-        log.info("HERE IS THE EXERCISE_ID!!!!!!!!")
         try:
             survey_ref = get_survey_ref(instrument.survey.survey_id)
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
