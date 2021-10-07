@@ -22,7 +22,7 @@ class GoogleCloudSEFTCIBucket:
         blob = self.bucket.blob(path)
         blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
-        return
+        return path
 
     def download_file_from_bucket(self, file_location: str):
         if self.prefix != "":
