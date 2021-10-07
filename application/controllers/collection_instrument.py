@@ -8,6 +8,7 @@ from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
+    get_survey_ref,
     service_request,
 )
 from application.controllers.session_decorator import with_db_session
@@ -133,13 +134,6 @@ class CollectionInstrument(object):
         seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
         instrument.seft_file = seft_file
 
-        try:
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file)
-            instrument.seft_file.gcs = True
-        except Exception:
-            log.exception("An error occurred when trying to put SEFT CI in bucket")
-
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
@@ -153,6 +147,16 @@ class CollectionInstrument(object):
 
         if classifiers:
             instrument.classifiers = loads(classifiers)
+
+        survey_ref = get_survey_ref(instrument.survey.survey_id)
+        exercise_id = instrument.exercises.exercise_id
+
+        try:
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            seft_ci_bucket.upload_file_to_bucket(file=file, survey_ref=survey_ref, exercise_id=exercise_id)
+            instrument.seft_file.gcs = True
+        except Exception:
+            log.exception("An error occurred when trying to put SEFT CI in bucket")
 
         session.add(instrument)
         return instrument
