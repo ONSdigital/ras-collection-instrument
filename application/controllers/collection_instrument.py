@@ -471,7 +471,7 @@ class CollectionInstrument(object):
             if instrument.seft_file.gcs:
                 try:
                     survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = instrument.exids[0]
+                    exercise_id = str(instrument.exids[0])
                     file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                     file = seft_ci_bucket.download_file_from_bucket(file_path)
@@ -528,7 +528,7 @@ class CollectionInstrument(object):
             if instrument.seft_file.gcs:
                 try:
                     survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = instrument.exids[0]
+                    exercise_id = str(instrument.exids[0])
                     file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                     file = seft_ci_bucket.download_file_from_bucket(file_path)
