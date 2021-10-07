@@ -149,11 +149,11 @@ class CollectionInstrument(object):
             instrument.classifiers = loads(classifiers)
 
         survey_ref = get_survey_ref(instrument.survey.survey_id)
-        exercise_id = instrument.exercises.exercise_id
+        file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
 
         try:
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file, survey_ref=survey_ref, exercise_id=exercise_id)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
             instrument.seft_file.gcs = True
         except Exception:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
