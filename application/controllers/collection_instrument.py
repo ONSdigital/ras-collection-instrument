@@ -148,12 +148,15 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
+        log.info("HERE IS THE EXERCISE_ID!!!!!!!!")
+        log.info(instrument.exids)
+        log.info(instrument.exercises)
+        log.info("HERE IS THE EXERCISE_ID!!!!!!!!")
         try:
             survey_ref = get_survey_ref(instrument.survey.survey_id)
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            path = seft_ci_bucket.upload_file_to_bucket(file=file)
-            instrument.seft_file.file_name = path
+            seft_ci_bucket.upload_file_to_bucket(file=file)
             instrument.seft_file.gcs = True
         except Exception:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
@@ -467,8 +470,11 @@ class CollectionInstrument(object):
         for instrument in exercise.instruments:
             if instrument.seft_file.gcs:
                 try:
+                    survey_ref = get_survey_ref(instrument.survey.survey_id)
+                    exercise_id = instrument.exids
+                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.seft_file.file_name)
+                    file = seft_ci_bucket.download_file_from_bucket(file_path)
                     csv += csv_format.format(
                         count=count,
                         file_name=instrument.seft_file.file_name,
@@ -521,8 +527,11 @@ class CollectionInstrument(object):
         if instrument:
             if instrument.seft_file.gcs:
                 try:
+                    survey_ref = get_survey_ref(instrument.survey.survey_id)
+                    exercise_id = instrument.exids
+                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(instrument.seft_file.file_name)
+                    file = seft_ci_bucket.download_file_from_bucket(file_path)
                     return file, instrument.seft_file.file_name
                 except Exception:
                     log.exception("Couldn't find SEFT CI in GCP bucket")
