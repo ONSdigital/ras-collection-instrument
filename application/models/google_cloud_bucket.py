@@ -1,7 +1,10 @@
 import logging
 
 import structlog
+from flask import current_app
 from google.cloud import storage
+
+from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -20,7 +23,11 @@ class GoogleCloudSEFTCIBucket:
         else:
             path = file.filename
         log.info("Uploading SEFT CI to GCP bucket: " + path)
-        blob = self.bucket.blob(path)
+        key = current_app.config.get("ONS_CRYPTOKEY", None)
+        if key is None:
+            log.error("Customer defined encryption key is missing.")
+            raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
+        blob = self.bucket.blob(blob_name=path, encryption_key=key)
         blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
         return
