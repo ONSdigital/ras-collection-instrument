@@ -1,3 +1,4 @@
+import base64
 import logging
 
 import structlog
@@ -27,7 +28,8 @@ class GoogleCloudSEFTCIBucket:
         if key is None:
             log.error("Customer defined encryption key is missing.")
             raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
-        blob = self.bucket.blob(blob_name=path, encryption_key=key)
+        customer_supplied_encryption_key = base64.b64decode(key)
+        blob = self.bucket.blob(blob_name=path, encryption_key=customer_supplied_encryption_key)
         blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
         return
