@@ -744,6 +744,23 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Missing filename")
         self.assertStatus(response, 400)
 
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    def test_patch_collection_instrument_gcs(self, mock_bucket):
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        self.app.config["SEFT_GCS_ENABLED"] = True
+        # When patch call made
+        data = {"file": (BytesIO(b"test data"), "test.xls")}
+
+        response = self.client.patch(
+            f"/collection-instrument-api/1.0.2/{self.instrument_id}",
+            data=data,
+            content_type="multipart/form-data",
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), "The patch of the instrument was successful")
+
     @staticmethod
     @with_db_session
     def add_instrument_without_exercise(session=None):
