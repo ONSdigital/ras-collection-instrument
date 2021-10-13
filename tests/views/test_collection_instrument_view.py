@@ -708,7 +708,11 @@ class TestCollectionInstrumentView(TestClient):
 
     @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
-        mock_request.get(url_survey_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"})
+        mock_request.get(
+            url_survey_url,
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
 
         # When patch call made
         data = {"file": (BytesIO(), "test.xls")}
@@ -749,7 +753,11 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     def test_patch_collection_instrument_gcs(self, mock_request, mock_bucket):
-        mock_request.get(url_survey_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"})
+        mock_request.get(
+            url_survey_url,
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         self.app.config["SEFT_GCS_ENABLED"] = True
         # When patch call made
