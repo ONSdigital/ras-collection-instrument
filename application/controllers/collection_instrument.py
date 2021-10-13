@@ -447,8 +447,6 @@ class CollectionInstrument(object):
         else:
             seft_model.file_name = file.filename
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
-            if current_app.config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"] != "":
-                file.filename = current_app.config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"] + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
             seft_model.gcs = True
