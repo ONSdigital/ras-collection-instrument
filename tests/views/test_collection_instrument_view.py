@@ -27,6 +27,7 @@ from tests.test_client import TestClient
 
 linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
+url_survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 
 
 @with_db_session
@@ -705,18 +706,25 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
-    def test_patch_collection_instrument_empty_file(self):
+    @requests_mock.mock()
+    def test_patch_collection_instrument_empty_file(self, mock_request):
+        mock_request.get(url_survey_url, status_code=200)
+        mock_survey_service = Response()
+        print(mock_survey_service)
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         # given we have a collection instrument id
 
         # When patch call made
         data = {"file": (BytesIO(), "test.xls")}
+        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
 
-        response = self.client.patch(
-            f"/collection-instrument-api/1.0.2/{self.instrument_id}",
-            data=data,
-            content_type="multipart/form-data",
-            headers=self.get_auth_headers(),
-        )
+            response = self.client.patch(
+                f"/collection-instrument-api/1.0.2/{self.instrument_id}",
+                data=data,
+                content_type="multipart/form-data",
+                headers=self.get_auth_headers(),
+            )
 
         # Then 400 not found error returned
         response_data = json.loads(response.data)

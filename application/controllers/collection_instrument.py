@@ -179,7 +179,10 @@ class CollectionInstrument(object):
             log.error("Not a SEFT instrument")
             raise RasError("Not a SEFT instrument", 400)
 
-        seft_model = self._update_seft_file(instrument.seft_file, file)
+        survey_ref = get_survey_ref(instrument.survey.survey_id)
+        exercise_id = str(instrument.exids[0])
+
+        seft_model = self._update_seft_file(instrument.seft_file, file, survey_ref, exercise_id)
         session.add(seft_model)
 
     @staticmethod
@@ -423,7 +426,7 @@ class CollectionInstrument(object):
         return seft_file
 
     @staticmethod
-    def _update_seft_file(seft_model, file):
+    def _update_seft_file(seft_model, file, survey_ref, exercise_id):
         """
         Updates a seft_file with a new version of the data
 
@@ -442,8 +445,10 @@ class CollectionInstrument(object):
             seft_model.file_name = file.filename
             seft_model.data = encrypted_file
         else:
-            # ToDo : Add logic for path for file
             seft_model.file_name = file.filename
+            file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
+            if current_app.config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"] != "":
+                file.filename = current_app.config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"] + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
             seft_model.gcs = True
