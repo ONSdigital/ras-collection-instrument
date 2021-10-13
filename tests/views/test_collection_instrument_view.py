@@ -708,23 +708,17 @@ class TestCollectionInstrumentView(TestClient):
 
     @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
-        mock_request.get(url_survey_url, status_code=200)
-        mock_survey_service = Response()
-        print(mock_survey_service)
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
-        # given we have a collection instrument id
+        mock_request.get(url_survey_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"})
 
         # When patch call made
         data = {"file": (BytesIO(), "test.xls")}
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
 
-            response = self.client.patch(
-                f"/collection-instrument-api/1.0.2/{self.instrument_id}",
-                data=data,
-                content_type="multipart/form-data",
-                headers=self.get_auth_headers(),
-            )
+        response = self.client.patch(
+            f"/collection-instrument-api/1.0.2/{self.instrument_id}",
+            data=data,
+            content_type="multipart/form-data",
+            headers=self.get_auth_headers(),
+        )
 
         # Then 400 not found error returned
         response_data = json.loads(response.data)
@@ -752,8 +746,10 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Missing filename")
         self.assertStatus(response, 400)
 
+    @requests_mock.mock()
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
-    def test_patch_collection_instrument_gcs(self, mock_bucket):
+    def test_patch_collection_instrument_gcs(self, mock_request, mock_bucket):
+        mock_request.get(url_survey_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"})
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         self.app.config["SEFT_GCS_ENABLED"] = True
         # When patch call made
