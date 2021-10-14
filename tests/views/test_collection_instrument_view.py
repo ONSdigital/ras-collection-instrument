@@ -750,7 +750,6 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Missing filename")
         self.assertStatus(response, 400)
 
-
     @requests_mock.mock()
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     def test_patch_collection_instrument_gcs(self, mock_request, mock_bucket):
