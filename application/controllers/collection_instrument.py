@@ -448,10 +448,10 @@ class CollectionInstrument(object):
             old_filename = seft_model.file_name
             seft_model.file_name = file.filename
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.upload_file_to_bucket(file=file)
             old_filename = survey_ref + "/" + exercise_id + "/" + old_filename
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.delete_file_from_bucket(old_filename)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
             seft_model.gcs = True
         return seft_model
 
