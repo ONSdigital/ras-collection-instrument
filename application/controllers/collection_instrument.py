@@ -154,8 +154,9 @@ class CollectionInstrument(object):
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
             instrument.seft_file.gcs = True
-        except Exception:
-            log.error("An error occurred when trying to put SEFT CI in bucket")
+        except Exception as e:
+            log.exception("An error occurred when trying to put SEFT CI in bucket")
+            raise e
 
         session.add(instrument)
         return instrument
