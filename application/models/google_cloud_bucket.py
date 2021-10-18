@@ -4,6 +4,7 @@ from hashlib import sha256
 import structlog
 from flask import current_app
 from google.cloud import storage
+from google.cloud.exceptions import NotFound
 
 from application.exceptions import RasError
 
@@ -19,10 +20,9 @@ class GoogleCloudSEFTCIBucket:
         self.prefix = config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"]
 
     def upload_file_to_bucket(self, file):
+        path = file.filename
         if self.prefix != "":
-            path = self.prefix + "/" + file.filename
-        else:
-            path = file.filename
+            path = self.prefix + "/" + path
         log.info("Uploading SEFT CI to GCP bucket: " + path)
         key = current_app.config.get("ONS_CRYPTOKEY", None)
         if key is None:
@@ -44,3 +44,16 @@ class GoogleCloudSEFTCIBucket:
         file = blob.download_as_bytes()
         log.info("Successfully downloaded SEFT CI from GCP bucket")
         return file
+
+    def delete_file_from_bucket(self, file_location: str):
+        if self.prefix != "":
+            path = self.prefix + "/" + file_location
+        else:
+            path = file_location
+        log.info("Deleting SEFT CI from GCP bucket: " + path)
+        try:
+            self.bucket.delete_blob(path)
+            log.info("Successfully deleted SEFT CI file")
+        except NotFound:
+            log.error("SEFT CI file not found when attempting to delete")
+        return

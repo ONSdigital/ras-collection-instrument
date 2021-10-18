@@ -27,6 +27,7 @@ from tests.test_client import TestClient
 
 linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
+url_survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 
 
 @with_db_session
@@ -705,8 +706,13 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
-    def test_patch_collection_instrument_empty_file(self):
-        # given we have a collection instrument id
+    @requests_mock.mock()
+    def test_patch_collection_instrument_empty_file(self, mock_request):
+        mock_request.get(
+            url_survey_url,
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
 
         # When patch call made
         data = {"file": (BytesIO(), "test.xls")}
@@ -744,8 +750,15 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Missing filename")
         self.assertStatus(response, 400)
 
+    @requests_mock.mock()
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
-    def test_patch_collection_instrument_gcs(self, mock_bucket):
+    def test_patch_collection_instrument_gcs(self, mock_request, mock_bucket):
+        mock_request.get(
+            url_survey_url,
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
+
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         self.app.config["SEFT_GCS_ENABLED"] = True
         # When patch call made
