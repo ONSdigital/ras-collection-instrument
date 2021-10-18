@@ -23,7 +23,7 @@ service:
 resources:
   application:
     requests:
-      memory: "600i"
+      memory: "600Mi"
       cpu: "230m"
     limits:
       memory: "700Mi"
