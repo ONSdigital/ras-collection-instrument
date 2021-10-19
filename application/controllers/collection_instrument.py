@@ -172,8 +172,8 @@ class CollectionInstrument(object):
 
         for i in instruments:
             if i.seft_file.file_name == instrument.seft_file.file_name:
-                log.error('SEFT collection instrument file already uploaded for this collection exercise')
-                raise RasError('Collection instrument already uploaded', 400)
+                log.error("SEFT collection instrument file already uploaded for this collection exercise")
+                raise RasError("Collection instrument already uploaded", 400)
 
         return
 
