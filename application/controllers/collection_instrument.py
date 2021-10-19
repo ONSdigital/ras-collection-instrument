@@ -170,6 +170,8 @@ class CollectionInstrument(object):
     def validate_non_duplicate_instrument(instrument, session):
         instruments = query_instrument_by_exercise_id(instrument.exids[0], session)
         log.info(instruments)
+        log.info(instruments.statement)
+        log.info(instruments.all())
         log.info("HERE ARE THE INSTRUMENTS")
 
         for i in instruments:
