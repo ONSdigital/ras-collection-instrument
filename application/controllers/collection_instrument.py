@@ -173,6 +173,11 @@ class CollectionInstrument(object):
         log.info("HERE ARE THE INSTRUMENTS")
 
         for i in instruments:
+            log.info(i.id)
+            log.info(i.seft_file.file_name)
+            log.info(i.exids[0])
+            log.info("Here is the data about the instrument")
+            log.info(instrument.seft_file.file_name)
             if i.seft_file.file_name == instrument.seft_file.file_name:
                 log.error("SEFT collection instrument file already uploaded for this collection exercise")
                 raise RasError("Collection instrument already uploaded", 400)
