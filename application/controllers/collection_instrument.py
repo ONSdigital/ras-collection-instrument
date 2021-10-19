@@ -169,8 +169,8 @@ class CollectionInstrument(object):
     @staticmethod
     def validate_non_duplicate_instrument(instrument, session):
         instruments = query_instrument_by_exercise_id(instrument.exids[0], session)
-        log.info(instruments)
-        log.info(instruments.statement)
+        log.info(str(instruments))
+        log.info(str(instruments.statement))
         log.info(instruments.all())
         log.info("HERE ARE THE INSTRUMENTS")
 
