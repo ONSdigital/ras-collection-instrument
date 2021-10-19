@@ -16,8 +16,8 @@ from application.controllers.sql_queries import (
     query_business_by_ru,
     query_exercise_by_id,
     query_instrument,
-    query_instrument_by_id,
     query_instrument_by_exercise_id,
+    query_instrument_by_id,
     query_survey_by_id,
 )
 from application.exceptions import RasError
@@ -100,7 +100,7 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        self.validate_nonduplicate_instrument(instrument, session)
+        self.validate_non_duplicate_instrument(instrument, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
@@ -140,7 +140,7 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        self.validate_nonduplicate_instrument(instrument, session)
+        self.validate_non_duplicate_instrument(instrument, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
@@ -167,7 +167,7 @@ class CollectionInstrument(object):
         return instrument
 
     @staticmethod
-    def validate_nonduplicate_instrument(instrument, session):
+    def validate_non_duplicate_instrument(instrument, session):
         instruments = query_instrument_by_exercise_id(instrument.exids[0], session)
 
         for i in instruments:
