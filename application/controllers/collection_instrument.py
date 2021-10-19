@@ -169,6 +169,8 @@ class CollectionInstrument(object):
     @staticmethod
     def validate_non_duplicate_instrument(instrument, session):
         instruments = query_instrument_by_exercise_id(instrument.exids[0], session)
+        log.info(instruments)
+        log.info("HERE ARE THE INSTRUMENTS")
 
         for i in instruments:
             if i.seft_file.file_name == instrument.seft_file.file_name:
