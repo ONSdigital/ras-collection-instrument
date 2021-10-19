@@ -24,3 +24,6 @@ def query_instrument_by_id(instrument_id, session):
 
 def query_instrument(session):
     return session.query(InstrumentModel)
+
+def query_instrument_by_exercise_id(exercise_id, session):
+    return session.query(InstrumentModel).filter(InstrumentModel.exids[0] == exercise_id)
