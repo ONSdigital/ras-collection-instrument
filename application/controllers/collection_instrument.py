@@ -16,7 +16,6 @@ from application.controllers.sql_queries import (
     query_business_by_ru,
     query_exercise_by_id,
     query_instrument,
-    query_instrument_by_exercise_id,
     query_instrument_by_id,
     query_survey_by_id,
 )
@@ -168,13 +167,13 @@ class CollectionInstrument(object):
 
     @staticmethod
     def validate_non_duplicate_instrument(instrument, session):
-        instruments = query_instrument_by_exercise_id(instrument.exids[0], session)
-        log.info(str(instruments))
-        log.info(str(instruments.statement))
-        log.info(instruments.all())
-        log.info("HERE ARE THE INSTRUMENTS")
+        exercise = query_exercise_by_id(instrument.exids[0], session)
+        log.info(str(exercise))
+        log.info(str(exercise.statement))
+        log.info(exercise.all())
+        log.info("HERE IS THE EXERCISE")
 
-        for i in instruments:
+        for i in exercise.instruments:
             log.info(i.id)
             log.info(i.seft_file.file_name)
             log.info(i.exids[0])
