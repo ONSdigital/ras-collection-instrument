@@ -27,4 +27,5 @@ def query_instrument(session):
 
 
 def query_instrument_by_exercise_id(exercise_id, session):
+    session.query.join(ExerciseModel, InstrumentModel.exercises)
     return session.query(InstrumentModel).filter(InstrumentModel.exids == exercise_id)
