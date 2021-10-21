@@ -1,4 +1,4 @@
-"""add seft ci file location column
+"""remove unused columns from exercise table
 
 Revision ID: e2012ed329da
 Revises: d975ea83b712
@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_column("exercise", "items")
-    op.drop_column("exercise", "status")
+    op.drop_column("exercise", "items", schema="ras_ci")
+    op.drop_column("exercise", "status", schema="ras_ci")
 
 
 def downgrade():
