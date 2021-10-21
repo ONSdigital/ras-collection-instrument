@@ -139,7 +139,7 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        self.validate_non_duplicate_instrument(instrument, session)
+        self.validate_non_duplicate_instrument(instrument, exercise_id, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
@@ -166,11 +166,9 @@ class CollectionInstrument(object):
         return instrument
 
     @staticmethod
-    def validate_non_duplicate_instrument(instrument, session):
-        exercise = query_exercise_by_id(instrument.exids[0], session)
+    def validate_non_duplicate_instrument(instrument, exercise_id, session):
+        exercise = query_exercise_by_id(exercise_id, session)
         log.info(str(exercise))
-        log.info(str(exercise.statement))
-        log.info(exercise.all())
         log.info("HERE IS THE EXERCISE")
 
         for i in exercise.instruments:
