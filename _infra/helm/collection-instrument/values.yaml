@@ -24,10 +24,10 @@ resources:
   application:
     requests:
       memory: "600Mi"
-      cpu: "230m"
+      cpu: "330m"
     limits:
       memory: "700Mi"
-      cpu: "320m"
+      cpu: "3800m"
   proxy:
     requests:
       memory: "25Mi"
