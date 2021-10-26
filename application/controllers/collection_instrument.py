@@ -392,7 +392,7 @@ class CollectionInstrument(object):
         exercise = query_exercise_by_id(exercise_id, session)
         if not exercise:
             log.info("creating exercise", exercise_id=exercise_id)
-            exercise = ExerciseModel(exercise_id=exercise_id, items=1)
+            exercise = ExerciseModel(exercise_id=exercise_id)
         return exercise
 
     @staticmethod

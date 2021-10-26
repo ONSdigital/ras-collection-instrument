@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import deferred, relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, Enum, LargeBinary, String
+from sqlalchemy.types import TIMESTAMP, Boolean, LargeBinary, String
 
 from application.models import GUID
 
@@ -119,23 +119,17 @@ class ExerciseModel(Base):
 
     id = Column(Integer, primary_key=True)
     exercise_id = Column(GUID, index=True)
-    items = Column(Integer)
-    status = Column(Enum("uploading", "pending", "active", name="status"))
     instruments = relationship("InstrumentModel", secondary=instrument_exercise_table, back_populates="exercises")
 
-    def __init__(self, exercise_id=None, items=0, status="pending"):
+    def __init__(self, exercise_id=None):
         """Initialise the class with optionally supplied defaults"""
         self.exercise_id = exercise_id
-        self.items = items
-        self.status = status
 
     @property
     def json(self):
         return {
             "id": self.id,
             "exercise_id": self.exercise_id,
-            "items": self.items,
-            "status": self.status,
             "instruments": self.instrument_ids,
         }
 
