@@ -225,12 +225,12 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload_with_duplicate_filename_errors(self, mock_bucket, mock_request):
+    def test_collection_instrument_upload_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
         self.app.config["SEFT_GCS_ENABLED"] = True
         mock_request.get(
             url_survey_url,
             status_code=200,
-            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
         )
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -239,7 +239,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
 
