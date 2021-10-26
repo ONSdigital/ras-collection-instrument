@@ -91,6 +91,12 @@ class CollectionInstrument(object):
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
+
+        log.error(file.filename)
+        log.error("here is seft file name before going into function")
+        self.validate_non_duplicate_instrument(file, exercise_id, session)
+        log.error("YOU GOT PAST FUNCTION VALIDATION FUNCTION!")
+
         instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file)
@@ -98,11 +104,6 @@ class CollectionInstrument(object):
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
-
-        log.error(file.filename)
-        log.error("here is seft file name before going into function")
-
-        self.validate_non_duplicate_instrument(file, exercise_id, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
@@ -134,6 +135,12 @@ class CollectionInstrument(object):
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
+
+        log.error(file.filename)
+        log.error("here is seft file name before going into function")
+
+        self.validate_non_duplicate_instrument(file, exercise_id, session)
+        log.error("YOU GOT PAST FUNCTION VALIDATION FUNCTION!")
         instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
@@ -141,11 +148,6 @@ class CollectionInstrument(object):
 
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
-
-        log.error(file.filename)
-        log.error("here is seft file name before going into function")
-
-        self.validate_non_duplicate_instrument(file, exercise_id, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
