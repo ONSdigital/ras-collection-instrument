@@ -225,6 +225,52 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
+    def test_collection_instrument_upload_with_duplicate_filename_errors(self, mock_bucket, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        """Verify that uploading a collection instrument file that has the same name as a file already uploaded
+        for that collection exercise results in an error"""
+        # Given an upload file and a patched survey_id response
+        mock_survey_service = Response()
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
+        data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
+
+        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+            # When a post is made to the upload end point
+            response = self.client.post(
+                "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
+                headers=self.get_auth_headers(),
+                data=data,
+                content_type="multipart/form-data",
+            )
+
+            # Then the file uploads successfully
+            self.assertStatus(response, 200)
+            self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+            self.assertEqual(len(collection_instruments()), 2)
+
+        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+            # When a post is made to the upload end point
+            response = self.client.post(
+                "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
+                headers=self.get_auth_headers(),
+                data=data2,
+                content_type="multipart/form-data",
+            )
+
+            # Then the file upload fails
+            error = {
+                "errors": ["Collection instrument file already uploaded for this collection exercise"]
+            }
+            self.assertStatus(response, 400)
+            self.assertEqual(response.json, error)
+            self.assertEqual(len(collection_instruments()), 2)
+
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
