@@ -99,6 +99,9 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
+        log.error(file.filename)
+        log.error("here is seft file name before going into function")
+
         self.validate_non_duplicate_instrument(file, exercise_id, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
@@ -139,8 +142,8 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        log.info(file.filename)
-        log.info("here is seft file name before going into function")
+        log.error(file.filename)
+        log.error("here is seft file name before going into function")
 
         self.validate_non_duplicate_instrument(file, exercise_id, session)
 
@@ -174,9 +177,9 @@ class CollectionInstrument(object):
 
         if exercise:
             for i in exercise.instruments:
-                log.info(i.seft_file.file_name)
-                log.info(file.filename)
-                log.info("here is seft file name after going into function")
+                log.error(i.seft_file.file_name)
+                log.error(file.filename)
+                log.error("here is seft file name after going into function")
                 if i.seft_file.file_name == file.filename:
                     log.error("SEFT collection instrument file already uploaded for this collection exercise")
                     raise RasError("Collection instrument already uploaded for this collection exercise", 400)
