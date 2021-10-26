@@ -189,7 +189,7 @@ class TestCollectionInstrumentView(TestClient):
         mock_survey_service.status_code = 200
         mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
-        data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
+        data2 = {"file": (BytesIO(b"test data"), "12345678900.xls")}
 
         with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
             # When a post is made to the upload end point
@@ -217,7 +217,7 @@ class TestCollectionInstrumentView(TestClient):
 
             # Then the file upload fails
             error = {
-                "errors": ["Collection instrument already uploaded for this collection exercise"]
+                "errors": ["Reporting unit 12345678901 already has an instrument uploaded for this collection exercise"]
             }
             self.assertStatus(response, 400)
             self.assertEqual(response.json, error)
