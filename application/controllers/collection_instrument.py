@@ -91,12 +91,6 @@ class CollectionInstrument(object):
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-
-        log.error(file.filename)
-        log.error("here is seft file name before going into function")
-        self.validate_non_duplicate_instrument(file, exercise_id, session)
-        log.error("YOU GOT PAST FUNCTION VALIDATION FUNCTION!")
-
         instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file)
@@ -135,12 +129,7 @@ class CollectionInstrument(object):
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
-
-        log.error(file.filename)
-        log.error("here is seft file name before going into function")
-
         self.validate_non_duplicate_instrument(file, exercise_id, session)
-        log.error("YOU GOT PAST FUNCTION VALIDATION FUNCTION!")
         instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
@@ -179,9 +168,6 @@ class CollectionInstrument(object):
 
         if exercise:
             for i in exercise.instruments:
-                log.error(i.seft_file.file_name)
-                log.error(file.filename)
-                log.error("here is seft file name after going into function")
                 if i.seft_file.file_name == file.filename:
                     log.error("SEFT collection instrument file already uploaded for this collection exercise")
                     raise RasError("Collection instrument already uploaded for this collection exercise", 400)
