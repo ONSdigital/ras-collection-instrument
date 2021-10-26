@@ -99,7 +99,7 @@ class CollectionInstrument(object):
         exercise = self._find_or_create_exercise(exercise_id, session)
         instrument.exercises.append(exercise)
 
-        self.validate_non_duplicate_instrument(instrument, exercise_id, session)
+        self.validate_non_duplicate_instrument(file, exercise_id, session)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         instrument.survey = survey
