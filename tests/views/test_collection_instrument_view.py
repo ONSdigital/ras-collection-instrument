@@ -226,6 +226,7 @@ class TestCollectionInstrumentView(TestClient):
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
     def test_collection_instrument_upload_with_duplicate_filename_errors(self, mock_bucket, mock_request):
+        self.app.config["SEFT_GCS_ENABLED"] = True
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection instrument file that has the same name as a file already uploaded
