@@ -129,6 +129,7 @@ class CollectionInstrument(object):
         log.info("Upload exercise", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
+        self.validate_non_duplicate_instrument(file, exercise_id, session)
         instrument = InstrumentModel(ci_type="SEFT")
 
         seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
@@ -160,6 +161,18 @@ class CollectionInstrument(object):
 
         session.add(instrument)
         return instrument
+
+    @staticmethod
+    def validate_non_duplicate_instrument(file, exercise_id, session):
+        exercise = query_exercise_by_id(exercise_id, session)
+
+        if exercise:
+            for i in exercise.instruments:
+                if i.seft_file.file_name == file.filename:
+                    log.error("Collection instrument file already uploaded for this collection exercise")
+                    raise RasError("Collection instrument file already uploaded for this collection exercise", 400)
+
+        return
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
