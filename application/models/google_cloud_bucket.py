@@ -40,7 +40,12 @@ class GoogleCloudSEFTCIBucket:
         else:
             path = file_location
         log.info("Downloading SEFT CI from GCP bucket: " + path)
-        blob = self.bucket.blob(path)
+        key = current_app.config.get("ONS_CRYPTOKEY", None)
+        if key is None:
+            log.error("Customer defined encryption key is missing.")
+            raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
+        customer_supplied_encryption_key = sha256(key.encode("utf-8")).digest()
+        blob = self.bucket.blob(blob_name=path, encryption_key=customer_supplied_encryption_key)
         file = blob.download_as_bytes()
         log.info("Successfully downloaded SEFT CI from GCP bucket")
         return file
