@@ -268,9 +268,7 @@ class TestCollectionInstrumentView(TestClient):
             )
 
             # Then the file upload fails
-            error = {
-                "errors": ["Collection instrument file already uploaded for this collection exercise"]
-            }
+            error = {"errors": ["Collection instrument file already uploaded for this collection exercise"]}
             self.assertStatus(response, 400)
             self.assertEqual(response.json, error)
             self.assertEqual(len(collection_instruments()), 2)
