@@ -9,7 +9,9 @@ logger = wrap_logger(logging.getLogger(__name__))
 class GNUEncrypter:
     def __init__(self, public_key, passphrase=None, always_trust=True):
         self.gpg = gnupg.GPG()
-        self.gpg.import_keys(public_key.encode("utf-8"))
+        with open(public_key, "rb") as key_file:
+            key_data = key_file.read()
+        self.gpg.import_keys(key_data)
 
     def encrypt(self, payload, recipient):
         """
