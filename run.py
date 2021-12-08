@@ -57,8 +57,9 @@ def create_app(config=None, init_db=True):
 
     logger.info("App setup complete", config=config_name)
 
+    credentials = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        print("In here and the credentials are")
+        logger.info("Creating the client", credentials=credentials)
         app.pubsub = pubsub_v1.PublisherClient()
 
     return app
