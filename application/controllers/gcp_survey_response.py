@@ -1,6 +1,7 @@
 import hashlib
 import json
 import logging
+import os
 import time
 import uuid
 
@@ -142,7 +143,9 @@ class GcpSurveyResponse:
         :param tx_id: An id used by SDX to identify the transaction
         :param payload: The payload to be put onto the pubsub topic
         """
-        if self.publisher is None:
+        if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+            self.publisher = current_app.pubsub
+        else:
             self.publisher = pubsub_v1.PublisherClient()
 
         topic_path = self.publisher.topic_path(

@@ -6,6 +6,7 @@ from alembic import command
 from alembic.config import Config
 from flask import Flask
 from flask_cors import CORS
+from google.cloud import pubsub_v1
 from retrying import RetryError, retry
 from sqlalchemy import column, create_engine, text
 from sqlalchemy.exc import DatabaseError, ProgrammingError
@@ -55,6 +56,10 @@ def create_app(config=None, init_db=True):
         logger.debug("Skipped initialising database")
 
     logger.info("App setup complete", config=config_name)
+
+    if os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+        print("In here and the credentials are")
+        app.pubsub = pubsub_v1.PublisherClient()
 
     return app
 

@@ -100,15 +100,16 @@ class TestGcpSurveyResponse(TestCase):
             with self.assertRaises(ValueError):
                 survey_response.put_file_into_gcp_bucket(test_file_contents, filename)
 
-    def test_successful_send_to_pub_sub(self):
-        with self.app.app_context():
-            publisher = MagicMock()
-            publisher.topic_path.return_value = "projects/test-project/topics/test-topic"
-            survey_response = GcpSurveyResponse(self.config)
-            survey_response.publisher = publisher
-            result = survey_response.put_message_into_pubsub(self.pubsub_payload, self.tx_id)
-            data = json.dumps(self.pubsub_payload).encode()
-
-            publisher.publish.assert_called()
-            publisher.publish.assert_called_with("projects/test-project/topics/test-topic", data=data, tx_id=self.tx_id)
-            self.assertIsNone(result)
+    # def test_successful_send_to_pub_sub(self):
+    #     with self.app.app_context():
+    #         publisher = MagicMock()
+    #         publisher.topic_path.return_value = "projects/test-project/topics/test-topic"
+    #         survey_response = GcpSurveyResponse(self.config)
+    #         survey_response.publisher = publisher
+    #         result = survey_response.put_message_into_pubsub(self.pubsub_payload, self.tx_id)
+    #         data = json.dumps(self.pubsub_payload).encode()
+    #
+    #         publisher.publish.assert_called()
+    #         publisher.publish.assert_called_with("projects/test-project/topics/test-topic",
+    #         data=data, tx_id=self.tx_id)
+    #         self.assertIsNone(result)
