@@ -27,7 +27,7 @@ alembic = "*"
 pycryptodome = "*"
 requestsdefaulter = "*"
 google-cloud-storage = "*"
-google-cloud-pubsub = "==1.7.0"
+google-cloud-pubsub = "*"
 python-gnupg = "==0.4.7"
 
 [dev-packages]
