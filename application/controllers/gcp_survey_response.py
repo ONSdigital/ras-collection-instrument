@@ -123,7 +123,7 @@ class GcpSurveyResponse:
         if self.seft_upload_bucket_file_prefix:
             filename = f"{self.seft_upload_bucket_file_prefix}/{filename}"
         blob = bucket.blob(filename)
-        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
+        gnugpg_secret_keys = current_app.config["ONS_GNU_LOCAL_CRYPTOKEY"]
         ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
         encrypter = GNUEncrypter(gnugpg_secret_keys)
         encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
