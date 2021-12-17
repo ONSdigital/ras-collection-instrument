@@ -6,7 +6,6 @@ from flask import current_app
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
 
-from application.controllers.gnu_encryptor import GNUEncrypter
 from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -25,15 +24,13 @@ class GoogleCloudSEFTCIBucket:
         if self.prefix != "":
             path = self.prefix + "/" + path
         log.info("Uploading SEFT CI to GCP bucket: " + path)
-        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
-        ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
-        if gnugpg_secret_keys is None:
+        key = current_app.config.get("ONS_CRYPTOKEY", None)
+        if key is None:
             log.error("Customer defined encryption key is missing.")
             raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
-        encrypter = GNUEncrypter(gnugpg_secret_keys)
-        encrypted_file = encrypter.encrypt(file, ons_gnu_fingerprint)
-        blob = self.bucket.blob(blob_name=path)
-        blob.upload_from_file(file_obj=encrypted_file, rewind=True)
+        customer_supplied_encryption_key = sha256(key.encode("utf-8")).digest()
+        blob = self.bucket.blob(blob_name=path, encryption_key=customer_supplied_encryption_key)
+        blob.upload_from_file(file_obj=file.stream, rewind=True)
         log.info("Successfully put SEFT CI in bucket")
         return
 
