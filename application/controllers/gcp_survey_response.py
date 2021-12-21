@@ -125,7 +125,7 @@ class GcpSurveyResponse:
         blob = bucket.blob(filename)
         # with open("dev-public-key.gpg", "rb") as key_file:
         #     gnugpg_secret_keys = key_file.read()
-        gnugpg_secret_keys = current_app.config["ONS_GNU_LOCAL_CRYPTOKEY"]
+        gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
         bound_log.error("Here is the key:")
         bound_log.error(gnugpg_secret_keys)
         ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
