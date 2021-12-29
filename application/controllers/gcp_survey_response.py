@@ -123,12 +123,13 @@ class GcpSurveyResponse:
         if self.seft_upload_bucket_file_prefix:
             filename = f"{self.seft_upload_bucket_file_prefix}/{filename}"
         blob = bucket.blob(filename)
-        with open("test-key.gpg", "rb") as key_file:
+        with open("pubkey.gpg", "rb") as key_file:
             gnugpg_secret_keys = key_file.read()
         # gnugpg_secret_keys = current_app.config["ONS_GNU_PUBLIC_CRYPTOKEY"]
         bound_log.error("Here is the key:")
         bound_log.error(gnugpg_secret_keys)
-        ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
+        # ons_gnu_fingerprint = current_app.config["ONS_GNU_FINGERPRINT"]
+        ons_gnu_fingerprint = "test@test.test"
         encrypter = GNUEncrypter(gnugpg_secret_keys)
         encrypted_message = encrypter.encrypt(file_contents, ons_gnu_fingerprint)
         md5sum = hashlib.md5(str(encrypted_message).encode()).hexdigest()
