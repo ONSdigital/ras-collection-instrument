@@ -7,7 +7,7 @@ logger = wrap_logger(logging.getLogger(__name__))
 
 
 class GNUEncrypter:
-    def __init__(self, public_key, passphrase=None, always_trust=True):
+    def __init__(self, public_key, passphrase=None, always_trust=True, extra_args="--output /dev/null"):
         self.gpg = gnupg.GPG()
         self.gpg.import_keys(public_key.encode("utf-8"))
 
