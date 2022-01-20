@@ -8,7 +8,7 @@ class Config(object):
     HOST = os.getenv("HOST", "0.0.0.0")
     PORT = os.getenv("PORT", 8002)
     DEBUG = os.getenv("DEBUG", False)
-    LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "DEBUG")
+    LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
     JSON_SECRET_KEYS = os.getenv("JSON_SECRET_KEYS")
     ONS_CRYPTOKEY = os.getenv("ONS_CRYPTOKEY")
     ONS_GNU_PUBLIC_CRYPTOKEY = os.getenv("ONS_GNU_PUBLIC_CRYPTOKEY")
