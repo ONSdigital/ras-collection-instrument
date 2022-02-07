@@ -59,6 +59,9 @@ gcp:
       name: bucket
       prefix: ""
     topic: topic
+    migration:
+      topic: topic
+      subscription: subscription
   collectionInstrument:
     bucket:
       name: "ras-rm-seft-ci-dev"
