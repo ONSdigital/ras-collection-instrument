@@ -518,6 +518,21 @@ class CollectionInstrument(object):
 
     @staticmethod
     @with_db_session
+    def get_instrument(instrument_id, session):
+        """
+        Get collection instrument json from the db
+
+        :param instrument_id: The id of the instrument we want
+        :param session: database session
+        :return: formatted JSON version of the instrument
+        """
+
+        instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
+        exercise = instrument.exercises
+        return instrument
+
+    @staticmethod
+    @with_db_session
     def get_instrument_json(instrument_id, session):
         """
         Get collection instrument json from the db

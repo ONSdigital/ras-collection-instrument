@@ -5,8 +5,9 @@ from flask import Blueprint, current_app, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
-from application.controllers.service_helper import collection_instrument_link
+from application.controllers.service_helper import collection_instrument_link, get_survey_ref
 from application.exceptions import RasError
+from application.models.google_cloud_bucket import GoogleCloudSEFTCIBucket
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -95,6 +96,38 @@ def download_csv(exercise_id):
         return response
 
     return make_response(NO_INSTRUMENT_FOR_EXERCISE, 404)
+
+
+@collection_instrument_view.route("/migrate/<instrument_id>", methods=["GET"])
+def migrate_collection_instrument(instrument_id):
+
+    # Get the record out of the database
+    collection_instrument = CollectionInstrument.get_instrument_json(instrument_id)
+    exercises = collection_instrument['exercises']
+    if len('exercises') == 0:
+        return jsonify("No exercise associated with the SEFT", 400)
+    if len(exercises) > 1:
+        return jsonify("More than 1 exercise associated with the instrument", 400)
+    if not collection_instrument['file_name']:
+        return jsonify("Filename missing", 400)
+    if not collection_instrument['file_name']:
+        return jsonify("Filename missing", 400)
+
+    exercise_id = exercises[0]
+
+    survey_ref = get_survey_ref(collection_instrument['survey'])
+    data = CollectionInstrument.get_instrument_data(instrument_id)
+    filename = survey_ref + "/" + exercise_id + "/" + collection_instrument['file_name']
+    # TODO sort out format of file so bucket uploader is happy
+    # file.filename = filename
+    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+    seft_ci_bucket.upload_file_to_bucket(file=data)
+
+    # Decrypt data
+    # Write it to the bucket under survey_ref/exercise_id/filename
+    # Write the record back to the database with the data blanked and gcs set to true
+    return '', 204
+
 
 
 @collection_instrument_view.route("/collectioninstrument", methods=["GET"])
