@@ -2,6 +2,7 @@ from application.models.models import (
     BusinessModel,
     ExerciseModel,
     InstrumentModel,
+    SEFTModel,
     SurveyModel,
 )
 
@@ -24,3 +25,7 @@ def query_instrument_by_id(instrument_id, session):
 
 def query_instrument(session):
     return session.query(InstrumentModel)
+
+
+def query_seft_instrument_by_instrument_id(instrument_id, session):
+    return session.query(SEFTModel).filter(SEFTModel.instrument_id == instrument_id).one()

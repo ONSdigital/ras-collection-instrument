@@ -17,6 +17,7 @@ from application.controllers.sql_queries import (
     query_exercise_by_id,
     query_instrument,
     query_instrument_by_id,
+    query_seft_instrument_by_instrument_id,
     query_survey_by_id,
 )
 from application.exceptions import RasError
@@ -518,18 +519,19 @@ class CollectionInstrument(object):
 
     @staticmethod
     @with_db_session
-    def get_instrument(instrument_id, session):
+    def remove_database_stored_seft_data(instrument_id, session):
         """
-        Get collection instrument json from the db
+        Get collection instrument json from the db (needed so we can get the
 
         :param instrument_id: The id of the instrument we want
         :param session: database session
         :return: formatted JSON version of the instrument
         """
 
-        instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
-        exercise = instrument.exercises
-        return instrument
+        seft_instrument = query_seft_instrument_by_instrument_id(instrument_id, session)
+        seft_instrument.data = None
+        seft_instrument.gcs = True
+        return seft_instrument
 
     @staticmethod
     @with_db_session

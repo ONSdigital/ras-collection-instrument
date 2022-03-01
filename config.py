@@ -29,10 +29,6 @@ class Config(object):
     SEFT_UPLOAD_PROJECT = os.getenv("SEFT_UPLOAD_PROJECT", "ras-rm-sandbox")
     SEFT_UPLOAD_PUBSUB_TOPIC = os.getenv("SEFT_UPLOAD_PUBSUB_TOPIC", "ras-rm-notify-test")
 
-    # Temporary pub/sub queues for migrating SEFT CI files to buckets
-    SEFT_MIGRATION_PUBSUB_TOPIC = os.getenv("SEFT_MIGRATION_PUBSUB_TOPIC", "ras-rm-seft-migration-topic")
-    SEFT_MIGRATION_PUBSUB_SUBSCRIPTION = os.getenv("SEFT_MIGRATION_PUBSUB_SUBSCRIPTION", "ras-rm-seft-migration-subscription")
-
     SEFT_DOWNLOAD_BUCKET_NAME = os.getenv("SEFT_DOWNLOAD_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_DOWNLOAD_BUCKET_FILE_PREFIX")
