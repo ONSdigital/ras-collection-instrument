@@ -5,7 +5,6 @@ from flask import Blueprint, current_app, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
-from application.controllers.cryptographer import Cryptographer
 from application.controllers.service_helper import (
     collection_instrument_link,
     get_survey_ref,
@@ -114,20 +113,16 @@ def migrate_collection_instrument(instrument_id):
         return jsonify("More than 1 exercise associated with the instrument", 400)
     if not collection_instrument["file_name"]:
         return jsonify("Filename missing", 400)
-    if not collection_instrument["file_name"]:
-        return jsonify("Filename missing", 400)
 
     exercise_id = exercises[0]
 
     survey_ref = get_survey_ref(collection_instrument["survey"])
-    data = CollectionInstrument.get_instrument_data(instrument_id)
-    cryptographer = Cryptographer()
-    decrypted_data = cryptographer.decrypt(data)
+    data, file_name = CollectionInstrument.get_instrument_data(instrument_id)
 
-    path = survey_ref + "/" + exercise_id + "/" + collection_instrument["file_name"]
+    path = survey_ref + "/" + str(exercise_id) + "/" + collection_instrument["file_name"]
 
     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-    seft_ci_bucket.upload_migrated_file_to_bucket(path, decrypted_data)
+    seft_ci_bucket.upload_migrated_file_to_bucket(path, data)
 
     CollectionInstrument.remove_database_stored_seft_data(instrument_id)
     # Decrypt data
