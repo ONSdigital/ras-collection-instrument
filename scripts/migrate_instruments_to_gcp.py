@@ -31,4 +31,3 @@ for instrument_id in instrument_ids:
     print(f"Successfully migrated instrument with id [{instrument_id}]")
 
 print("Finished migrating instruments")
-
