@@ -29,7 +29,7 @@ class GoogleCloudSEFTCIBucket:
             raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
         customer_supplied_encryption_key = sha256(key.encode("utf-8")).digest()
         blob = self.bucket.blob(blob_name=path, encryption_key=customer_supplied_encryption_key)
-        blob.upload_from_file(file_obj=data)
+        blob.upload_from_string(data)
         log.info("Successfully migrated SEFT CI to bucket", path=path)
         return
 
