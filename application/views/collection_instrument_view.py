@@ -120,14 +120,14 @@ def migrate_collection_instrument(instrument_id):
     if collection_instrument.seft_file.gcs:
         return jsonify("GCS flag true for this instrument"), 400
 
-    exercise_id = exercises[0].exercise_id
+    exercise_id = str(exercises[0].exercise_id)
     if not validate_uuid(exercise_id):
         return jsonify(f"Exercise id isn't a valid uuid [{exercise_id}]"), 400
 
     survey_ref = get_survey_ref(collection_instrument.survey.survey_id)
     data, file_name = CollectionInstrument.get_instrument_data(instrument_id)
 
-    path = survey_ref + "/" + str(exercise_id) + "/" + collection_instrument.seft_file.file_name
+    path = survey_ref + "/" + exercise_id + "/" + collection_instrument.seft_file.file_name
 
     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
     seft_ci_bucket.upload_migrated_file_to_bucket(path, data)
