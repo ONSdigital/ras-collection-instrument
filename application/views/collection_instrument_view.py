@@ -5,6 +5,7 @@ from flask import Blueprint, current_app, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
+from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
     get_survey_ref,
@@ -105,29 +106,35 @@ def download_csv(exercise_id):
 def migrate_collection_instrument(instrument_id):
 
     # Get the record out of the database
-    collection_instrument = CollectionInstrument.get_instrument_json(instrument_id)
-    exercises = collection_instrument["exercises"]
-    if len("exercises") == 0:
-        return jsonify("No exercise associated with the SEFT", 400)
+    session = current_app.db.session()
+    collection_instrument = CollectionInstrument.get_instrument_by_id(instrument_id, session)
+    exercises = collection_instrument.exercises
+    if collection_instrument.type != "SEFT":
+        return jsonify("Wrong instrument type"), 400
+    if len(exercises) == 0:
+        return jsonify("No exercise associated with the SEFT"), 400
     if len(exercises) > 1:
-        return jsonify("More than 1 exercise associated with the instrument", 400)
-    if not collection_instrument["file_name"]:
-        return jsonify("Filename missing", 400)
+        return jsonify("More than 1 exercise associated with the instrument"), 400
+    if not collection_instrument.seft_file.file_name:
+        return jsonify("Filename missing"), 400
+    if collection_instrument.seft_file.gcs:
+        return jsonify("GCS flag true for this instrument"), 400
 
-    exercise_id = exercises[0]
+    exercise_id = exercises[0].exercise_id
+    if not validate_uuid(exercise_id):
+        return jsonify(f"Exercise id isn't a valid uuid [{exercise_id}]"), 400
 
-    survey_ref = get_survey_ref(collection_instrument["survey"])
+    survey_ref = get_survey_ref(collection_instrument.survey.survey_id)
     data, file_name = CollectionInstrument.get_instrument_data(instrument_id)
 
-    path = survey_ref + "/" + str(exercise_id) + "/" + collection_instrument["file_name"]
+    path = survey_ref + "/" + str(exercise_id) + "/" + collection_instrument.seft_file.file_name
 
     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
     seft_ci_bucket.upload_migrated_file_to_bucket(path, data)
 
-    CollectionInstrument.remove_database_stored_seft_data(instrument_id)
-    # Decrypt data
-    # Write it to the bucket under survey_ref/exercise_id/filename
-    # Write the record back to the database with the data blanked and gcs set to true
+    # Write the record back to the database gcs set to true
+    CollectionInstrument.set_gcs_flag_true_for_seft(instrument_id)
+
     return "", 204
 
 

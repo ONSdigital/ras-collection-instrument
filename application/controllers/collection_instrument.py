@@ -519,19 +519,18 @@ class CollectionInstrument(object):
 
     @staticmethod
     @with_db_session
-    def remove_database_stored_seft_data(instrument_id, session):
+    def set_gcs_flag_true_for_seft(instrument_id, session):
         """
-        Get collection instrument json from the db (needed so we can get the
+        Sets the gcs flag against the seft instrument to true.
 
         :param instrument_id: The id of the instrument we want
         :param session: database session
-        :return: formatted JSON version of the instrument
         """
 
         seft_instrument = query_seft_instrument_by_instrument_id(instrument_id, session)
-        seft_instrument.data = None
         seft_instrument.gcs = True
-        return seft_instrument
+        # Does a commit at the end of the function
+        return
 
     @staticmethod
     @with_db_session
