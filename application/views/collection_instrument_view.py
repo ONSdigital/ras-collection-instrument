@@ -119,6 +119,8 @@ def migrate_collection_instrument(instrument_id):
         return jsonify("Filename missing"), 400
     if collection_instrument.seft_file.gcs:
         return jsonify("GCS flag true for this instrument"), 400
+    if not collection_instrument.seft_file.data:
+        return jsonify("No instrument data stored in the database"), 400
 
     exercise_id = str(exercises[0].exercise_id)
     if not validate_uuid(exercise_id):
