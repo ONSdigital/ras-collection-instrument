@@ -19,6 +19,20 @@ class GoogleCloudSEFTCIBucket:
         self.bucket = self.client.bucket(self.bucket_name)
         self.prefix = config["SEFT_DOWNLOAD_BUCKET_FILE_PREFIX"]
 
+    def upload_migrated_file_to_bucket(self, path, data):
+        if self.prefix != "":
+            path = self.prefix + "/" + path
+        log.info("Migrating SEFT CI to GCP bucket", path=path)
+        key = current_app.config.get("ONS_CRYPTOKEY", None)
+        if key is None:
+            log.error("Customer defined encryption key is missing.")
+            raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
+        customer_supplied_encryption_key = sha256(key.encode("utf-8")).digest()
+        blob = self.bucket.blob(blob_name=path, encryption_key=customer_supplied_encryption_key)
+        blob.upload_from_string(data)
+        log.info("Successfully migrated SEFT CI to bucket", path=path)
+        return
+
     def upload_file_to_bucket(self, file):
         path = file.filename
         if self.prefix != "":
