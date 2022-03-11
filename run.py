@@ -26,9 +26,7 @@ def create_app(config=None, init_db=True):
     app.config.from_object(app_config)
 
     # register view blueprints
-    from application.views.survey_responses_view import survey_responses_view
 
-    app.register_blueprint(survey_responses_view, url_prefix="/survey_response-api/v1")
     from application.views.collection_instrument_view import collection_instrument_view
 
     app.register_blueprint(collection_instrument_view, url_prefix="/collection-instrument-api/1.0.2")
@@ -36,6 +34,7 @@ def create_app(config=None, init_db=True):
     from application.views.info_view import info_view
 
     app.register_blueprint(info_view)
+
     from application.error_handlers import error_blueprint
 
     app.register_blueprint(error_blueprint)
