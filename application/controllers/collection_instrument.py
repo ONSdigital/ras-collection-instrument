@@ -17,7 +17,6 @@ from application.controllers.sql_queries import (
     query_exercise_by_id,
     query_instrument,
     query_instrument_by_id,
-    query_seft_instrument_by_instrument_id,
     query_survey_by_id,
 )
 from application.exceptions import RasError
@@ -516,21 +515,6 @@ class CollectionInstrument(object):
                 )
             count += 1
         return csv
-
-    @staticmethod
-    @with_db_session
-    def set_gcs_flag_true_for_seft(instrument_id, session):
-        """
-        Sets the gcs flag against the seft instrument to true.
-
-        :param instrument_id: The id of the instrument we want
-        :param session: database session
-        """
-
-        seft_instrument = query_seft_instrument_by_instrument_id(instrument_id, session)
-        seft_instrument.gcs = True
-        # Does a commit at the end of the function
-        return
 
     @staticmethod
     @with_db_session
