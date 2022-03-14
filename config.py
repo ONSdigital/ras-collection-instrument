@@ -20,15 +20,6 @@ class Config(object):
     DATABASE_URI = os.getenv("DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
     DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA", "ras_ci")
 
-    SEFT_UPLOAD_BUCKET_NAME = os.getenv("SEFT_UPLOAD_BUCKET_NAME", "test-bucket")
-    # Prefix only used for dev environments to file in folders within the bucket
-    SEFT_UPLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_UPLOAD_BUCKET_FILE_PREFIX")
-
-    # In preprod and prod, this project will point to the SDX project as they own the topic.  In dev environments
-    # this will be our ras-rm project as we create the topic ourselves.
-    SEFT_UPLOAD_PROJECT = os.getenv("SEFT_UPLOAD_PROJECT", "ras-rm-sandbox")
-    SEFT_UPLOAD_PUBSUB_TOPIC = os.getenv("SEFT_UPLOAD_PUBSUB_TOPIC", "ras-rm-notify-test")
-
     SEFT_DOWNLOAD_BUCKET_NAME = os.getenv("SEFT_DOWNLOAD_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_DOWNLOAD_BUCKET_FILE_PREFIX")

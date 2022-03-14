@@ -439,44 +439,6 @@ paths:
                     example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
         '404':
           description: Collection instrument not found
-  "/survey_response-api/v1/survey_responses/{case_id}":
-    post:
-      summary: Encrypt and upload collection instrument
-      tags:
-        - survey-response
-      parameters:
-        - in: path
-          name: case_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 'ab548d78-c2f1-400f-9899-79d944b87300'
-          description: The ID of the case
-        - in: query
-          name: file
-          required: true
-          schema:
-            type: string
-            example: 'file_name.xlsx'
-          description: Spreadsheet file
-      responses:
-        '200':
-          description: Collection instrument successfully uploaded
-          content:
-            text/plain:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: 'Upload successful'
-        '400':
-          description: File is invalid
-        '404':
-          description: Missing data
-        '500':
-          description: Collection instrument upload unsuccessful
   "/info":
     get:
       summary: Returns survey information
