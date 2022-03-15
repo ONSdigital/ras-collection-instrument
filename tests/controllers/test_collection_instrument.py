@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import requests_mock
+from openpyxl import load_workbook
 
 from application.controllers.collection_instrument import CollectionInstrument
 from application.controllers.session_decorator import with_db_session
@@ -128,6 +129,17 @@ class TestCollectionInstrument(TestClient):
 
         # Then that instrument is not found
         self.assertEqual(instrument, None)
+
+    def test_sanitise_instrument_metadata(self):
+        # Given that a collection instrument file has been added to a collection exercise
+        # When the file is sanitised
+        file_path = "tests/files/upload.xlsx"
+        file = self.collection_instrument.sanitise_instrument_file_metadata(file_path)
+        wb = load_workbook(file.filename)
+
+        # Then the file's creator and lastModifiedBy properties are set to "N/A"
+        self.assertEqual(wb.properties.creator, "N/A")
+        self.assertEqual(wb.properties.lastModifiedBy, "N/A")
 
     @requests_mock.mock()
     def test_publish_uploaded_collection_instrument(self, mock_request):

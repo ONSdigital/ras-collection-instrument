@@ -3,6 +3,7 @@ from json import loads
 
 import structlog
 from flask import current_app
+from openpyxl import load_workbook
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
@@ -150,6 +151,8 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
+        file = self.sanitise_instrument_file_metadata(file)
+
         try:
             survey_ref = get_survey_ref(instrument.survey.survey_id)
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
@@ -162,6 +165,21 @@ class CollectionInstrument(object):
 
         session.add(instrument)
         return instrument
+
+    @staticmethod
+    def sanitise_instrument_file_metadata(file):
+        """
+        Sanitise the metadata to remove personal information
+        :param file:
+        :return: The file with the sanitised metadata fields
+        """
+        wb = load_workbook(file.filename)
+        wb.properties.creator = "N/A"
+        wb.properties.lastModifiedBy = "N/A"
+        wb.save(file.filename)
+        wb.close()
+
+        return file
 
     @staticmethod
     def validate_non_duplicate_instrument(file, exercise_id, session):
