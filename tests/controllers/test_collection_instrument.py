@@ -24,6 +24,12 @@ TEST_FILE_LOCATION = "tests/files/test.xlsx"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 
 
+class File:
+    """Used to imitate a file being uploaded"""
+
+    pass
+
+
 class TestCollectionInstrumentUnit(TestCase):
     instrument_id = "5f023a96-fdcd-4177-8036-7d13878465eb"
     file = ""
@@ -133,8 +139,11 @@ class TestCollectionInstrument(TestClient):
     def test_sanitise_instrument_metadata(self):
         # Given that a collection instrument file has been added to a collection exercise
         # When the file is sanitised
-        file_path = "tests/files/upload.xlsx"
-        file = self.collection_instrument.sanitise_instrument_file_metadata(file_path)
+        file = File()
+        file.filename = "tests/files/upload.xlsx"
+        file.stream = "stream"
+        file.mimetype = "xlsx"
+        file = self.collection_instrument.sanitise_instrument_file_metadata(file)
         wb = load_workbook(file.filename)
 
         # Then the file's creator and lastModifiedBy properties are set to "N/A"

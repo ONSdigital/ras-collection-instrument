@@ -172,11 +172,15 @@ class CollectionInstrument(object):
         :param file:
         :return: The file with the sanitised metadata fields
         """
-        wb = load_workbook(file.filename)
-        wb.properties.creator = "N/A"
-        wb.properties.lastModifiedBy = "N/A"
-        wb.save(file.filename)
-        wb.close()
+        if file.mimetype == "xlsx":
+            wb = load_workbook(file.filename)
+            wb.properties.creator = "N/A"
+            wb.properties.lastModifiedBy = "N/A"
+            wb.save(file.filename)
+            wb.close()
+        elif file.mimetype == "xls":
+            pass
+        #     do xls sanitization
 
         return file
 
