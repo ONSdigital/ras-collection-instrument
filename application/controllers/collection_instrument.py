@@ -4,7 +4,6 @@ from json import loads
 import structlog
 from flask import current_app
 from openpyxl import load_workbook
-from xlrd import open_workbook
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
@@ -30,6 +29,9 @@ from application.models.models import (
     SEFTModel,
     SurveyModel,
 )
+
+# from xlrd import open_workbook
+
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -174,17 +176,19 @@ class CollectionInstrument(object):
         :return: The file with the sanitised metadata fields
         """
         log.info("Starting file metadata sanitization")
-        if file.mimetype == "xlsx":
+        if file.filename[-1] == "x":
             log.info("xlsx file")
             wb = load_workbook(file.filename)
             wb.properties.creator = "N/A"
             wb.properties.lastModifiedBy = "N/A"
             wb.save(file.filename)
             wb.close()
-        elif file.mimetype == "xls":
-            log.info("xls file")
-            wb = open_workbook(file.filename)
-            wb.user_name = "N/A"
+        elif file.filename[-1] == "s":
+            pass
+            # log.info("xls file")
+            # wb = open_workbook(file.filename)
+            # wb.user_name = "N/A"
+            # wb.unload_sheet()
         log.info("File sanitised")
         return file
 
