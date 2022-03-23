@@ -4,6 +4,7 @@ from json import loads
 import structlog
 from flask import current_app
 from openpyxl import load_workbook
+from xlrd import open_workbook
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
@@ -172,16 +173,19 @@ class CollectionInstrument(object):
         :param file:
         :return: The file with the sanitised metadata fields
         """
+        log.info("Starting file metadata sanitization")
         if file.mimetype == "xlsx":
+            log.info("xlsx file")
             wb = load_workbook(file.filename)
             wb.properties.creator = "N/A"
             wb.properties.lastModifiedBy = "N/A"
             wb.save(file.filename)
             wb.close()
         elif file.mimetype == "xls":
-            pass
-        #     do xls sanitization
-
+            log.info("xls file")
+            wb = open_workbook(file.filename)
+            wb.user_name = "N/A"
+        log.info("File sanitised")
         return file
 
     @staticmethod
@@ -199,7 +203,7 @@ class CollectionInstrument(object):
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
         """
-        Replaces the the seft_file for an instrument with the one provided.
+        Replaces the seft_file for an instrument with the one provided.
 
         :param instrument_id: The top level instrument id that needs changing
         :param file: A FileStorage object with the new file
