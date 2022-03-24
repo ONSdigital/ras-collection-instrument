@@ -184,11 +184,7 @@ class CollectionInstrument(object):
             wb.save(file.filename)
             wb.close()
         elif file.filename[-1] == "s":
-            pass
-            # log.info("xls file")
-            # wb = open_workbook(file.filename)
-            # wb.user_name = "N/A"
-            # wb.unload_sheet()
+            log.info("xls file")
         log.info("File sanitised")
         return file
 
