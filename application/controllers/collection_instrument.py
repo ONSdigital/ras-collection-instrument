@@ -155,7 +155,6 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
-
         try:
             survey_ref = get_survey_ref(instrument.survey.survey_id)
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
@@ -186,7 +185,8 @@ class CollectionInstrument(object):
                 wb.save(file.filename)
                 wb.close()
             except Exception as e:
-                pass
+                log.error("Error during sanitization")
+                raise e
         elif file.filename[-1] == "s":
             log.info("xls file")
         log.info("File sanitised")
