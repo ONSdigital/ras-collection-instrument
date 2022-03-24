@@ -136,6 +136,8 @@ class CollectionInstrument(object):
         self.validate_non_duplicate_instrument(file, exercise_id, session)
         instrument = InstrumentModel(ci_type="SEFT")
 
+        file = self.sanitise_instrument_file_metadata(file)
+
         seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
         instrument.seft_file = seft_file
 
@@ -153,7 +155,6 @@ class CollectionInstrument(object):
         if classifiers:
             instrument.classifiers = loads(classifiers)
 
-        file = self.sanitise_instrument_file_metadata(file)
 
         try:
             survey_ref = get_survey_ref(instrument.survey.survey_id)
@@ -178,11 +179,14 @@ class CollectionInstrument(object):
         log.info("Starting file metadata sanitization")
         if file.filename[-1] == "x":
             log.info("xlsx file")
-            wb = load_workbook(file.filename)
-            wb.properties.creator = "N/A"
-            wb.properties.lastModifiedBy = "N/A"
-            wb.save(file.filename)
-            wb.close()
+            try:
+                wb = load_workbook(file.filename)
+                wb.properties.creator = "N/A"
+                wb.properties.lastModifiedBy = "N/A"
+                wb.save(file.filename)
+                wb.close()
+            except Exception as e:
+                pass
         elif file.filename[-1] == "s":
             log.info("xls file")
         log.info("File sanitised")
