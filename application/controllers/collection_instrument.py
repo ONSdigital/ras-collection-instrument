@@ -179,7 +179,7 @@ class CollectionInstrument(object):
         if file.filename[-1] == "x":
             log.info("xlsx file")
             try:
-                wb = load_workbook(file.stream)
+                wb = load_workbook(file.filename)
                 wb.properties.creator = "N/A"
                 wb.properties.lastModifiedBy = "N/A"
                 wb.save(file.filename)
