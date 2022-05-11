@@ -28,7 +28,6 @@ pycryptodome = "*"
 requestsdefaulter = "*"
 google-cloud-storage = "*"
 google-cloud-pubsub = "*"
-python-gnupg = "==0.4.7"
 
 [dev-packages]
 black = "==21.12b0"
