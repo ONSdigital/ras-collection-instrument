@@ -30,7 +30,7 @@ google-cloud-storage = "*"
 google-cloud-pubsub = "*"
 
 [dev-packages]
-black = "==21.12b0"
+black = "*"
 coverage = "*"
 flake8 = "*"
 flake8-mock = "*"
