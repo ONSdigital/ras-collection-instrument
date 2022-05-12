@@ -149,11 +149,6 @@ spec:
             value: "config/config-docker.yaml"
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /var/secrets/google/credentials.json
-          - name: ONS_GNU_PUBLIC_CRYPTOKEY
-            valueFrom:
-              secretKeyRef:
-                name: seft-collection-instrument-key
-                key: gpg-public-crypto-key
           - name: ONS_CRYPTOKEY
             valueFrom:
               secretKeyRef:
@@ -183,10 +178,6 @@ spec:
             {{- else }}
             value: "http://$(SURVEY_SERVICE_HOST):$(SURVEY_SERVICE_PORT)"
             {{- end }}
-          - name: ONS_GNU_FINGERPRINT
-            value: "{{ .Values.gnu.fingerprint }}"
-          - name: ONS_GNU_RECIPIENT
-            value: "{{ .Values.gnu.recipient }}"
           - name: SEFT_DOWNLOAD_BUCKET_NAME
             value: "{{ .Values.gcp.collectionInstrument.bucket.name }}"
           - name: GOOGLE_CLOUD_PROJECT

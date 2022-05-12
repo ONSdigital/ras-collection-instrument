@@ -64,19 +64,19 @@ docker-compose up -d
 
 Environment variables available for configuration are listed below:
 
-| Environment Variable                | Description                                                   | Default
-|-------------------------------------|---------------------------------------------------------------|-------------------------------
-| MAX_UPLOAD_FILE_NAME_LENGTH         | Maximum length of file names | 50
-| LOGGING_LEVEL                       | Level of the logger | INFO
-| JSON_SECRET_KEYS                    | Json representation of keys | None
-| ONS_CRYPTOKEY                       | A key used by the Cryptographer | None
-| SECURITY_USER_NAME                  | Username the client uses to authenticate with other apis | admin
-| SECURITY_USER_PASSWORD              | Password the client uses to authenticate with other apis | secret
-| COLLECTION_EXERCISE_SCHEMA          | Location of the collection instrument schema | application/schemas/collection_instrument_schema.json
-| CASE_URL                            | URL for the case service | 'http://localhost:8171'
-| COLLECTION_EXERCISE_URL             | URL for the collection exercise service | 'http://localhost:8145'
-| SURVEY_SERVICE_URL                  | URL for the survey service | 'http://localhost:8080'
-| PARTY_URL                           | URL for the party service | 'http://localhost:8081'
+| Environment Variable        | Description                                              | Default                                               |
+|-----------------------------|----------------------------------------------------------|-------------------------------------------------------|
+| MAX_UPLOAD_FILE_NAME_LENGTH | Maximum length of file names                             | 50                                                    |
+| LOGGING_LEVEL               | Level of the logger                                      | INFO                                                  |
+| JSON_SECRET_KEYS            | Json representation of keys                              | None                                                  |
+| ONS_CRYPTOKEY               | A key used by the Cryptographer                          | None                                                  |
+| SECURITY_USER_NAME          | Username the client uses to authenticate with other apis | admin                                                 |
+| SECURITY_USER_PASSWORD      | Password the client uses to authenticate with other apis | secret                                                |
+| COLLECTION_EXERCISE_SCHEMA  | Location of the collection instrument schema             | application/schemas/collection_instrument_schema.json |
+| CASE_URL                    | URL for the case service                                 | 'http://localhost:8171'                               |
+| COLLECTION_EXERCISE_URL     | URL for the collection exercise service                  | 'http://localhost:8145'                               |
+| SURVEY_SERVICE_URL          | URL for the survey service                               | 'http://localhost:8080'                               |
+| PARTY_URL                   | URL for the party service                                | 'http://localhost:8081'                               |
 
 
 
@@ -93,41 +93,3 @@ Navigate to /developer_scripts and run import.py, answer the prompts on the comm
 * A couple of the endpoints have fairly useless functionality. For example, all the `/collectioninstrument/count` endpoint does is return the number of collection instruments. Why is this something the service needs to do? Could this not be accomplished by a database query?
 * Given the service's heavy reliance on collection exercises, could this service not be combined with the collection exercise service during the ras-rm redesign?
 
-## Updates GNU
-* The system now uses GNUPG to encrypt seft messages which is controlled by the saveSeftInGcp flagged stored in the values.yml file
-* Due to the version of GNUPG current used in Docker (as of 03/06/2021 BST/UK) (gpg (GnuPG) 2.2.12 libgcrypt 1.8.4) it does NOT support an email as a recipient, you need to use the fingerprint
-* if you receive a binary public key you MUST convert it to ascii with armor. use the following command.
-```
- gpg --export -a <  sdx_preprod_binary_key.gpg > sdx_preprod_binary_key.gpg.asc    
-```
-and load this upto the secret key manager - gnu-public-crypto-key
-
-* to get the fingerprint. the fingerprint will look like 'A8F49D6EE2DE17F03ACF11A9BF16B2EB4DASE991
-Also, make sure have an empty local trusted db
-```
-gpg --with-fingerprint <~/.gnupg/sdx_preprod_binary_key.gpg.asc
-```
-
-* important to check that the subkey next to the fingerprint has not expired and be aware that some public key have been unable and it is worth sanity checking them on the command line
-
-* within the project there is a development public/private gnupg key. However if you wish to create your own 
-```
-gpg --full-generate-key
-gpg --list-secret-keys --keyid-format=long
-```
-The current values provided are
-```
-gpg --list-secret-keys --keyid-format=long
-------------------------------------
-sec   ed25519/3CB9DD17EFF9948B 2021-06-10 [SC]
-      C46BB0CB8CEBBC20BC07FCA83CB9DD17EFF9948B
-uid                 [ultimate] ONS RAS Dev Team (USE FOR DEVELOPMENT ONLY) <dev@example.com>
-ssb   cv25519/ED1B7A3EADF95687 2021-06-10 [E]
-```
-Then export via
-```
-gpg --armor --export ED1B7A3EADF95687
-```
-current saved exported  public private keys are dev-public-key.asc dev-private-key.asc
-The private key is only supplied for testing decryption
-passphase if needed is PASSWORD1
