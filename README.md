@@ -64,19 +64,19 @@ docker-compose up -d
 
 Environment variables available for configuration are listed below:
 
-| Environment Variable                | Description                                                   | Default
-|-------------------------------------|---------------------------------------------------------------|-------------------------------
-| MAX_UPLOAD_FILE_NAME_LENGTH         | Maximum length of file names | 50
-| LOGGING_LEVEL                       | Level of the logger | INFO
-| JSON_SECRET_KEYS                    | Json representation of keys | None
-| ONS_CRYPTOKEY                       | A key used by the Cryptographer | None
-| SECURITY_USER_NAME                  | Username the client uses to authenticate with other apis | admin
-| SECURITY_USER_PASSWORD              | Password the client uses to authenticate with other apis | secret
-| COLLECTION_EXERCISE_SCHEMA          | Location of the collection instrument schema | application/schemas/collection_instrument_schema.json
-| CASE_URL                            | URL for the case service | 'http://localhost:8171'
-| COLLECTION_EXERCISE_URL             | URL for the collection exercise service | 'http://localhost:8145'
-| SURVEY_SERVICE_URL                  | URL for the survey service | 'http://localhost:8080'
-| PARTY_URL                           | URL for the party service | 'http://localhost:8081'
+| Environment Variable        | Description                                              | Default                                               |
+|-----------------------------|----------------------------------------------------------|-------------------------------------------------------|
+| MAX_UPLOAD_FILE_NAME_LENGTH | Maximum length of file names                             | 50                                                    |
+| LOGGING_LEVEL               | Level of the logger                                      | INFO                                                  |
+| JSON_SECRET_KEYS            | Json representation of keys                              | None                                                  |
+| ONS_CRYPTOKEY               | A key used by the Cryptographer                          | None                                                  |
+| SECURITY_USER_NAME          | Username the client uses to authenticate with other apis | admin                                                 |
+| SECURITY_USER_PASSWORD      | Password the client uses to authenticate with other apis | secret                                                |
+| COLLECTION_EXERCISE_SCHEMA  | Location of the collection instrument schema             | application/schemas/collection_instrument_schema.json |
+| CASE_URL                    | URL for the case service                                 | 'http://localhost:8171'                               |
+| COLLECTION_EXERCISE_URL     | URL for the collection exercise service                  | 'http://localhost:8145'                               |
+| SURVEY_SERVICE_URL          | URL for the survey service                               | 'http://localhost:8080'                               |
+| PARTY_URL                   | URL for the party service                                | 'http://localhost:8081'                               |
 
 
 
