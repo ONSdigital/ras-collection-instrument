@@ -1,7 +1,7 @@
 import logging
 
 import structlog
-from flask import Blueprint, current_app, jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
@@ -31,10 +31,7 @@ def before_collection_instrument_view():
 def upload_collection_instrument(exercise_id, ru_ref=None):
     file = request.files["file"]
     classifiers = request.args.get("classifiers")
-    if current_app.config["SEFT_GCS_ENABLED"] is False:
-        instrument = CollectionInstrument().upload_instrument(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
-    else:
-        instrument = CollectionInstrument().upload_to_bucket(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    instrument = CollectionInstrument().upload_to_bucket(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
 
     if not publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
         log.error(

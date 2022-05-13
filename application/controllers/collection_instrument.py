@@ -76,44 +76,6 @@ class CollectionInstrument(object):
         return result
 
     @with_db_session
-    def upload_instrument(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
-        """
-        Encrypt and upload a collection instrument to the db
-
-        :param exercise_id: An exercise id (UUID)
-        :param ru_ref: The name of the file we're receiving
-        :param classifiers: Classifiers associated with the instrument
-        :param file: A file object from which we can read the file contents
-        :param session: database session
-        :return: a collection instrument instance
-        """
-
-        log.info("Upload exercise", exercise_id=exercise_id)
-
-        validate_uuid(exercise_id)
-        instrument = InstrumentModel(ci_type="SEFT")
-
-        seft_file = self._create_seft_file(instrument.instrument_id, file)
-        instrument.seft_file = seft_file
-
-        exercise = self._find_or_create_exercise(exercise_id, session)
-        instrument.exercises.append(exercise)
-
-        survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
-        instrument.survey = survey
-
-        if ru_ref:
-            business = self._find_or_create_business(ru_ref, session)
-            self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
-            instrument.businesses.append(business)
-
-        if classifiers:
-            instrument.classifiers = loads(classifiers)
-
-        session.add(instrument)
-        return instrument
-
-    @with_db_session
     def upload_to_bucket(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
         """
         Encrypt and upload a collection instrument to the bucket and db
@@ -453,20 +415,14 @@ class CollectionInstrument(object):
         if file_size == 0:
             raise RasError("File is empty", 400)
         seft_model.length = file_size
-        if current_app.config["SEFT_GCS_ENABLED"] is False:
-            cryptographer = Cryptographer()
-            encrypted_file = cryptographer.encrypt(file_contents)
-            seft_model.file_name = file.filename
-            seft_model.data = encrypted_file
-        else:
-            old_filename = seft_model.file_name
-            seft_model.file_name = file.filename
-            file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
-            old_filename = survey_ref + "/" + exercise_id + "/" + old_filename
-            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-            seft_ci_bucket.delete_file_from_bucket(old_filename)
-            seft_ci_bucket.upload_file_to_bucket(file=file)
-            seft_model.gcs = True
+        old_filename = seft_model.file_name
+        seft_model.file_name = file.filename
+        file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
+        old_filename = survey_ref + "/" + exercise_id + "/" + old_filename
+        seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+        seft_ci_bucket.delete_file_from_bucket(old_filename)
+        seft_ci_bucket.upload_file_to_bucket(file=file)
+        seft_model.gcs = True
         return seft_model
 
     @staticmethod

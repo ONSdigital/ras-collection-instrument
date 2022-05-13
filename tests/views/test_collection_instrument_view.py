@@ -226,7 +226,6 @@ class TestCollectionInstrumentView(TestClient):
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
     def test_collection_instrument_upload_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
-        self.app.config["SEFT_GCS_ENABLED"] = True
         mock_request.get(
             url_survey_url,
             status_code=200,
@@ -508,9 +507,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}".format(
-                instrument_id=self.instrument_id
-            ),
+            f"/collection-instrument-api/1.0.2/collectioninstrument/id/{self.instrument_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -522,7 +519,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/{instrument_id}".format(instrument_id=self.instrument_id),
+            f"/collection-instrument-api/1.0.2/{self.instrument_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -532,14 +529,12 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn("cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", response.data.decode())
 
     def test_get_instrument_by_id_no_instrument(self):
-        # Given a instrument which doesn't exist
+        # Given an instrument which doesn't exist
         missing_instrument_id = "ffb8a5e8-03ef-45f0-a85a-3276e98f66b8"
 
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}".format(
-                instrument_id=missing_instrument_id
-            ),
+            f"/collection-instrument-api/1.0.2/collectioninstrument/id/{missing_instrument_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -549,7 +544,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/{instrument_id}".format(instrument_id=missing_instrument_id),
+            f"/collection-instrument-api/1.0.2/{missing_instrument_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -573,7 +568,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given an instrument which is in the db
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/download/{instrument_id}".format(instrument_id=self.instrument_id),
+            f"/collection-instrument-api/1.0.2/download/{self.instrument_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -582,12 +577,12 @@ class TestCollectionInstrumentView(TestClient):
         self.assertIn("test data", response.data.decode())
 
     def test_get_instrument_download_missing_instrument(self):
-        # Given an instrument which doesn't exists in the db
+        # Given an instrument which doesn't exist in the db
         instrument = "655488ea-ccaa-4d02-8f73-3d20bceed706"
 
         # When the collection instrument end point is called with an id
         response = self.client.get(
-            "/collection-instrument-api/1.0.2/download/{instrument_id}".format(instrument_id=instrument),
+            f"/collection-instrument-api/1.0.2/download/{instrument}",
             headers=self.get_auth_headers(),
         )
 
@@ -810,7 +805,6 @@ class TestCollectionInstrumentView(TestClient):
         )
 
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
-        self.app.config["SEFT_GCS_ENABLED"] = True
         # When patch call made
         data = {"file": (BytesIO(b"test data"), "test.xls")}
 
