@@ -28,6 +28,7 @@ from tests.test_client import TestClient
 linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 url_survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+survey_response_json = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"}
 
 
 @with_db_session
@@ -56,6 +57,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_request.get(url_survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
@@ -154,6 +156,11 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_request.get(
+            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
@@ -181,6 +188,11 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_only_allows_single_one(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_request.get(
+            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection instrument for a reporting unit twice for the same collection exercise
         will result in an error"""
@@ -226,11 +238,7 @@ class TestCollectionInstrumentView(TestClient):
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
     def test_collection_instrument_upload_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
-        mock_request.get(
-            url_survey_url,
-            status_code=200,
-            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(url_survey_url, status_code=200, json=survey_response_json)
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection instrument file that has the same name as a file already uploaded
@@ -276,6 +284,11 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_request.get(
+            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection exercise, bound to a reporting unit, for two separate collection exercises
         results in them both being saved"""
