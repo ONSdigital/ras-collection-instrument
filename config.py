@@ -1,5 +1,4 @@
 import os
-from distutils.util import strtobool
 
 
 class Config(object):
@@ -20,7 +19,6 @@ class Config(object):
     SEFT_DOWNLOAD_BUCKET_NAME = os.getenv("SEFT_DOWNLOAD_BUCKET_NAME")
     GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
     SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_DOWNLOAD_BUCKET_FILE_PREFIX")
-    SEFT_GCS_ENABLED = bool(strtobool(os.getenv("SEFT_GCS_ENABLED", "False")))
 
     UPLOAD_FILE_EXTENSIONS = "xls,xlsx"
 
@@ -50,4 +48,3 @@ class TestingConfig(Config):
     SEFT_DOWNLOAD_BUCKET_NAME = "TEST_BUCKET"
     GOOGLE_CLOUD_PROJECT = "TEST_PROJECT"
     SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = ""
-    SEFT_GCS_ENABLED = False

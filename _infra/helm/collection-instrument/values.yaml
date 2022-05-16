@@ -57,6 +57,3 @@ gcp:
     bucket:
       name: "ras-rm-seft-ci-dev"
       prefix: ""
-
-seftGCS:
-  enabled: true

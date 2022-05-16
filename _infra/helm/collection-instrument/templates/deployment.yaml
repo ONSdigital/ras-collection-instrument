@@ -184,7 +184,5 @@ spec:
             value: "{{ .Values.gcp.project }}"
           - name: SEFT_DOWNLOAD_BUCKET_FILE_PREFIX
             value: "{{ .Values.gcp.collectionInstrument.bucket.prefix }}"
-          - name: SEFT_GCS_ENABLED
-            value: "{{ .Values.seftGCS.enabled }}"
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}
