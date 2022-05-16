@@ -27,7 +27,7 @@ from tests.test_client import TestClient
 
 linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
-url_survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 survey_response_json = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"}
 
 
@@ -57,7 +57,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_request.get(url_survey_url, status_code=200, json=survey_response_json)
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
@@ -156,16 +156,12 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_request.get(
-            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            status_code=200,
-            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {"file": (BytesIO(b"test data"), "test.xls")}
 
         with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
@@ -188,18 +184,14 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_only_allows_single_one(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_request.get(
-            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            status_code=200,
-            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection instrument for a reporting unit twice for the same collection exercise
         will result in an error"""
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678900.xls")}
 
@@ -238,7 +230,7 @@ class TestCollectionInstrumentView(TestClient):
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
     def test_collection_instrument_upload_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
-        mock_request.get(url_survey_url, status_code=200, json=survey_response_json)
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection instrument file that has the same name as a file already uploaded
@@ -284,18 +276,14 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     def test_collection_instrument_upload_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        mock_request.get(
-            "http://localhost:8080/surveys/db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            status_code=200,
-            json={"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         """Verify that uploading a collection exercise, bound to a reporting unit, for two separate collection exercises
         results in them both being saved"""
         # Given an upload file and a patched survey_id response
         mock_survey_service = Response()
         mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
 
@@ -698,7 +686,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When the instrument is unlinked to an exercise
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/" f"{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -715,7 +703,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When the instrument is unlinked to an exercise but failed to publish messsage
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/" f"{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -728,13 +716,13 @@ class TestCollectionInstrumentView(TestClient):
         instrument_id = self.add_instrument_without_exercise()
 
         self.client.post(
-            f"/collection-instrument-api/1.0.2/link-exercise/" f"{instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         # When the instrument is unlinked to an exercise
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/" f"{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
@@ -755,7 +743,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When unlink call made with
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/" f"{unknown_ci}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{unknown_ci}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
         # Then 404 not found error returned
@@ -766,11 +754,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
-        mock_request.get(
-            url_survey_url,
-            status_code=200,
-            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
         # When patch call made
         data = {"file": (BytesIO(), "test.xls")}
@@ -811,11 +795,7 @@ class TestCollectionInstrumentView(TestClient):
     @requests_mock.mock()
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     def test_patch_collection_instrument_gcs(self, mock_request, mock_bucket):
-        mock_request.get(
-            url_survey_url,
-            status_code=200,
-            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # When patch call made
