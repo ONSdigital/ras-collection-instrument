@@ -25,6 +25,7 @@ class GoogleCloudSEFTCIBucket:
             path = self.prefix + "/" + path
         log.info("Uploading SEFT CI to GCP bucket: " + path)
         key = current_app.config.get("ONS_CRYPTOKEY", None)
+        print(key)
         if key is None:
             log.error("Customer defined encryption key is missing.")
             raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
@@ -41,6 +42,7 @@ class GoogleCloudSEFTCIBucket:
             path = file_location
         log.info("Downloading SEFT CI from GCP bucket: " + path)
         key = current_app.config.get("ONS_CRYPTOKEY", None)
+        print(key)
         if key is None:
             log.error("Customer defined encryption key is missing.")
             raise RasError("can't find customer defined encryption, hence can't perform this task", 500)
