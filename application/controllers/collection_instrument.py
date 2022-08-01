@@ -94,7 +94,7 @@ class CollectionInstrument(object):
         self.validate_non_duplicate_instrument(file, exercise_id, session)
         instrument = InstrumentModel(ci_type="SEFT")
 
-        seft_file = self._create_seft_file(instrument.instrument_id, file, encrypt_and_save_to_db=False)
+        seft_file = self._create_seft_file(instrument.instrument_id, file)
         instrument.seft_file = seft_file
 
         exercise = self._find_or_create_exercise(exercise_id, session)
@@ -384,7 +384,7 @@ class CollectionInstrument(object):
         return business
 
     @staticmethod
-    def _create_seft_file(instrument_id, file, encrypt_and_save_to_db=True):
+    def _create_seft_file(instrument_id, file):
         """
         Creates a seft_file with an encrypted version of the file
         :param file: A file object from which we can read the file contents
@@ -394,10 +394,6 @@ class CollectionInstrument(object):
         file_contents = file.read()
         file_size = len(file_contents)
         seft_file = SEFTModel(instrument_id=instrument_id, file_name=file.filename, length=file_size)
-        if encrypt_and_save_to_db:
-            cryptographer = Cryptographer()
-            encrypted_file = cryptographer.encrypt(file_contents)
-            seft_file.data = encrypted_file
 
         return seft_file
 
