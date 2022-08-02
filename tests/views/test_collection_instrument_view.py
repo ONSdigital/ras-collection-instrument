@@ -565,18 +565,6 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 404)
         self.assertEqual(response.data.decode(), NO_INSTRUMENT_FOR_EXERCISE)
 
-    def test_get_instrument_download(self):
-        # Given an instrument which is in the db
-        # When the collection instrument end point is called with an id
-        response = self.client.get(
-            f"/collection-instrument-api/1.0.2/download/{self.instrument_id}",
-            headers=self.get_auth_headers(),
-        )
-
-        # Then the response returns the correct instrument
-        self.assertStatus(response, 200)
-        self.assertIn("test data", response.data.decode())
-
     def test_get_instrument_download_missing_instrument(self):
         # Given an instrument which doesn't exist in the db
         instrument = "655488ea-ccaa-4d02-8f73-3d20bceed706"
