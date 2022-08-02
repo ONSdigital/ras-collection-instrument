@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_column("instrument", "data", schema="ras_ci")
+    op.drop_column("seft_instrument", "data", schema="ras_ci")
 
 
 def downgrade():
-    op.add_column("instrument", sa.Column("data", postgresql.BYTEA(), nullable=True), schema="ras_ci")
+    op.add_column("seft_instrument", sa.Column("data", postgresql.BYTEA(), nullable=True), schema="ras_ci")
