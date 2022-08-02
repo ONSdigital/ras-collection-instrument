@@ -4,8 +4,8 @@ from uuid import uuid4
 from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import deferred, relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, LargeBinary, String
+from sqlalchemy.orm import relationship
+from sqlalchemy.types import TIMESTAMP, Boolean, String
 
 from application.models import GUID
 
