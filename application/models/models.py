@@ -40,10 +40,16 @@ class InstrumentModel(Base):
     survey_id = Column(Integer, ForeignKey("survey.id"))
     classifiers = Column(JSONB)
     survey = relationship("SurveyModel", back_populates="instruments")
-    seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument")
+    seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument", cascade="all, delete-orphan")
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
-    businesses = relationship("BusinessModel", secondary=instrument_business_table, back_populates="instruments")
+    businesses = relationship(
+        "BusinessModel",
+        secondary=instrument_business_table,
+        back_populates="instruments",
+        single_parent=True,
+        cascade="all, delete-orphan",
+    )
 
     def __init__(self, classifiers=None, ci_type=None):
         """Initialise the class with optionally supplied defaults"""

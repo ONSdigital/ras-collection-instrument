@@ -3,6 +3,7 @@ from json import loads
 
 import structlog
 from flask import current_app
+from sqlalchemy.orm import Session
 
 from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
@@ -277,16 +278,42 @@ class CollectionInstrument(object):
             bound_logger.info("Failed to unlink, unable to find instrument or exercise")
             raise RasError("Unable to find instrument or exercise", 404)
 
+        if instrument.type == "SEFT":
+            # SEFT instruments need to be deleted from both GCP and the db, removing just the link will leave orphaned
+            # data. When deleting SEFT instruments, the link will automatically be removed without this function
+            raise RasError(
+                f"{instrument_id} is of type SEFT which should be deleted and not unlinked",
+                405,
+            )
+
         instrument.exercises.remove(exercise)
-        for business in instrument.businesses:
-            bound_logger.info("Removing business/exercise link", business_id=business.id, ru_ref=business.ru_ref)
-            business.instruments.remove(instrument)
 
         response = self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id)
         if response.status_code != 200:
             raise RasError("Failed to publish upload message", 500)
         bound_logger.info("Successfully unlinked instrument to exercise")
         return True
+
+    @with_db_session
+    def delete_seft_collection_instrument(self, instrument_id: str, session: Session = None) -> None:
+        """
+        Deletes a seft collection instrument from the database and gcs
+        :param instrument_id: A collection instrument id (UUID)
+        :param session: database session
+        """
+        instrument = self.get_instrument_by_id(instrument_id, session)
+
+        if not instrument:
+            raise RasError(f"Collection instrument {instrument_id} not found", 404)
+        if instrument.type != "SEFT":
+            raise RasError(
+                f"Only SEFT collection instruments can be deleted {instrument_id} has type {instrument.type}",
+                405,
+            )
+
+        session.delete(instrument)
+        gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+        gcs_seft_bucket.delete_file_from_bucket(instrument_id)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):

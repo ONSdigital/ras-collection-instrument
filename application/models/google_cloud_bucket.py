@@ -51,10 +51,7 @@ class GoogleCloudSEFTCIBucket:
         return file
 
     def delete_file_from_bucket(self, file_location: str):
-        if self.prefix != "":
-            path = self.prefix + "/" + file_location
-        else:
-            path = file_location
+        path = self.prefix + "/" + file_location if self.prefix != "" else file_location
         log.info("Deleting SEFT CI from GCP bucket: " + path)
         try:
             self.bucket.delete_blob(path)
