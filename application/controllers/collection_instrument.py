@@ -287,7 +287,6 @@ class CollectionInstrument(object):
             )
 
         instrument.exercises.remove(exercise)
-
         response = self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id)
         if response.status_code != 200:
             raise RasError("Failed to publish upload message", 500)
@@ -313,7 +312,8 @@ class CollectionInstrument(object):
 
         session.delete(instrument)
         gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-        gcs_seft_bucket.delete_file_from_bucket(instrument.seft_file.file_name)
+        file_path = self._build_seft_file_path(instrument)
+        gcs_seft_bucket.delete_file_from_bucket(file_path)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
@@ -448,9 +448,8 @@ class CollectionInstrument(object):
         seft_model.gcs = True
         return seft_model
 
-    @staticmethod
     @with_db_session
-    def get_instruments_by_exercise_id_csv(exercise_id, session=None):
+    def get_instruments_by_exercise_id_csv(self, exercise_id, session=None):
         """
         Finds all collection instruments associated with an exercise and returns them in csv format
 
@@ -472,9 +471,7 @@ class CollectionInstrument(object):
         for instrument in exercise.instruments:
             if instrument.seft_file.gcs:
                 try:
-                    survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = str(instrument.exids[0])
-                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
+                    file_path = self._build_seft_file_path(instrument)
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                     file = seft_ci_bucket.download_file_from_bucket(file_path)
                     csv += csv_format.format(
@@ -510,9 +507,8 @@ class CollectionInstrument(object):
         instrument_json = instrument.json if instrument else None
         return instrument_json
 
-    @staticmethod
     @with_db_session
-    def get_instrument_data(instrument_id, session):
+    def get_instrument_data(self, instrument_id, session):
         """
         Get the instrument data from the db or bucket using the id
 
@@ -529,9 +525,7 @@ class CollectionInstrument(object):
         if instrument:
             if instrument.seft_file.gcs:
                 try:
-                    survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = str(instrument.exids[0])
-                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
+                    file_path = self._build_seft_file_path(instrument)
                     seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                     file = seft_ci_bucket.download_file_from_bucket(file_path)
                     return file, instrument.seft_file.file_name
@@ -611,3 +605,9 @@ class CollectionInstrument(object):
                 query = query.join(SurveyModel, InstrumentModel.survey)
                 already_joined.append(SurveyModel)
         return query
+
+    @staticmethod
+    def _build_seft_file_path(instrument) -> str:
+        survey_ref = get_survey_ref(instrument.survey.survey_id)
+        exercise_id = str(instrument.exids[0])
+        return f"{survey_ref}/{exercise_id}/{instrument.seft_file.file_name}"
