@@ -123,8 +123,14 @@ class TestCollectionInstrument(TestClient):
             self.collection_instrument.get_instrument_by_search_string('{"COLLECTION_EXERCISE": "invalid_uuid"}')
 
     @patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
-    def test_delete_seft_collection_instrument(self, mock_bucket):
+    @requests_mock.mock()
+    def test_delete_seft_collection_instrument(self, mock_bucket, mock_request):
         mock_bucket.delete_file_from_bucket.return_value = True
+        mock_request.get(
+            "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
         seft_instrument_id = str(self.instrument_id)
         self.collection_instrument.delete_seft_collection_instrument(seft_instrument_id)
         instrument = self.collection_instrument.get_instrument_json(seft_instrument_id)

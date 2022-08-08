@@ -83,8 +83,10 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(len(collection_instruments()), 2)
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
-    def test_seft_collection_instrument_delete(self, mock_bucket):
+    @requests_mock.mock()
+    def test_seft_collection_instrument_delete(self, mock_bucket, mock_request):
         # Given an collection instrument and GCS is patched
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.delete_file_from_bucket.return_value = True
 
         # When a post is made to delete the instrument
