@@ -311,9 +311,9 @@ class CollectionInstrument(object):
                 405,
             )
 
-        session.delete(instrument.seft_file.file_name)
+        session.delete(instrument)
         gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-        gcs_seft_bucket.delete_file_from_bucket(instrument_id)
+        gcs_seft_bucket.delete_file_from_bucket(instrument.seft_file.file_name)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
