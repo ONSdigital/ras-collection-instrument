@@ -311,7 +311,7 @@ class CollectionInstrument(object):
                 405,
             )
 
-        session.delete(instrument)
+        session.delete(instrument.seft_file.file_name)
         gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
         gcs_seft_bucket.delete_file_from_bucket(instrument_id)
 
