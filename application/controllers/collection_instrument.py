@@ -116,7 +116,6 @@ class CollectionInstrument(object):
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
-            instrument.seft_file.gcs = True
         except Exception as e:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
             raise e
@@ -418,7 +417,6 @@ class CollectionInstrument(object):
         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
         seft_ci_bucket.delete_file_from_bucket(old_filename)
         seft_ci_bucket.upload_file_to_bucket(file=file)
-        seft_model.gcs = True
         return seft_model
 
     @staticmethod
@@ -443,7 +441,6 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-            if instrument.seft_file.gcs:
                 try:
                     survey_ref = get_survey_ref(instrument.survey.survey_id)
                     exercise_id = str(instrument.exids[0])
@@ -458,14 +455,6 @@ class CollectionInstrument(object):
                     )
                 except Exception:
                     log.exception("Couldn't find SEFT CI in bucket")
-            else:
-                csv += csv_format.format(
-                    count=count,
-                    file_name=instrument.name,
-                    length=instrument.seft_file.len if instrument.seft_file else None,
-                    date_stamp=instrument.stamp,
-                )
-            count += 1
         return csv
 
     @staticmethod
@@ -500,7 +489,6 @@ class CollectionInstrument(object):
         file_name = None
 
         if instrument:
-            if instrument.seft_file.gcs:
                 try:
                     survey_ref = get_survey_ref(instrument.survey.survey_id)
                     exercise_id = str(instrument.exids[0])
@@ -510,11 +498,6 @@ class CollectionInstrument(object):
                     return file, instrument.seft_file.file_name
                 except Exception:
                     log.exception("Couldn't find SEFT CI in GCP bucket")
-            else:
-                log.info("Decrypting collection instrument data", instrument_id=instrument_id)
-                cryptographer = Cryptographer()
-                data = cryptographer.decrypt(instrument.seft_file.data)
-                file_name = instrument.seft_file.file_name
         return data, file_name
 
     @staticmethod
