@@ -441,20 +441,20 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-                try:
-                    survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = str(instrument.exids[0])
-                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(file_path)
-                    csv += csv_format.format(
-                        count=count,
-                        file_name=instrument.seft_file.file_name,
-                        length=len(file),
-                        date_stamp=instrument.stamp,
-                    )
-                except Exception:
-                    log.exception("Couldn't find SEFT CI in bucket")
+            try:
+                survey_ref = get_survey_ref(instrument.survey.survey_id)
+                exercise_id = str(instrument.exids[0])
+                file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                file = seft_ci_bucket.download_file_from_bucket(file_path)
+                csv += csv_format.format(
+                    count=count,
+                    file_name=instrument.seft_file.file_name,
+                    length=len(file),
+                    date_stamp=instrument.stamp,
+                )
+            except Exception:
+                log.exception("Couldn't find SEFT CI in bucket")
         return csv
 
     @staticmethod
@@ -489,15 +489,15 @@ class CollectionInstrument(object):
         file_name = None
 
         if instrument:
-                try:
-                    survey_ref = get_survey_ref(instrument.survey.survey_id)
-                    exercise_id = str(instrument.exids[0])
-                    file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(file_path)
-                    return file, instrument.seft_file.file_name
-                except Exception:
-                    log.exception("Couldn't find SEFT CI in GCP bucket")
+            try:
+                survey_ref = get_survey_ref(instrument.survey.survey_id)
+                exercise_id = str(instrument.exids[0])
+                file_path = survey_ref + "/" + exercise_id + "/" + instrument.seft_file.file_name
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                file = seft_ci_bucket.download_file_from_bucket(file_path)
+                return file, instrument.seft_file.file_name
+            except Exception:
+                log.exception("Couldn't find SEFT CI in GCP bucket")
         return data, file_name
 
     @staticmethod
