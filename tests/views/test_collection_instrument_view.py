@@ -318,14 +318,15 @@ class TestCollectionInstrumentView(TestClient):
             self.assertEqual(len(collection_instruments()), 3)
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
-    def test_download_exercise_csv(self, mock_bucket):
+    @requests_mock.mock()
+    def test_download_exercise_csv(self, mock_bucket, mock_request):
         # Given a patched exercise
         instrument = InstrumentModel()
         seft_file = SEFTModel(
             instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=999
         )
         survey = SurveyModel()
-        survey.id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+        survey.survey_id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
         instrument.survey = survey
         instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
@@ -334,6 +335,7 @@ class TestCollectionInstrumentView(TestClient):
         instrument.businesses.append(business)
 
         mock_bucket.return_value.download_file_from_bucket.return_value = BytesIO(b"test_data")
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
         with patch("application.controllers.collection_instrument.query_exercise_by_id", return_value=exercise):
             # When a call is made to the download_csv end point
