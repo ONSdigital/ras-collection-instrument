@@ -323,7 +323,7 @@ class TestCollectionInstrumentView(TestClient):
         # Given a patched exercise
         instrument = InstrumentModel()
         seft_file = SEFTModel(
-            instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=999
+            instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=6
         )
         survey = SurveyModel()
         survey.survey_id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -334,7 +334,7 @@ class TestCollectionInstrumentView(TestClient):
         instrument.exercises.append(exercise)
         instrument.businesses.append(business)
 
-        mock_bucket.return_value.download_file_from_bucket.return_value = BytesIO(b"test_data")
+        mock_bucket.return_value.download_file_from_bucket.return_value = "abc123"
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
         with patch("application.controllers.collection_instrument.query_exercise_by_id", return_value=exercise):
@@ -347,7 +347,7 @@ class TestCollectionInstrumentView(TestClient):
             # Then the response contains the correct data
             self.assertStatus(response, 200)
             self.assertIn('"Count","File Name","Length","Time Stamp"', response.data.decode())
-            self.assertIn('"1","file_name","999"', response.data.decode())
+            self.assertIn('"1","file_name","6"', response.data.decode())
 
     def test_get_instrument_by_search_string_ru(self):
         # Given an instrument which is in the db
