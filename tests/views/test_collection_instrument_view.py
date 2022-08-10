@@ -8,7 +8,6 @@ from flask import current_app
 from requests.models import Response
 from six import BytesIO
 
-from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
 from application.models.models import (
@@ -322,9 +321,7 @@ class TestCollectionInstrumentView(TestClient):
     def test_download_exercise_csv(self, mock_bucket, mock_request):
         # Given a patched exercise
         instrument = InstrumentModel()
-        seft_file = SEFTModel(
-            instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=6
-        )
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=6)
         survey = SurveyModel()
         survey.survey_id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
         instrument.survey = survey
@@ -822,10 +819,7 @@ class TestCollectionInstrumentView(TestClient):
     @with_db_session
     def add_instrument_data(session=None):
         instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type="SEFT")
-        crypto = Cryptographer()
-        data = BytesIO(b"test data")
-        data = crypto.encrypt(data.read())
-        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999", data=data)
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
         instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id=linked_exercise_id)
         business = BusinessModel(ru_ref="test_ru_ref")
