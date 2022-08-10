@@ -324,7 +324,9 @@ class TestCollectionInstrumentView(TestClient):
         seft_file = SEFTModel(
             instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=999
         )
-        instrument.survey_id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+        survey = SurveyModel()
+        survey.id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+        instrument.survey = survey
         instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
         business = BusinessModel(ru_ref="test_ru_ref")
