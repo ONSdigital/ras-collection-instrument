@@ -68,7 +68,6 @@ Environment variables available for configuration are listed below:
 |-----------------------------|----------------------------------------------------------|-------------------------------------------------------|
 | MAX_UPLOAD_FILE_NAME_LENGTH | Maximum length of file names                             | 50                                                    |
 | LOGGING_LEVEL               | Level of the logger                                      | INFO                                                  |
-| JSON_SECRET_KEYS            | Json representation of keys                              | None                                                  |
 | ONS_CRYPTOKEY               | A key used by the Cryptographer                          | None                                                  |
 | SECURITY_USER_NAME          | Username the client uses to authenticate with other apis | admin                                                 |
 | SECURITY_USER_PASSWORD      | Password the client uses to authenticate with other apis | secret                                                |
