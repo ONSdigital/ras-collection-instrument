@@ -4,7 +4,6 @@ from json import loads
 import structlog
 from flask import current_app
 
-from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,

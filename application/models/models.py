@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, String
+from sqlalchemy.types import TIMESTAMP, String
 
 from application.models import GUID
 
