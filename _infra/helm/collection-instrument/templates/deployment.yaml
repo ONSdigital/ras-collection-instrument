@@ -138,11 +138,6 @@ spec:
             {{- else }}
             value: "postgresql://$(DB_USERNAME):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
             {{- end }}
-          - name: JSON_SECRET_KEYS
-            valueFrom:
-              secretKeyRef:
-                name: json-secrets
-                key: json-secret-keys
           - name: PORT
             value: "{{ .Values.container.port }}"
           - name: CONFIG_YML
