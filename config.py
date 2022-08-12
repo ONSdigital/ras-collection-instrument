@@ -8,7 +8,6 @@ class Config(object):
     PORT = os.getenv("PORT", 8002)
     DEBUG = os.getenv("DEBUG", False)
     LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
-    JSON_SECRET_KEYS = os.getenv("JSON_SECRET_KEYS")
     ONS_CRYPTOKEY = os.getenv("ONS_CRYPTOKEY")
     SECURITY_USER_NAME = os.getenv("SECURITY_USER_NAME", "admin")
     SECURITY_USER_PASSWORD = os.getenv("SECURITY_USER_PASSWORD", "secret")
@@ -35,9 +34,6 @@ class DevelopmentConfig(Config):
 
 
 class TestingConfig(Config):
-    project_root = os.path.dirname(__file__)
-    JSON_SECRET_KEYS = open(f"{project_root}/tests/files/keys.json").read()
-
     DEBUG = True
     LOGGING_LEVEL = "ERROR"
     SECURITY_USER_NAME = "admin"

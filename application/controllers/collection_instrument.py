@@ -5,7 +5,6 @@ import structlog
 from flask import current_app
 from sqlalchemy.orm import Session
 
-from application.controllers.cryptographer import Cryptographer
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
@@ -117,7 +116,6 @@ class CollectionInstrument(object):
             file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
-            instrument.seft_file.gcs = True
         except Exception as e:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
             raise e
@@ -445,7 +443,6 @@ class CollectionInstrument(object):
         seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
         seft_ci_bucket.delete_file_from_bucket(old_filename)
         seft_ci_bucket.upload_file_to_bucket(file=file)
-        seft_model.gcs = True
         return seft_model
 
     @with_db_session
@@ -469,27 +466,20 @@ class CollectionInstrument(object):
             return None
 
         for instrument in exercise.instruments:
-            if instrument.seft_file.gcs:
-                try:
-                    file_path = self._build_seft_file_path(instrument)
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(file_path)
-                    csv += csv_format.format(
-                        count=count,
-                        file_name=instrument.seft_file.file_name,
-                        length=len(file),
-                        date_stamp=instrument.stamp,
-                    )
-                except Exception:
-                    log.exception("Couldn't find SEFT CI in bucket")
-            else:
+            try:
+                survey_ref = get_survey_ref(instrument.survey.survey_id)
+                exercise_id = str(instrument.exids[0])
+                file_path = self._build_seft_file_path(instrument)
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                file = seft_ci_bucket.download_file_from_bucket(file_path)
                 csv += csv_format.format(
                     count=count,
-                    file_name=instrument.name,
-                    length=instrument.seft_file.len if instrument.seft_file else None,
+                    file_name=instrument.seft_file.file_name,
+                    length=len(file),
                     date_stamp=instrument.stamp,
                 )
-            count += 1
+            except Exception:
+                log.exception("Couldn't find SEFT CI in bucket")
         return csv
 
     @staticmethod
@@ -523,19 +513,15 @@ class CollectionInstrument(object):
         file_name = None
 
         if instrument:
-            if instrument.seft_file.gcs:
-                try:
-                    file_path = self._build_seft_file_path(instrument)
-                    seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-                    file = seft_ci_bucket.download_file_from_bucket(file_path)
-                    return file, instrument.seft_file.file_name
-                except Exception:
-                    log.exception("Couldn't find SEFT CI in GCP bucket")
-            else:
-                log.info("Decrypting collection instrument data", instrument_id=instrument_id)
-                cryptographer = Cryptographer()
-                data = cryptographer.decrypt(instrument.seft_file.data)
-                file_name = instrument.seft_file.file_name
+            try:
+                survey_ref = get_survey_ref(instrument.survey.survey_id)
+                exercise_id = str(instrument.exids[0])
+                file_path = self._build_seft_file_path(instrument)
+                seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+                file = seft_ci_bucket.download_file_from_bucket(file_path)
+                return file, instrument.seft_file.file_name
+            except Exception:
+                log.exception("Couldn't find SEFT CI in GCP bucket")
         return data, file_name
 
     @staticmethod

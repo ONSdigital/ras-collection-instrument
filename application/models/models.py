@@ -5,7 +5,7 @@ from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy.types import TIMESTAMP, Boolean, String
+from sqlalchemy.types import TIMESTAMP, String
 
 from application.models import GUID
 
@@ -172,7 +172,6 @@ class SEFTModel(Base):
     file_name = Column(String(32))
     len = Column(Integer)
     instrument_id = Column(GUID, ForeignKey("instrument.instrument_id"))
-    gcs = Column(Boolean)
 
     instrument = relationship("InstrumentModel", back_populates="seft_file")
 
@@ -181,4 +180,3 @@ class SEFTModel(Base):
         self.instrument_id = instrument_id
         self.file_name = file_name
         self.len = length
-        self.gcs = False

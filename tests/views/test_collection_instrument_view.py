@@ -8,7 +8,6 @@ from flask import current_app
 from requests.models import Response
 from six import BytesIO
 
-from application.controllers.cryptographer import Cryptographer
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
 from application.models.models import (
@@ -336,17 +335,23 @@ class TestCollectionInstrumentView(TestClient):
 
             self.assertEqual(len(collection_instruments()), 3)
 
-    def test_download_exercise_csv(self):
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
+    def test_download_exercise_csv(self, mock_bucket, mock_request):
         # Given a patched exercise
         instrument = InstrumentModel()
-        seft_file = SEFTModel(
-            instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=999
-        )
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=6)
+        survey = SurveyModel()
+        survey.survey_id = "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+        instrument.survey = survey
         instrument.seft_file = seft_file
         exercise = ExerciseModel(exercise_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
         business = BusinessModel(ru_ref="test_ru_ref")
         instrument.exercises.append(exercise)
         instrument.businesses.append(business)
+
+        mock_bucket.return_value.download_file_from_bucket.return_value = "abc123"
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
         with patch("application.controllers.collection_instrument.query_exercise_by_id", return_value=exercise):
             # When a call is made to the download_csv end point
@@ -358,7 +363,7 @@ class TestCollectionInstrumentView(TestClient):
             # Then the response contains the correct data
             self.assertStatus(response, 200)
             self.assertIn('"Count","File Name","Length","Time Stamp"', response.data.decode())
-            self.assertIn('"1","file_name","999"', response.data.decode())
+            self.assertIn('"1","file_name","6"', response.data.decode())
 
     def test_get_instrument_by_search_string_ru(self):
         # Given an instrument which is in the db
@@ -835,21 +840,11 @@ class TestCollectionInstrumentView(TestClient):
     def add_instrument_data(session=None, ci_type="SEFT"):
         instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type=ci_type)
         if ci_type == "SEFT":
-            crypto = Cryptographer()
-            data = BytesIO(b"test data")
-            data = crypto.encrypt(data.read())
             seft_file = SEFTModel(
                 instrument_id=instrument.instrument_id,
                 file_name="test_file",
-                length="999",
-                data=data,
+                length="999"
             )
             instrument.seft_file = seft_file
             business = BusinessModel(ru_ref="test_ru_ref")
             instrument.businesses.append(business)
-        exercise = ExerciseModel(exercise_id=linked_exercise_id)
-        instrument.exercises.append(exercise)
-        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
-        instrument.survey = survey
-        session.add(instrument)
-        return instrument.instrument_id
