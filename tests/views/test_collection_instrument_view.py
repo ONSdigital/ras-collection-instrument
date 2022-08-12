@@ -840,11 +840,13 @@ class TestCollectionInstrumentView(TestClient):
     def add_instrument_data(session=None, ci_type="SEFT"):
         instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type=ci_type)
         if ci_type == "SEFT":
-            seft_file = SEFTModel(
-                instrument_id=instrument.instrument_id,
-                file_name="test_file",
-                length="999"
-            )
+            seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
             instrument.seft_file = seft_file
             business = BusinessModel(ru_ref="test_ru_ref")
             instrument.businesses.append(business)
+        exercise = ExerciseModel(exercise_id=linked_exercise_id)
+        instrument.exercises.append(exercise)
+        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
+        instrument.survey = survey
+        session.add(instrument)
+        return instrument.instrument_id
