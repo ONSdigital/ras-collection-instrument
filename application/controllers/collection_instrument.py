@@ -467,8 +467,6 @@ class CollectionInstrument(object):
 
         for instrument in exercise.instruments:
             try:
-                survey_ref = get_survey_ref(instrument.survey.survey_id)
-                exercise_id = str(instrument.exids[0])
                 file_path = self._build_seft_file_path(instrument)
                 seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                 file = seft_ci_bucket.download_file_from_bucket(file_path)
@@ -514,8 +512,6 @@ class CollectionInstrument(object):
 
         if instrument:
             try:
-                survey_ref = get_survey_ref(instrument.survey.survey_id)
-                exercise_id = str(instrument.exids[0])
                 file_path = self._build_seft_file_path(instrument)
                 seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
                 file = seft_ci_bucket.download_file_from_bucket(file_path)
