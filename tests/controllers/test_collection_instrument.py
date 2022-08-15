@@ -20,6 +20,7 @@ from application.views.collection_instrument_view import (
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = "tests/files/test.xlsx"
+COLLECTION_EXERCISE_ID = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 
 
@@ -121,10 +122,59 @@ class TestCollectionInstrument(TestClient):
         with self.assertRaises(RasDatabaseError):
             self.collection_instrument.get_instrument_by_search_string('{"COLLECTION_EXERCISE": "invalid_uuid"}')
 
+    @patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
+    def test_delete_seft_collection_instrument(self, mock_bucket, mock_request):
+        mock_bucket.delete_file_from_bucket.return_value = True
+        mock_request.get(
+            "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
+        seft_instrument_id = str(self.instrument_id)
+        self.collection_instrument.delete_seft_collection_instrument(seft_instrument_id)
+        instrument = self.collection_instrument.get_instrument_json(seft_instrument_id)
+
+        self.assertEqual(instrument, None)
+
+    def test_delete_seft_collection_instrument_not_found(self):
+        with self.assertRaises(RasError) as error:
+            self.collection_instrument.delete_seft_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
+
+        self.assertEqual(404, error.exception.status_code)
+        self.assertEqual(
+            ["Collection instrument 8b4a214b-466b-4882-90a1-fe90ad59e2fc not found"],
+            error.exception.errors,
+        )
+
+    def test_delete_eq_collection_instrument(self):
+        eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")
+        with self.assertRaises(RasError) as error:
+            self.collection_instrument.delete_seft_collection_instrument(str(eq_collection_instrument_id))
+
+        self.assertEqual(405, error.exception.status_code)
+        self.assertEqual(
+            [f"Only SEFT collection instruments can be deleted {eq_collection_instrument_id} has type EQ"],
+            error.exception.errors,
+        )
+
+    def test_unlink_instrument_from_exercise_seft(self):
+        eq_collection_instrument = self.add_instrument_data()
+        with self.assertRaises(RasError) as error:
+            self.collection_instrument.unlink_instrument_from_exercise(
+                str(eq_collection_instrument), COLLECTION_EXERCISE_ID
+            )
+
+        self.assertEqual(405, error.exception.status_code)
+        self.assertEqual(
+            [f"{eq_collection_instrument} is of type SEFT which should be deleted and not unlinked"],
+            error.exception.errors,
+        )
+
     def test_get_instrument_by_incorrect_id(self):
         # Given there is an instrument in the db
         # When an incorrect instrument id is used to find that instrument
-        instrument = self.collection_instrument.get_instrument_json("db0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
+        instrument = self.collection_instrument.get_instrument_json(COLLECTION_EXERCISE_ID)
 
         # Then that instrument is not found
         self.assertEqual(instrument, None)
@@ -133,8 +183,7 @@ class TestCollectionInstrument(TestClient):
     def test_publish_uploaded_collection_instrument(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         # Given there is an instrument in the db
-        c_id = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
-        result = publish_uploaded_collection_instrument(c_id, self.instrument_id)
+        result = publish_uploaded_collection_instrument(COLLECTION_EXERCISE_ID, self.instrument_id)
 
         # Then the message is successfully published
         self.assertEqual(result.status_code, 200)
@@ -143,20 +192,20 @@ class TestCollectionInstrument(TestClient):
     def test_publish_uploaded_collection_instrument_fails(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=500)
         # Given there is an instrument in the db
-        c_id = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
         with self.assertRaises(Exception):
-            publish_uploaded_collection_instrument(c_id, self.instrument_id)
+            publish_uploaded_collection_instrument(COLLECTION_EXERCISE_ID, self.instrument_id)
 
     @staticmethod
     @with_db_session
-    def add_instrument_data(session=None):
-        instrument = InstrumentModel(ci_type="SEFT")
-        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file")
-        exercise = ExerciseModel(exercise_id="db0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
-        business = BusinessModel(ru_ref="test_ru_ref")
-        instrument.seft_file = seft_file
+    def add_instrument_data(session=None, ci_type="SEFT"):
+        instrument = InstrumentModel(ci_type=ci_type)
+        exercise = ExerciseModel(exercise_id=COLLECTION_EXERCISE_ID)
         instrument.exercises.append(exercise)
-        instrument.businesses.append(business)
+        if ci_type == "SEFT":
+            seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file")
+            business = BusinessModel(ru_ref="test_ru_ref")
+            instrument.seft_file = seft_file
+            instrument.businesses.append(business)
         survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
         instrument.survey = survey
         session.add(instrument)

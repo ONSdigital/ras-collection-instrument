@@ -20,6 +20,7 @@ from application.models.models import (
 from application.views.collection_instrument_view import (
     COLLECTION_INSTRUMENT_NOT_FOUND,
     NO_INSTRUMENT_FOR_EXERCISE,
+    SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL,
     UPLOAD_SUCCESSFUL,
 )
 from tests.test_client import TestClient
@@ -79,6 +80,24 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
 
         self.assertEqual(len(collection_instruments()), 2)
+
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
+    def test_seft_collection_instrument_delete(self, mock_bucket, mock_request):
+        # Given an collection instrument and GCS is patched
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
+        mock_bucket.delete_file_from_bucket.return_value = True
+
+        # When a post is made to delete the instrument
+        response = self.client.delete(
+            f"/collection-instrument-api/1.0.2/delete/{self.instrument_id}",
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the instrument is deleted successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
 
     def test_upload_collection_instrument_without_collection_exercise(self):
         # When a post is made to the upload end point
@@ -610,7 +629,6 @@ class TestCollectionInstrumentView(TestClient):
 
     def test_instrument_by_search_string_ru_missing_auth_details(self):
         # Given an instrument which is in the db
-        self.add_instrument_data()
         # When the collection instrument end point is called without auth details
         response = self.client.get(
             '/collection-instrument-api/1.0.2/collectioninstrument?searchString={"RU_REF":%20"test_ru_ref"}'
@@ -621,7 +639,6 @@ class TestCollectionInstrumentView(TestClient):
 
     def test_instrument_by_search_string_ru_incorrect_auth_details(self):
         # Given a file and incorrect auth details
-        self.add_instrument_data()
         auth = "{}:{}".format("incorrect_user_name", "incorrect_password").encode("utf-8")
         header = {"Authorization": "Basic %s" % base64.b64encode(bytes(auth)).decode("ascii")}
 
@@ -673,60 +690,63 @@ class TestCollectionInstrumentView(TestClient):
             self.assertEqual(response_data["errors"][0], "Failed to publish upload message")
 
     @requests_mock.mock()
-    def test_unlink_collection_instrument(self, mock_request):
+    def test_unlink_eq_collection_instrument(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
-        # Given an instrument which is in the db is linked to a collection exercise
+        # Given an eq instrument which is in the db is linked to a collection exercise
+        eq_instrument_id = self.add_instrument_data(ci_type="EQ")
 
         # When the instrument is unlinked to an exercise
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{eq_instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         # Then that instrument and collection exercise are successfully unlinked
         self.assertStatus(response, 200)
-        linked_exercises = collection_exercises_linked_to_collection_instrument(self.instrument_id)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(eq_instrument_id)
         linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
         self.assertNotIn(linked_exercise_id, linked_exercise_ids)
 
     @requests_mock.mock()
-    def test_unlink_collection_instrument_rest_exception(self, mock_request):
+    def test_unlink_eq_collection_instrument_rest_exception(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=500)
-        # Given an instrument which is in the db is linked to a collection exercise
+        # Given an eq instrument which is in the db is linked to a collection exercise
+        eq_instrument_id = self.add_instrument_data(ci_type="EQ")
 
         # When the instrument is unlinked to an exercise but failed to publish messsage
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{eq_instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         self.assertStatus(response, 500)
 
     @requests_mock.mock()
-    def test_unlink_collection_instrument_does_not_unlink_all_ci_to_given_ce(self, mock_request):
+    def test_unlink_eq_collection_instrument_does_not_unlink_all_ci_to_given_ce(self, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         # Given there are multiple cis linked to the same ce
-        instrument_id = self.add_instrument_without_exercise()
+        eq_instrument_id = self.add_instrument_data(ci_type="EQ")
+        instrument_without_exercise = self.add_instrument_without_exercise()
 
         self.client.post(
-            f"/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/link-exercise/{instrument_without_exercise}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         # When the instrument is unlinked to an exercise
         response = self.client.put(
-            f"/collection-instrument-api/1.0.2/unlink-exercise/{self.instrument_id}/{linked_exercise_id}",
+            f"/collection-instrument-api/1.0.2/unlink-exercise/{eq_instrument_id}/{linked_exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         # Then only that ci and ce are unlinked the other link remains
         self.assertStatus(response, 200)
 
-        linked_exercises = collection_exercises_linked_to_collection_instrument(self.instrument_id)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(eq_instrument_id)
         linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
         self.assertNotIn(linked_exercise_id, linked_exercise_ids)
 
-        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_id)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_without_exercise)
         linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
         self.assertIn(linked_exercise_id, linked_exercise_ids)
 
@@ -817,14 +837,15 @@ class TestCollectionInstrumentView(TestClient):
 
     @staticmethod
     @with_db_session
-    def add_instrument_data(session=None):
-        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type="SEFT")
-        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
-        instrument.seft_file = seft_file
+    def add_instrument_data(session=None, ci_type="SEFT"):
+        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type=ci_type)
+        if ci_type == "SEFT":
+            seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
+            instrument.seft_file = seft_file
+            business = BusinessModel(ru_ref="test_ru_ref")
+            instrument.businesses.append(business)
         exercise = ExerciseModel(exercise_id=linked_exercise_id)
-        business = BusinessModel(ru_ref="test_ru_ref")
         instrument.exercises.append(exercise)
-        instrument.businesses.append(business)
         survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
         instrument.survey = survey
         session.add(instrument)
