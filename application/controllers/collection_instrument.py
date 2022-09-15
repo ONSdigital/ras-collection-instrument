@@ -57,14 +57,13 @@ class CollectionInstrument(object):
         for instrument in instruments:
 
             classifiers = instrument.classifiers or {}
+
+            # Leaving these as empty lists for now. Before it would loop over the instrument.businesses and
+            # instrument.exercises and populate the lists.  We're almost certain nothing uses this, or the 'classifiers'
+            # key in the instrument_json at all.  If this proves to be the case after we deploy this change then we can
+            # fully remove it in a future PR
             ru = {"RU_REF": []}
             collection_exercise = {"COLLECTION_EXERCISE": []}
-
-            for business in instrument.businesses:
-                ru["RU_REF"].append(business.ru_ref)
-
-            for exercise in instrument.exercises:
-                collection_exercise["COLLECTION_EXERCISE"].append(exercise.exercise_id)
 
             instrument_json = {
                 "id": instrument.instrument_id,

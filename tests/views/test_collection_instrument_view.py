@@ -375,8 +375,11 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then the response returns the correct data
         self.assertStatus(response, 200)
-        self.assertIn("test_ru_ref", response.data.decode())
         self.assertIn("cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", response.data.decode())
+
+        # We've removed the ru ref in the 'classifiers' key in the response as it's almost certainly not used anywhere.
+        # This assertion will be removed if this is true, and we do another PR to remove the classifiers key.
+        self.assertNotIn("test_ru_ref", response.data.decode())
 
     def test_get_instrument_by_search_string_type(self):
         # Given an instrument which is in the db
@@ -446,7 +449,6 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then 2 responses are returned
         self.assertStatus(response, 200)
-        self.assertIn("test_ru_ref", response.data.decode())
         self.assertEqual(response.data.decode().count("cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"), 2)
 
     def test_count_instrument_by_search_string_ru(self):
