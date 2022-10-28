@@ -40,7 +40,11 @@ class InstrumentModel(Base):
     survey_id = Column(Integer, ForeignKey("survey.id"))
     classifiers = Column(JSONB)
     survey = relationship("SurveyModel", back_populates="instruments")
-    seft_file = relationship("SEFTModel", uselist=False, back_populates="instrument", cascade="all, delete-orphan")
+    # Use eager loading using 'lazy="joined"' to preload SEFT information to speed up looping over the instruments. For
+    # example adding this speeds up calling 'validate_non_duplicate_instrument'
+    seft_file = relationship(
+        "SEFTModel", uselist=False, back_populates="instrument", cascade="all, delete-orphan", lazy="joined"
+    )
 
     exercises = relationship("ExerciseModel", secondary=instrument_exercise_table, back_populates="instruments")
     businesses = relationship(
