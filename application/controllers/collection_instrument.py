@@ -125,19 +125,22 @@ class CollectionInstrument(object):
     @staticmethod
     def validate_non_duplicate_instrument(file, exercise_id, session):
         exercise = query_exercise_by_id(exercise_id, session)
-
+        log.info("Validating if instrument is already uploaded for this exercise", exercise_id=exercise_id)
         if exercise:
             for i in exercise.instruments:
                 if i.seft_file.file_name == file.filename:
-                    log.error("Collection instrument file already uploaded for this collection exercise")
+                    log.info(
+                        "Collection instrument file already uploaded for this collection exercise",
+                        exercise_id=exercise_id,
+                    )
                     raise RasError("Collection instrument file already uploaded for this collection exercise", 400)
-
+        log.info("Successfully validated instrument is not already uploaded for this exercise", exercise_id=exercise_id)
         return
 
     @with_db_session
     def patch_seft_instrument(self, instrument_id: str, file, session):
         """
-        Replaces the the seft_file for an instrument with the one provided.
+        Replaces the seft_file for an instrument with the one provided.
 
         :param instrument_id: The top level instrument id that needs changing
         :param file: A FileStorage object with the new file
@@ -202,6 +205,7 @@ class CollectionInstrument(object):
                             f"uploaded for this collection exercise"
                         )
                         raise RasError(error_text, 400)
+        bound_logger.info("Successfully validated there isn't an instrument for this ru for this exercise")
 
     @with_db_session
     def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
