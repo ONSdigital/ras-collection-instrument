@@ -68,6 +68,7 @@ class CollectionInstrument(object):
             instrument_json = {
                 "id": instrument.instrument_id,
                 "file_name": instrument.name,
+                "type": instrument.type,
                 "classifiers": {**classifiers, **ru, **collection_exercise},
                 "surveyId": instrument.survey.survey_id,
             }
