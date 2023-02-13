@@ -68,6 +68,7 @@ class CollectionInstrument(object):
             instrument_json = {
                 "id": instrument.instrument_id,
                 "file_name": instrument.name,
+                "type": instrument.type,
                 "classifiers": {**classifiers, **ru, **collection_exercise},
                 "surveyId": instrument.survey.survey_id,
             }
@@ -128,7 +129,7 @@ class CollectionInstrument(object):
         log.info("Validating if instrument is already uploaded for this exercise", exercise_id=exercise_id)
         if exercise:
             for i in exercise.instruments:
-                if i.seft_file.file_name == file.filename:
+                if i.type == "SEFT" and i.seft_file.file_name == file.filename:
                     log.info(
                         "Collection instrument file already uploaded for this collection exercise",
                         exercise_id=exercise_id,
