@@ -28,7 +28,14 @@ from tests.test_client import TestClient
 linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
-survey_response_json = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"}
+survey_response_json = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139", "surveyMode": "SEFT"}
+collection_exercise_url = "http://localhost:8145/collectionexercises/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+
+survey_response_json_EQ_AND_SEFT = {
+    "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+    "surveyRef": "139",
+    "surveyMode": "EQ_AND_SEFT",
+}
 
 
 @with_db_session
@@ -55,7 +62,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -81,26 +88,10 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 2)
 
-    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_seft_collection_instrument_delete(self, mock_bucket, mock_request):
-        # Given an collection instrument and GCS is patched
-        mock_request.get(survey_url, status_code=200, json=survey_response_json)
-        mock_bucket.delete_file_from_bucket.return_value = True
-
-        # When a post is made to delete the instrument
-        response = self.client.delete(
-            f"/collection-instrument-api/1.0.2/delete/{self.instrument_id}",
-            headers=self.get_auth_headers(),
-            content_type="multipart/form-data",
-        )
-
-        # Then the instrument is deleted successfully
-        self.assertStatus(response, 200)
-        self.assertEqual(response.data.decode(), SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
-
-    def test_upload_collection_instrument_without_collection_exercise(self):
+    def test_upload_eq_collection_instrument(self, mock_request):
         # When a post is made to the upload end point
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         response = self.client.post(
             "/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
             headers=self.get_auth_headers(),
@@ -113,8 +104,10 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 2)
 
-    def test_upload_collection_instrument_without_collection_exercise_duplicate_protection(self):
+    @requests_mock.mock()
+    def test_upload_eq_collection_instrument_duplicate_protection(self, mock_request):
         # When a post is made to the upload end point
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         response = self.client.post(
             "/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
             "&classifiers=%7B%22form_type%22%3A%220255%22%2C%22eq_id%22%3A%22rsi%22%7D",
@@ -156,10 +149,12 @@ class TestCollectionInstrumentView(TestClient):
 
         self.assertEqual(len(collection_instruments()), 3)
 
-    def test_upload_collection_instrument_if_survey_does_not_exist(self):
+    @requests_mock.mock()
+    def test_upload_eq_collection_instrument_if_survey_does_not_exist(self, mock_request):
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
         # When a post is made to the upload end point
         response = self.client.post(
-            "/collection-instrument-api/1.0.2/upload?survey_id=98b711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            "/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
             headers=self.get_auth_headers(),
             content_type="multipart/form-data",
         )
@@ -172,7 +167,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload_with_ru(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument_with_ru(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -200,7 +195,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload_with_ru_only_allows_single_one(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument_with_ru_only_allows_single_one(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -247,7 +242,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument_with_duplicate_filename_causes_error(self, mock_bucket, mock_request):
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -292,7 +287,7 @@ class TestCollectionInstrumentView(TestClient):
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_collection_instrument_upload_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument_with_ru_allowed_for_different_exercises(self, mock_bucket, mock_request):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
@@ -335,9 +330,114 @@ class TestCollectionInstrumentView(TestClient):
 
             self.assertEqual(len(collection_instruments()), 3)
 
+    @requests_mock.mock()
+    def test_upload_eq_collection_instrument_eq_and_seft_survey_mode(self, mock_request):
+        # Given a survey with mode EQ_AND_SEFT
+        mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
+
+        # When a eQ collection instrument is uploaded
+        response = self.client.post(
+            "/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the file uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
-    def test_download_exercise_csv(self, mock_bucket, mock_request):
+    def test_upload_seft_collection_instrument_eq_and_seft_survey_mode(self, mock_bucket, mock_request):
+        # Given a survey with mode EQ_AND_SEFT
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
+        mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
+        mock_survey_service = Response()
+        mock_survey_service.status_code = 200
+        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        data = {"file": (BytesIO(b"test data"), "test.xls")}
+
+        # When a SEFT collection instrument is uploaded
+        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+
+            response = self.client.post(
+                "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+                '?classifiers={"form_type": "001"}',
+                headers=self.get_auth_headers(),
+                data=data,
+                content_type="multipart/form-data",
+            )
+
+        # Then the file uploads successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), UPLOAD_SUCCESSFUL)
+
+    @requests_mock.mock()
+    def test_upload_eq_collection_instrument_eq_and_seft_survey_mode_form_type_used(self, mock_request):
+        # Given a survey with mode EQ_AND_SEFT
+        mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
+        self.add_instrument_data()
+
+        # When an eQ collection instrument is uploaded with a form_type already used by a SEFT collection instrument
+        response = self.client.post(
+            "/collection-instrument-api/1.0.2/upload?survey_id=cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+            '&classifiers={"form_type": "001"}',
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the file does not upload and an 400 error is returned
+        error = {"errors": ["This form type has already been used in this survey by SEFT"]}
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json, error)
+
+    @requests_mock.mock()
+    def test_upload_seft_collection_instrument_eq_and_seft_survey_mode_form_type_used(self, mock_request):
+        # Given a survey with mode EQ_AND_SEFT
+        mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
+        mock_request.get(
+            collection_exercise_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
+        )
+
+        data = {"file": (BytesIO(b"test data"), "test.xls")}
+        self.add_instrument_data(ci_type="EQ")
+
+        # When a SEFT collection instrument is uploaded with a form_type already used by an eQ collection instrument
+        response = self.client.post(
+            "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+            '?classifiers={"form_type": "001"}',
+            headers=self.get_auth_headers(),
+            data=data,
+            content_type="multipart/form-data",
+        )
+
+        # Then the file does not upload and an 400 error is returned
+        error = {"errors": ["This form type has already been used in this survey by EQ"]}
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json, error)
+
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
+    def test_delete_seft_collection_instrument(self, mock_bucket, mock_request):
+        # Given an collection instrument and GCS is patched
+        mock_request.get(survey_url, status_code=200, json=survey_response_json)
+        mock_bucket.delete_file_from_bucket.return_value = True
+
+        # When a post is made to delete the instrument
+        response = self.client.delete(
+            f"/collection-instrument-api/1.0.2/delete/{self.instrument_id}",
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the instrument is deleted successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
+
+    @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
+    @requests_mock.mock()
+    def test_download_seft_exercise_csv(self, mock_bucket, mock_request):
         # Given a patched exercise
         instrument = InstrumentModel()
         seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="file_name", data="test_data", length=6)
@@ -840,7 +940,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None, ci_type="SEFT"):
-        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type=ci_type)
+        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN", "type": "EQ"}, ci_type=ci_type)
         if ci_type == "SEFT":
             seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
             instrument.seft_file = seft_file

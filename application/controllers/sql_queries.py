@@ -24,3 +24,16 @@ def query_instrument_by_id(instrument_id, session):
 
 def query_instrument(session):
     return session.query(InstrumentModel)
+
+
+def query_instruments_form_type_with_different_survey_mode(survey_id, form_type, survey_mode, session):
+    return (
+        session.query(InstrumentModel)
+        .join(SurveyModel)
+        .filter(
+            SurveyModel.survey_id == survey_id,
+            InstrumentModel.classifiers["form_type"].astext == form_type,
+            InstrumentModel.type != survey_mode,
+        )
+        .all()
+    )
