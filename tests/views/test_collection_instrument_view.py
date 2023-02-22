@@ -29,7 +29,7 @@ linked_exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
 url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 survey_url = "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 survey_response_json = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139", "surveyMode": "SEFT"}
-collection_exercise_url = "http://localhost:8145/collectionexercises/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+collection_exercise_url = "http://localhost:8145/collectionexercises/6790cdaa-28a9-4429-905c-0e943373b62e"
 
 survey_response_json_EQ_AND_SEFT = {
     "surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
@@ -405,7 +405,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When a SEFT collection instrument is uploaded with a form_type already used by an eQ collection instrument
         response = self.client.post(
-            "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
+            "/collection-instrument-api/1.0.2/upload/6790cdaa-28a9-4429-905c-0e943373b62e"
             '?classifiers={"form_type": "001"}',
             headers=self.get_auth_headers(),
             data=data,
@@ -940,7 +940,7 @@ class TestCollectionInstrumentView(TestClient):
     @staticmethod
     @with_db_session
     def add_instrument_data(session=None, ci_type="SEFT"):
-        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN", "type": "EQ"}, ci_type=ci_type)
+        instrument = InstrumentModel(classifiers={"form_type": "001", "geography": "EN"}, ci_type=ci_type)
         if ci_type == "SEFT":
             seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file", length="999")
             instrument.seft_file = seft_file

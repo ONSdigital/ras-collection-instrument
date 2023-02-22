@@ -1,7 +1,7 @@
 from unittest.mock import patch
-import json
-from requests.models import Response
+
 import requests
+from requests.models import Response
 
 from application.controllers.service_helper import service_request
 from application.exceptions import RasError, ServiceUnavailableException
@@ -18,9 +18,11 @@ class TestServiceHelper(TestClient):
 
         # When a call is made to the service
         with patch("requests.get", return_value=mock_response):
-            response = service_request(service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce")
+            response = service_request(
+                service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce"
+            )
 
-            # Then it response successfully
+            # Then it response is successful
             self.assertStatus(response, 200)
 
     def test_incorrect_service_request(self):
@@ -40,9 +42,11 @@ class TestServiceHelper(TestClient):
         # Then a RasError is raised
         with patch("requests.get", return_value=mock_response):
             with self.assertRaises(RasError) as exception:
-                service_request(service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce")
+                service_request(
+                    service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce"
+                )
 
-        self.assertEquals(['survey-service returned a HTTPError'], exception.exception.errors)
+        self.assertEquals(["survey-service returned a HTTPError"], exception.exception.errors)
         self.assertEquals(500, exception.exception.status_code)
 
     def test_service_request_connection_error(self):
@@ -51,9 +55,11 @@ class TestServiceHelper(TestClient):
         # Then a ServiceUnavailableException is raised with a 503
         with patch("requests.get", side_effect=requests.ConnectionError):
             with self.assertRaises(ServiceUnavailableException) as exception:
-                service_request(service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce")
+                service_request(
+                    service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce"
+                )
 
-        self.assertEquals(['survey-service returned a connection error'], exception.exception.errors)
+        self.assertEquals(["survey-service returned a connection error"], exception.exception.errors)
         self.assertEquals(503, exception.exception.status_code)
 
     def test_service_request_timeout_error(self):
@@ -63,5 +69,5 @@ class TestServiceHelper(TestClient):
         with patch("requests.get", side_effect=requests.Timeout):
             with self.assertRaises(ServiceUnavailableException) as exception:
                 service_request(service=SERVICE, endpoint="surveys", search_value="test_case")
-        self.assertEquals(['survey-service has timed out'], exception.exception.errors)
+        self.assertEquals(["survey-service has timed out"], exception.exception.errors)
         self.assertEquals(504, exception.exception.status_code)

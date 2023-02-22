@@ -98,7 +98,6 @@ class CollectionInstrument(object):
         survey_service_details = get_survey_service_details(survey_id)
         ci_type = "SEFT"
         instrument = InstrumentModel(ci_type=ci_type)
-
         if classifiers:
             classifiers = loads(classifiers)
             if survey_service_details["surveyMode"] == "EQ_AND_SEFT":
@@ -116,6 +115,15 @@ class CollectionInstrument(object):
         instrument.exercises.append(exercise)
         instrument.survey = survey
         session.add(instrument)
+
+        try:
+            file.filename = survey_service_details["surveyRef"] + "/" + exercise_id + "/" + file.filename
+            seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            seft_ci_bucket.upload_file_to_bucket(file=file)
+        except Exception as e:
+            log.exception("An error occurred when trying to put SEFT CI in bucket")
+            raise e
+
         return instrument
 
     @staticmethod
@@ -225,11 +233,9 @@ class CollectionInstrument(object):
         validate_uuid(survey_id)
         survey = self._find_or_create_survey_from_survey_id(survey_id, session)
         survey_service_details = get_survey_service_details(survey.survey_id)
-
         ci_type = "EQ"
         instrument = InstrumentModel(ci_type=ci_type)
         instrument.survey = survey
-
         if classifiers:
             classifiers = loads(classifiers)
             if survey_service_details["surveyMode"] == "EQ_AND_SEFT":
