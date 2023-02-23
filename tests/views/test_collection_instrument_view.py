@@ -388,7 +388,7 @@ class TestCollectionInstrumentView(TestClient):
         )
 
         # Then the file does not upload and an 400 error is returned
-        error = {"errors": ["This form type has already been used in this survey by SEFT"]}
+        error = {"errors": ["This form type is currently being used by SEFT for this survey"]}
         self.assertStatus(response, 400)
         self.assertEqual(response.json, error)
 
@@ -413,7 +413,7 @@ class TestCollectionInstrumentView(TestClient):
         )
 
         # Then the file does not upload and an 400 error is returned
-        error = {"errors": ["This form type has already been used in this survey by EQ"]}
+        error = {"errors": ["This form type is currently being used by EQ for this survey"]}
         self.assertStatus(response, 400)
         self.assertEqual(response.json, error)
 

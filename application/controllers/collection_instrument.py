@@ -130,7 +130,14 @@ class CollectionInstrument(object):
     def validate_eq_and_seft_form_type(survey_id: str, form_type: str, survey_mode: str, session: Session) -> None:
         instruments = query_instruments_form_type_with_different_survey_mode(survey_id, form_type, survey_mode, session)
         if instruments:
-            raise RasError(f"This form type has already been used in this survey by {instruments[0].type}", 400)
+            instrument_type = instruments[0].type
+            log.info(
+                "Instrument can not be uploaded, a different survey mode already uses this form_type",
+                survey_id=survey_id,
+                form_type=form_type,
+                instrument_type=instrument_type,
+            )
+            raise RasError(f"This form type is currently being used by {instrument_type} for this survey", 400)
 
     @staticmethod
     def validate_non_duplicate_instrument(file, exercise_id, session):
@@ -248,9 +255,7 @@ class CollectionInstrument(object):
                     raise RasError("Cannot upload an instrument with an identical set of classifiers", 400)
 
             instrument.classifiers = deserialized_classifiers
-
         session.add(instrument)
-
         return instrument
 
     @with_db_session
@@ -349,12 +354,10 @@ class CollectionInstrument(object):
         """
         Makes a request to the collection exercise service for the survey ID,
         reuses the survey if it exists in this service or create if it doesn't
-
         :param exercise_id: An exercise id (UUID)
         :param session: database session
         :return: A survey record
         """
-
         response = service_request(
             service="collectionexercise-service", endpoint="collectionexercises", search_value=exercise_id
         )
