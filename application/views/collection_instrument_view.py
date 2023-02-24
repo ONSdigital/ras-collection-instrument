@@ -19,6 +19,7 @@ UPLOAD_SUCCESSFUL = "The upload was successful"
 PATCH_SUCCESSFUL = "The patch of the instrument was successful"
 LINK_SUCCESSFUL = "Linked collection instrument to collection exercise"
 UNLINK_SUCCESSFUL = "collection instrument and collection exercise unlinked"
+MULTI_SELECT_SUCCESSFUL = "Linked and/or unlinked collection instruments to collection exercise"
 
 
 @collection_instrument_view.before_request
@@ -62,6 +63,13 @@ def upload_collection_instrument_without_collection_exercise():
     survey_id = request.args.get("survey_id")
     CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
+@collection_instrument_view.route("/multi-select-exercise/<exercise_id>", methods=["POST"])
+def multi_select_collection_instrument(exercise_id):
+    instruments = request.args.getlist("instruments")
+    multi_select_successful = CollectionInstrument().multi_instrument_selection_to_exercise(instruments, exercise_id)
+    return make_response(jsonify(multi_select_successful), 200)
 
 
 @collection_instrument_view.route("/link-exercise/<instrument_id>/<exercise_id>", methods=["POST"])

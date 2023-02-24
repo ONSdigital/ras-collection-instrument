@@ -55,7 +55,6 @@ class CollectionInstrument(object):
 
         result = []
         for instrument in instruments:
-
             classifiers = instrument.classifiers or {}
 
             # Leaving these as empty lists for now. Before it would loop over the instrument.businesses and
@@ -240,6 +239,73 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
+    def multi_instrument_selection_to_exercise(self, instrument_selection, exercise_id, session=None):
+        """
+        Link a collection instrument to a collection exercise
+
+        :param instrument_selection: A list of instrument ids
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        :return: True if instrument has been successfully linked to exercise
+        """
+        current_instruments = []
+        unselected_instruments = {}
+        linked_instruments = query_exercise_by_id(exercise_id, session)
+        multi_select_successful = []
+
+        if linked_instruments:
+            for i in linked_instruments.instruments:
+                current_instruments.append(str(i.instrument_id))
+
+            selected_instruments = set(sorted(instrument_selection)).difference(sorted(current_instruments))
+            unselected_instruments = set(sorted(current_instruments)).difference(sorted(instrument_selection))
+        else:
+            selected_instruments = set(instrument_selection)
+
+        validate_uuid(exercise_id)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+
+        if selected_instruments:
+            for instrument_id in selected_instruments:
+                bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
+                bound_logger.info("Linking instrument and exercise")
+                validate_uuid(instrument_id)
+
+                instrument = self.get_instrument_by_id(instrument_id, session)
+
+                instrument.exercises.append(exercise)
+
+                response = self.publish_collection_instrument(True, exercise_id, instrument.instrument_id)
+                if response.status_code != 200:
+                    raise RasError("Error: Failed to add collection instrument(s)", 500)
+
+                log.info(
+                    "Successfully linked instrument to exercise", instrument_id=instrument_id, exercise_id=exercise_id
+                )
+
+            multi_select_successful.append({"added": True})
+
+        if unselected_instruments:
+            for instrument_id in unselected_instruments:
+                bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
+                bound_logger.info("Unlinking instrument and exercise")
+
+                instrument = self.get_instrument_by_id(instrument_id, session)
+
+                if not instrument or not exercise:
+                    bound_logger.info("Failed to unlink, unable to find instrument or exercise")
+                    raise RasError("Error: Failed to remove collection instrument", 404)
+
+                instrument.exercises.remove(exercise)
+                response = self.publish_collection_instrument(False, exercise_id, instrument.instrument_id)
+                if response.status_code != 200:
+                    raise RasError("Error: Failed to remove collection instrument", 500)
+
+            multi_select_successful.append({"removed": True})
+
+        return multi_select_successful
+
+    @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
@@ -328,6 +394,23 @@ class CollectionInstrument(object):
         """
         log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
         json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
+        return collection_instrument_link(json_message)
+
+    @staticmethod
+    def publish_collection_instrument(selection, exercise_id, instrument_id):
+        """
+        Publish message to collection instrument link
+        :param selection:
+        :param exercise_id: An exercise id (UUID)
+        :param instrument_id: The id (UUID) for the newly created collection instrument
+        :return True if message successfully linked
+        """
+        if selection:
+            log.info("Publishing upload message", exercise_id=exercise_id, instrument_id=instrument_id)
+            json_message = {"action": "ADD", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
+        else:
+            log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
+            json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
         return collection_instrument_link(json_message)
 
     @staticmethod

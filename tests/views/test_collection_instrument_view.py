@@ -768,6 +768,77 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
     @requests_mock.mock()
+    def test_multi_select_link_collection_instrument(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+        # When the instrument is linked to an exercise
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}?instruments={str(instrument_id)}",
+            headers=self.get_auth_headers(),
+        )
+
+        # Then that instrument is successfully linked to the given collection exercise
+        self.assertStatus(response, 200)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
+        self.assertIn(exercise_id, linked_exercise_ids)
+
+    @requests_mock.mock()
+    def test_multi_select_link_collection_instrument_rest_exception(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=500)
+        # Given an instrument which is in the db is not linked to a collection exercise
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+
+        # When the instrument is linked to an exercise
+        with self.assertRaises(Exception):
+            response = self.client.post(
+                f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}?"
+                f"instruments={str(instrument_id)}",
+                headers=self.get_auth_headers(),
+            )
+
+            response_data = json.loads(response.data)
+
+            self.assertStatus(response, 500)
+            self.assertEqual(response_data["errors"][0], "Failed to publish upload message")
+
+    @requests_mock.mock()
+    def test_multi_select_unlink_eq_collection_instrument(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        # Given an eq instrument which is in the db is linked to a collection exercise
+        exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
+        eq_instrument_id = self.add_instrument_data(ci_type="EQ")
+
+        # When the instrument is unlinked to an exercise
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}",
+            headers=self.get_auth_headers(),
+        )
+
+        # Then that instrument and collection exercise are successfully unlinked
+        self.assertStatus(response, 200)
+        linked_exercises = collection_exercises_linked_to_collection_instrument(eq_instrument_id)
+        linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
+        self.assertNotIn(linked_exercise_id, linked_exercise_ids)
+
+    @requests_mock.mock()
+    def test_multi_select_unlink_eq_collection_instrument_rest_exception(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=500)
+        # Given an eq instrument which is in the db is linked to a collection exercise
+        exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
+
+        # When the instrument is unlinked to an exercise but failed to publish messsage
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}",
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 500)
+
+    @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
