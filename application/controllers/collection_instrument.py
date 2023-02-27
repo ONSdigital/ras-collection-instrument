@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
-    get_survey_service_details,
+    get_survey_details,
     service_request,
 )
 from application.controllers.session_decorator import with_db_session
@@ -95,7 +95,7 @@ class CollectionInstrument(object):
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         survey_id = survey.survey_id
-        survey_service_details = get_survey_service_details(survey_id)
+        survey_service_details = get_survey_details(survey_id)
         ci_type = "SEFT"
         instrument = InstrumentModel(ci_type=ci_type)
         if classifiers:
@@ -128,6 +128,15 @@ class CollectionInstrument(object):
 
     @staticmethod
     def validate_eq_and_seft_form_type(survey_id: str, form_type: str, survey_mode: str, session: Session) -> None:
+        """
+        Validates when using EQ_AND_SEFT that there isn't a different survey mode already using the form type
+        uploaded in the same survey
+        :param survey_id: survey id
+        :param form_type: form type (i.e 0001)
+        :param survey_mode: survey mode (i.e SEFT)
+        :param session: session
+        :return: None
+        """
         instruments = query_instruments_form_type_with_different_survey_mode(survey_id, form_type, survey_mode, session)
         if instruments:
             instrument_type = instruments[0].type
@@ -173,7 +182,7 @@ class CollectionInstrument(object):
             log.error("Not a SEFT instrument")
             raise RasError("Not a SEFT instrument", 400)
 
-        survey_ref = get_survey_service_details(instrument.survey.survey_id).get("surveyRef")
+        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
 
         seft_model = self._update_seft_file(instrument.seft_file, file, survey_ref, exercise_id)
@@ -239,7 +248,7 @@ class CollectionInstrument(object):
 
         validate_uuid(survey_id)
         survey = self._find_or_create_survey_from_survey_id(survey_id, session)
-        survey_service_details = get_survey_service_details(survey.survey_id)
+        survey_service_details = get_survey_details(survey.survey_id)
         ci_type = "EQ"
         instrument = InstrumentModel(ci_type=ci_type)
         instrument.survey = survey
@@ -612,6 +621,6 @@ class CollectionInstrument(object):
 
     @staticmethod
     def _build_seft_file_path(instrument) -> str:
-        survey_ref = get_survey_service_details(instrument.survey.survey_id).get("surveyRef")
+        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
         return f"{survey_ref}/{exercise_id}/{instrument.seft_file.file_name}"

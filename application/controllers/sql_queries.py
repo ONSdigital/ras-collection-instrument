@@ -27,6 +27,14 @@ def query_instrument(session):
 
 
 def query_instruments_form_type_with_different_survey_mode(survey_id, form_type, survey_mode, session):
+    """
+    query to find instruments which match a given survey_id and form_type but not the survey mode
+    :param survey_id: survey id
+    :param form_type: form type (i.e 0001)
+    :param survey_mode: survey mode (i.e eQ)
+    :param session: session
+    :return: InstrumentModel
+    """
     return (
         session.query(InstrumentModel)
         .join(SurveyModel)

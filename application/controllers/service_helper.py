@@ -9,7 +9,7 @@ from application.exceptions import RasError, ServiceUnavailableException
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def get_survey_service_details(survey_id):
+def get_survey_details(survey_id):
     """
     :param survey_id: The survey_id UUID to search with
     :return: survey reference
