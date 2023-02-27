@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import (
     collection_instrument_link,
-    get_survey_ref,
+    get_survey_details,
     service_request,
 )
 from application.controllers.session_decorator import with_db_session
@@ -17,6 +17,7 @@ from application.controllers.sql_queries import (
     query_exercise_by_id,
     query_instrument,
     query_instrument_by_id,
+    query_instruments_form_type_with_different_survey_mode,
     query_survey_by_id,
 )
 from application.exceptions import RasError
@@ -76,9 +77,9 @@ class CollectionInstrument(object):
         return result
 
     @with_db_session
-    def upload_to_bucket(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
+    def upload_seft_to_bucket(self, exercise_id, file, ru_ref=None, classifiers=None, session=None):
         """
-        Encrypt and upload a collection instrument to the bucket and db
+        Encrypt and upload a SEFT collection instrument to the bucket and db
 
         :param exercise_id: An exercise id (UUID)
         :param ru_ref: The name of the file we're receiving
@@ -87,41 +88,65 @@ class CollectionInstrument(object):
         :param session: database session
         :return: a collection instrument instance
         """
-
-        log.info("Upload exercise", exercise_id=exercise_id)
+        log.info("Upload instrument", exercise_id=exercise_id)
 
         validate_uuid(exercise_id)
         self.validate_non_duplicate_instrument(file, exercise_id, session)
-        instrument = InstrumentModel(ci_type="SEFT")
-
-        seft_file = self._create_seft_file(instrument.instrument_id, file)
-        instrument.seft_file = seft_file
-
-        exercise = self._find_or_create_exercise(exercise_id, session)
-        instrument.exercises.append(exercise)
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
-        instrument.survey = survey
+        survey_id = survey.survey_id
+        survey_service_details = get_survey_details(survey_id)
+        ci_type = "SEFT"
+        instrument = InstrumentModel(ci_type=ci_type)
+        if classifiers:
+            classifiers = loads(classifiers)
+            if survey_service_details["surveyMode"] == "EQ_AND_SEFT":
+                self.validate_eq_and_seft_form_type(survey_id, classifiers.get("form_type"), ci_type, session)
+            instrument.classifiers = classifiers
 
+        exercise = self._find_or_create_exercise(exercise_id, session)
         if ru_ref:
             business = self._find_or_create_business(ru_ref, session)
             self.validate_one_instrument_for_ru_specific_upload(exercise, business, session)
             instrument.businesses.append(business)
 
-        if classifiers:
-            instrument.classifiers = loads(classifiers)
+        seft_file = self._create_seft_file(instrument.instrument_id, file)
+        instrument.seft_file = seft_file
+        instrument.exercises.append(exercise)
+        instrument.survey = survey
+        session.add(instrument)
 
         try:
-            survey_ref = get_survey_ref(instrument.survey.survey_id)
-            file.filename = survey_ref + "/" + exercise_id + "/" + file.filename
+            file.filename = survey_service_details["surveyRef"] + "/" + exercise_id + "/" + file.filename
             seft_ci_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             seft_ci_bucket.upload_file_to_bucket(file=file)
         except Exception as e:
             log.exception("An error occurred when trying to put SEFT CI in bucket")
             raise e
 
-        session.add(instrument)
         return instrument
+
+    @staticmethod
+    def validate_eq_and_seft_form_type(survey_id: str, form_type: str, survey_mode: str, session: Session) -> None:
+        """
+        Validates when using EQ_AND_SEFT that there isn't a different survey mode already using the form type
+        uploaded in the same survey
+        :param survey_id: survey id
+        :param form_type: form type (i.e 0001)
+        :param survey_mode: survey mode (i.e SEFT)
+        :param session: session
+        :return: None
+        """
+        instruments = query_instruments_form_type_with_different_survey_mode(survey_id, form_type, survey_mode, session)
+        if instruments:
+            instrument_type = instruments[0].type
+            log.info(
+                "Instrument can not be uploaded, a different survey mode already uses this form_type",
+                survey_id=survey_id,
+                form_type=form_type,
+                instrument_type=instrument_type,
+            )
+            raise RasError(f"This form type is currently being used by {instrument_type} for this survey", 400)
 
     @staticmethod
     def validate_non_duplicate_instrument(file, exercise_id, session):
@@ -157,7 +182,7 @@ class CollectionInstrument(object):
             log.error("Not a SEFT instrument")
             raise RasError("Not a SEFT instrument", 400)
 
-        survey_ref = get_survey_ref(instrument.survey.survey_id)
+        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
 
         seft_model = self._update_seft_file(instrument.seft_file, file, survey_ref, exercise_id)
@@ -209,9 +234,9 @@ class CollectionInstrument(object):
         bound_logger.info("Successfully validated there isn't an instrument for this ru for this exercise")
 
     @with_db_session
-    def upload_instrument_with_no_collection_exercise(self, survey_id, classifiers=None, session=None):
+    def upload_eq(self, survey_id, classifiers=None, session=None):
         """
-        Upload a collection instrument to the db without a collection exercise
+        Upload an eQ collection instrument to the db
 
         :param classifiers: Classifiers associated with the instrument
         :param session: database session
@@ -222,21 +247,24 @@ class CollectionInstrument(object):
         log.info("Upload instrument", survey_id=survey_id)
 
         validate_uuid(survey_id)
-        instrument = InstrumentModel(ci_type="EQ")
-
         survey = self._find_or_create_survey_from_survey_id(survey_id, session)
+        survey_service_details = get_survey_details(survey.survey_id)
+        ci_type = "EQ"
+        instrument = InstrumentModel(ci_type=ci_type)
         instrument.survey = survey
-
         if classifiers:
-            deserialized_classifiers = loads(classifiers)
+            classifiers = loads(classifiers)
+            if survey_service_details["surveyMode"] == "EQ_AND_SEFT":
+                self.validate_eq_and_seft_form_type(survey.survey_id, classifiers.get("form_type"), ci_type, session)
+
+            deserialized_classifiers = classifiers
             instruments = self._get_instruments_by_classifier(deserialized_classifiers, None, session)
             for instrument in instruments:
                 if instrument.classifiers == deserialized_classifiers:
                     raise RasError("Cannot upload an instrument with an identical set of classifiers", 400)
+
             instrument.classifiers = deserialized_classifiers
-
         session.add(instrument)
-
         return instrument
 
     @with_db_session
@@ -335,7 +363,6 @@ class CollectionInstrument(object):
         """
         Makes a request to the collection exercise service for the survey ID,
         reuses the survey if it exists in this service or create if it doesn't
-
         :param exercise_id: An exercise id (UUID)
         :param session: database session
         :return: A survey record
@@ -594,6 +621,6 @@ class CollectionInstrument(object):
 
     @staticmethod
     def _build_seft_file_path(instrument) -> str:
-        survey_ref = get_survey_ref(instrument.survey.survey_id)
+        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
         return f"{survey_ref}/{exercise_id}/{instrument.seft_file.file_name}"

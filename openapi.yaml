@@ -59,6 +59,10 @@ paths:
                     example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/upload/{exercise_id}":
     post:
       summary: Encrypt and upload collection instrument associated to collection exercised without RU
@@ -92,6 +96,10 @@ paths:
                     example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/upload":
     post:
       summary: Upload an eQ collection instrument associated to a survey with classifiers
@@ -123,6 +131,10 @@ paths:
                     example: 'The upload was successful'
         '500':
           description: Failed to publish upload message
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/link-exercise/{instrument_id}/{exercise_id}":
     post:
       summary: Link a collection instrument to a collection exercise
@@ -228,6 +240,12 @@ paths:
                     example: '2017-10-13 11:25:27.020468'
         '404':
           description: No collection instruments found for collection excercise ID
+        '500':
+          description: An external service returned a HTTPError
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/download/{instrument_id}":
     get:
       summary: Download a collection instrument
@@ -250,6 +268,12 @@ paths:
               example: 'adc8dcc1-c35f-4caf-8f5d-93e6287d4872.xlsx'
         '404':
           description: Collection instrument not found
+        '500':
+          description: An external service returned a HTTPError
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/collectioninstrument/count":
     get:
       summary: Get count of collection instruments
@@ -349,6 +373,12 @@ paths:
                     type: string
                     format: dictionary
                     example: ["Missing filename"]
+        '500':
+          description: An external service returned a HTTPError
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/collection-instrument-api/1.0.2/collectioninstrument":
     get:
       summary: Get collection instrument by search string
@@ -439,6 +469,36 @@ paths:
                     example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
         '404':
           description: Collection instrument not found
+  "/collection-instrument-api/1.0.2/delete/{instrument_id}":
+    delete:
+      summary: Delete a Seft collection instrument
+      tags:
+        - collection-instrument
+      parameters:
+        - in: path
+          name: instrument_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'ffb8a5e8-03ef-45f0-a85a-3276e98f66b8'
+          description: The ID of the collection instrument.
+      responses:
+        '200':
+          description: Successfully deleted the collection instrument
+          content:
+            text/plain:
+                schema:
+                  type: string
+                  example: "SEFT collection instrument deleted successfully"
+        '404':
+          description: Collection instrument not found
+        '500':
+          description: An external service returned a HTTPError
+        '503':
+          description: An external service returned a connection error
+        '504':
+          description: An external service timed out
   "/info":
     get:
       summary: Returns survey information
