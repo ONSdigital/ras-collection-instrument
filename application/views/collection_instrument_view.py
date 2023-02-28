@@ -30,10 +30,10 @@ def before_collection_instrument_view():
 
 @collection_instrument_view.route("/upload/<exercise_id>", methods=["POST"])
 @collection_instrument_view.route("/upload/<exercise_id>/<ru_ref>", methods=["POST"])
-def upload_collection_instrument(exercise_id, ru_ref=None):
+def upload_seft_collection_instrument(exercise_id, ru_ref=None):
     file = request.files["file"]
     classifiers = request.args.get("classifiers")
-    instrument = CollectionInstrument().upload_to_bucket(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
+    instrument = CollectionInstrument().upload_seft_to_bucket(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
 
     if not publish_uploaded_collection_instrument(exercise_id, instrument.instrument_id):
         log.error(
@@ -58,10 +58,10 @@ def patch_collection_instrument(instrument_id):
 
 
 @collection_instrument_view.route("/upload", methods=["POST"])
-def upload_collection_instrument_without_collection_exercise():
+def upload_eq_collection_instrument():
     classifiers = request.args.get("classifiers")
     survey_id = request.args.get("survey_id")
-    CollectionInstrument().upload_instrument_with_no_collection_exercise(survey_id, classifiers=classifiers)
+    CollectionInstrument().upload_eq(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 

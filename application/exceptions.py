@@ -10,6 +10,10 @@ class RasError(Exception):
         return {"errors": self.errors}
 
 
+class ServiceUnavailableException(RasError):
+    pass
+
+
 class RasDatabaseError(RasError):
     pass
 
