@@ -65,11 +65,11 @@ def upload_collection_instrument_without_collection_exercise():
     return make_response(UPLOAD_SUCCESSFUL, 200)
 
 
-@collection_instrument_view.route("/multi-select-exercise/<exercise_id>", methods=["POST"])
-def multi_select_collection_instrument(exercise_id):
+@collection_instrument_view.route("/update_collection_exercise_instruments/<exercise_id>", methods=["POST"])
+def update_collection_exercise_instruments(exercise_id):
     instruments = request.args.getlist("instruments")
-    multi_select_successful = CollectionInstrument().multi_instrument_selection_to_exercise(instruments, exercise_id)
-    return make_response(jsonify(multi_select_successful), 200)
+    updated_success = CollectionInstrument().update_collection_exercise_instruments(instruments, exercise_id)
+    return make_response(jsonify(updated_success), 200)
 
 
 @collection_instrument_view.route("/link-exercise/<instrument_id>/<exercise_id>", methods=["POST"])

@@ -239,7 +239,7 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
-    def multi_instrument_selection_to_exercise(self, instrument_selection, exercise_id, session=None):
+    def update_collection_exercise_instruments(self, instrument_selection, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
 
@@ -248,62 +248,46 @@ class CollectionInstrument(object):
         :param session: database session
         :return: True if instrument has been successfully linked to exercise
         """
-        current_instruments = []
-        unselected_instruments = {}
-        linked_instruments = query_exercise_by_id(exercise_id, session)
-        multi_select_successful = []
-
-        if linked_instruments:
-            for i in linked_instruments.instruments:
-                current_instruments.append(str(i.instrument_id))
-
-            selected_instruments = set(sorted(instrument_selection)).difference(sorted(current_instruments))
-            unselected_instruments = set(sorted(current_instruments)).difference(sorted(instrument_selection))
-        else:
-            selected_instruments = set(instrument_selection)
-
         validate_uuid(exercise_id)
-        exercise = self._find_or_create_exercise(exercise_id, session)
 
-        if selected_instruments:
-            for instrument_id in selected_instruments:
-                bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
-                bound_logger.info("Linking instrument and exercise")
-                validate_uuid(instrument_id)
+        linked_instruments = []
+        update_outcome = []
 
-                instrument = self.get_instrument_by_id(instrument_id, session)
+        # This query will eitheer create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
+        # In question.
+        exercise_and_instruments = self._find_or_create_exercise(exercise_id, session)
 
-                instrument.exercises.append(exercise)
+        for i in exercise_and_instruments.instruments:
+            linked_instruments.append(str(i.instrument_id))
 
-                response = self.publish_collection_instrument(True, exercise_id, instrument.instrument_id)
-                if response.status_code != 200:
-                    raise RasError("Error: Failed to add collection instrument(s)", 500)
+        instruments_to_add = set(instrument_selection).difference(linked_instruments)
+        instruments_to_remove = set(linked_instruments).difference(instrument_selection)
 
-                log.info(
-                    "Successfully linked instrument to exercise", instrument_id=instrument_id, exercise_id=exercise_id
-                )
+        if instruments_to_add:
+            self.update_collection_exercise_with_cis(instruments_to_add, True, exercise_and_instruments, session)
+            update_outcome.append({"added": True})
 
-            multi_select_successful.append({"added": True})
+        if instruments_to_remove:
+            self.update_collection_exercise_with_cis(instruments_to_remove, False, exercise_and_instruments, session)
+            update_outcome.append({"removed": True})
 
-        if unselected_instruments:
-            for instrument_id in unselected_instruments:
-                bound_logger = log.bind(instrument_id=instrument_id, exercise_id=exercise_id)
-                bound_logger.info("Unlinking instrument and exercise")
+        return update_outcome
 
-                instrument = self.get_instrument_by_id(instrument_id, session)
+    def update_collection_exercise_with_cis(self, instruments, to_add, exercise_and_instruments, session):
 
-                if not instrument or not exercise:
-                    bound_logger.info("Failed to unlink, unable to find instrument or exercise")
-                    raise RasError("Error: Failed to remove collection instrument", 404)
+        for instrument_id in instruments:
+            validate_uuid(instrument_id)
 
-                instrument.exercises.remove(exercise)
-                response = self.publish_collection_instrument(False, exercise_id, instrument.instrument_id)
-                if response.status_code != 200:
-                    raise RasError("Error: Failed to remove collection instrument", 500)
+            instrument = self.get_instrument_by_id(instrument_id, session)
 
-            multi_select_successful.append({"removed": True})
+            if to_add:
+                instrument.exercises.append(exercise_and_instruments)
+            else:
+                instrument.exercises.remove(exercise_and_instruments)
 
-        return multi_select_successful
+        self.publish_collection_instrument_to_collection_exercise(
+            to_add, exercise_and_instruments.exercise_id, instrument.instrument_id
+        )
 
     @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
@@ -397,15 +381,15 @@ class CollectionInstrument(object):
         return collection_instrument_link(json_message)
 
     @staticmethod
-    def publish_collection_instrument(selection, exercise_id, instrument_id):
+    def publish_collection_instrument_to_collection_exercise(to_add, exercise_id, instrument_id):
         """
         Publish message to collection instrument link
-        :param selection:
+        :param to_add: A booleaan to tell of the CI needs to be added (linked) or removed (unlinked)
         :param exercise_id: An exercise id (UUID)
         :param instrument_id: The id (UUID) for the newly created collection instrument
         :return True if message successfully linked
         """
-        if selection:
+        if to_add:
             log.info("Publishing upload message", exercise_id=exercise_id, instrument_id=instrument_id)
             json_message = {"action": "ADD", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
         else:

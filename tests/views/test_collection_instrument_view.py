@@ -3,6 +3,7 @@ import json
 from unittest import mock
 from unittest.mock import patch
 
+import pytest
 import requests_mock
 from flask import current_app
 from requests.models import Response
@@ -45,6 +46,12 @@ def collection_exercises(session=None):
 def collection_exercises_linked_to_collection_instrument(instrument_id, session=None):
     ci = session.query(InstrumentModel).filter(InstrumentModel.instrument_id == instrument_id).first()
     return ci.exercises
+
+
+@with_db_session
+def collection_exercises_and_collection_instrument(exercise_id, session=None):
+    ce = session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+    return ce.instruments, ce.exercise_id
 
 
 class TestCollectionInstrumentView(TestClient):
@@ -768,75 +775,65 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
     @requests_mock.mock()
-    def test_multi_select_link_collection_instrument(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=200)
+    def test_add_update_collection_exercise_instruments(self, mock_request):
         # Given an instrument which is in the db is not linked to a collection exercise
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
         instrument_id = self.add_instrument_without_exercise()
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
         # When the instrument is linked to an exercise
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}?instruments={str(instrument_id)}",
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?instruments={str(instrument_id)}",
             headers=self.get_auth_headers(),
         )
 
         # Then that instrument is successfully linked to the given collection exercise
         self.assertStatus(response, 200)
-        linked_exercises = collection_exercises_linked_to_collection_instrument(instrument_id)
-        linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
-        self.assertIn(exercise_id, linked_exercise_ids)
+        linked_collection_instruments, collection_exercise_id = collection_exercises_and_collection_instrument(
+            exercise_id
+        )
+        linked_collection_instrument = [str(ci.instrument_id) for ci in linked_collection_instruments]
+        self.assertIn(str(instrument_id), linked_collection_instrument)
+        self.assertIn(exercise_id, str(collection_exercise_id))
 
     @requests_mock.mock()
-    def test_multi_select_link_collection_instrument_rest_exception(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=500)
-        # Given an instrument which is in the db is not linked to a collection exercise
+    def test_publish_collection_instrument_to_collection_exercise_rest_failure_for_ci_http_error(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=400)
         instrument_id = self.add_instrument_without_exercise()
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
 
-        # When the instrument is linked to an exercise
-        with self.assertRaises(Exception):
-            response = self.client.post(
-                f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}?"
-                f"instruments={str(instrument_id)}",
-                headers=self.get_auth_headers(),
-            )
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"instruments={str(instrument_id)}",
+            headers=self.get_auth_headers(),
+        )
 
-            response_data = json.loads(response.data)
-
-            self.assertStatus(response, 500)
-            self.assertEqual(response_data["errors"][0], "Failed to publish upload message")
+        response_data = json.loads(response.data)
+        print("Test response: " + str(response_data))
+        self.assertStatus(response, 400)
+        self.assertEqual(response_data["errors"][0], "collection exercise responded with an http error")
 
     @requests_mock.mock()
-    def test_multi_select_unlink_eq_collection_instrument(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=200)
+    def test_remove_update_collection_exercise_instruments(self, mock_request):
         # Given an eq instrument which is in the db is linked to a collection exercise
         exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
-        eq_instrument_id = self.add_instrument_data(ci_type="EQ")
+
+        # Then that instrument is successfully linked to the given collection exercise
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
 
         # When the instrument is unlinked to an exercise
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}",
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}",
             headers=self.get_auth_headers(),
         )
 
         # Then that instrument and collection exercise are successfully unlinked
         self.assertStatus(response, 200)
-        linked_exercises = collection_exercises_linked_to_collection_instrument(eq_instrument_id)
-        linked_exercise_ids = [str(collection_exercise.exercise_id) for collection_exercise in linked_exercises]
-        self.assertNotIn(linked_exercise_id, linked_exercise_ids)
-
-    @requests_mock.mock()
-    def test_multi_select_unlink_eq_collection_instrument_rest_exception(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=500)
-        # Given an eq instrument which is in the db is linked to a collection exercise
-        exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
-
-        # When the instrument is unlinked to an exercise but failed to publish messsage
-        response = self.client.post(
-            f"/collection-instrument-api/1.0.2/multi-select-exercise/{exercise_id}",
-            headers=self.get_auth_headers(),
+        linked_collection_instruments, collection_exercise_id = collection_exercises_and_collection_instrument(
+            exercise_id
         )
-
-        self.assertStatus(response, 500)
+        linked_collection_instrument = [str(ci.instrument_id) for ci in linked_collection_instruments]
+        self.assertIn(exercise_id, str(collection_exercise_id))
+        self.assertNotIn(linked_exercise_id, linked_collection_instrument)
 
     @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
