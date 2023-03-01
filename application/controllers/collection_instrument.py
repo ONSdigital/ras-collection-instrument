@@ -96,6 +96,9 @@ class CollectionInstrument(object):
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         survey_id = survey.survey_id
         survey_service_details = get_survey_details(survey_id)
+        if survey_service_details["surveyMode"] == "EQ_AND_SEFT" and ru_ref is not None:
+            raise RasError("Can't upload an ru_ref specific instrument for an EQ_AND_SEFT survey", 400)
+
         ci_type = "SEFT"
         instrument = InstrumentModel(ci_type=ci_type)
         if classifiers:
