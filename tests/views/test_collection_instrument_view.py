@@ -416,6 +416,28 @@ class TestCollectionInstrumentView(TestClient):
         self.assertStatus(response, 400)
         self.assertEqual(response.json, error)
 
+    @requests_mock.mock()
+    def test_upload_no_ru_ref_instrument_for_eq_and_seft(self, mock_request):
+        mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
+        mock_request.get(
+            collection_exercise_url, status_code=200, json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
+        )
+        # Given an upload file
+        data = {"file": (BytesIO(b"test data"), "test.xls")}
+
+        # When a post is made to the ru specific upload endpoint
+        response = self.client.post(
+            "/collection-instrument-api/1.0.2/upload/6790cdaa-28a9-4429-905c-0e943373b62e/49990000001",
+            headers=self.get_auth_headers(),
+            data=data,
+            content_type="multipart/form-data",
+        )
+
+        # Then the file does not upload and an 400 error is returned
+        error = {"errors": ["Can't upload an reporting unit specific instrument for an EQ_AND_SEFT survey"]}
+        self.assertStatus(response, 400)
+        self.assertEqual(response.json, error)
+
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()
     def test_delete_seft_collection_instrument(self, mock_bucket, mock_request):
