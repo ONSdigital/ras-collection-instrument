@@ -3,7 +3,6 @@ import json
 from unittest import mock
 from unittest.mock import patch
 
-import pytest
 import requests_mock
 from flask import current_app
 from requests.models import Response
@@ -882,7 +881,8 @@ class TestCollectionInstrumentView(TestClient):
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
         # When the instrument is linked to an exercise
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?instruments={str(instrument_id)}",
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"instruments={str(instrument_id)}",
             headers=self.get_auth_headers(),
         )
 

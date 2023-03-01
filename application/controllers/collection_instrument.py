@@ -279,7 +279,6 @@ class CollectionInstrument(object):
         validate_uuid(exercise_id)
 
         linked_instruments = []
-        update_outcome = []
 
         # This query will eitheer create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
         # In question.
@@ -293,13 +292,9 @@ class CollectionInstrument(object):
 
         if instruments_to_add:
             self.update_collection_exercise_with_cis(instruments_to_add, True, exercise_and_instruments, session)
-            update_outcome.append({"added": True})
 
         if instruments_to_remove:
             self.update_collection_exercise_with_cis(instruments_to_remove, False, exercise_and_instruments, session)
-            update_outcome.append({"removed": True})
-
-        return update_outcome
 
     def update_collection_exercise_with_cis(self, instruments, to_add, exercise_and_instruments, session):
 
