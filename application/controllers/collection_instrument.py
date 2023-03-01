@@ -56,7 +56,6 @@ class CollectionInstrument(object):
 
         result = []
         for instrument in instruments:
-
             classifiers = instrument.classifiers or {}
 
             # Leaving these as empty lists for now. Before it would loop over the instrument.businesses and
