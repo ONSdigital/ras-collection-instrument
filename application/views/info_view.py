@@ -8,7 +8,6 @@ info_view = Blueprint("info_view", __name__)
 
 @info_view.route("/info", methods=["GET"])
 def get_info():
-
     git_info = {}
     if os.path.exists("git_info"):
         with open("git_info") as io:

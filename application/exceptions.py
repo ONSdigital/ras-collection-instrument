@@ -1,5 +1,4 @@
 class RasError(Exception):
-
     status_code = 500
 
     def __init__(self, errors, status_code=None):
