@@ -137,7 +137,7 @@ class TestCollectionInstrument(TestClient):
 
         self.assertEqual(instrument, None)
 
-    def test_delete_seft_collection_instrument_not_found(self):
+    def test_delete_collection_instrument_not_found(self):
         with self.assertRaises(RasError) as error:
             self.collection_instrument.delete_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
 
