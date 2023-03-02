@@ -434,7 +434,7 @@ class TestCollectionInstrumentView(TestClient):
         )
 
         # Then the file does not upload and an 400 error is returned
-        error = {"errors": ["Can't upload an reporting unit specific instrument for an EQ_AND_SEFT survey"]}
+        error = {"errors": ["Can't upload a reporting unit specific instrument for an EQ_AND_SEFT survey"]}
         self.assertStatus(response, 400)
         self.assertEqual(response.json, error)
 
