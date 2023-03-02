@@ -18,9 +18,9 @@ from application.models.models import (
     SurveyModel,
 )
 from application.views.collection_instrument_view import (
+    COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL,
     COLLECTION_INSTRUMENT_NOT_FOUND,
     NO_INSTRUMENT_FOR_EXERCISE,
-    SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL,
     UPLOAD_SUCCESSFUL,
 )
 from tests.test_client import TestClient
@@ -454,7 +454,20 @@ class TestCollectionInstrumentView(TestClient):
 
         # Then the instrument is deleted successfully
         self.assertStatus(response, 200)
-        self.assertEqual(response.data.decode(), SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
+        self.assertEqual(response.data.decode(), COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
+
+    def test_delete_eq_collection_instrument(self):
+        eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")
+        # When a post is made to delete the instrument
+        response = self.client.delete(
+            f"/collection-instrument-api/1.0.2/delete/{str(eq_collection_instrument_id)}",
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the instrument is deleted successfully
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
 
     @mock.patch("application.controllers.collection_instrument.GoogleCloudSEFTCIBucket")
     @requests_mock.mock()

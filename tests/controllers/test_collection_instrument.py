@@ -149,8 +149,8 @@ class TestCollectionInstrument(TestClient):
 
     def test_delete_eq_collection_instrument(self):
         eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")
-        self.collection_instrument.delete_collection_instrument(eq_collection_instrument_id)
-        instrument = self.collection_instrument.get_instrument_json(eq_collection_instrument_id)
+        self.collection_instrument.delete_collection_instrument(str(eq_collection_instrument_id))
+        instrument = self.collection_instrument.get_instrument_json(str(eq_collection_instrument_id))
         self.assertEqual(instrument, None)
 
     def test_unlink_instrument_from_exercise_seft(self):
