@@ -132,14 +132,14 @@ class TestCollectionInstrument(TestClient):
             json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
         )
         seft_instrument_id = str(self.instrument_id)
-        self.collection_instrument.delete_seft_collection_instrument(seft_instrument_id)
+        self.collection_instrument.delete_collection_instrument(seft_instrument_id)
         instrument = self.collection_instrument.get_instrument_json(seft_instrument_id)
 
         self.assertEqual(instrument, None)
 
     def test_delete_seft_collection_instrument_not_found(self):
         with self.assertRaises(RasError) as error:
-            self.collection_instrument.delete_seft_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
+            self.collection_instrument.delete_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
 
         self.assertEqual(404, error.exception.status_code)
         self.assertEqual(
@@ -149,14 +149,9 @@ class TestCollectionInstrument(TestClient):
 
     def test_delete_eq_collection_instrument(self):
         eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")
-        with self.assertRaises(RasError) as error:
-            self.collection_instrument.delete_seft_collection_instrument(str(eq_collection_instrument_id))
-
-        self.assertEqual(405, error.exception.status_code)
-        self.assertEqual(
-            [f"Only SEFT collection instruments can be deleted {eq_collection_instrument_id} has type EQ"],
-            error.exception.errors,
-        )
+        self.collection_instrument.delete_collection_instrument(eq_collection_instrument_id)
+        instrument = self.collection_instrument.get_instrument_json(eq_collection_instrument_id)
+        self.assertEqual(instrument, None)
 
     def test_unlink_instrument_from_exercise_seft(self):
         eq_collection_instrument = self.add_instrument_data()
