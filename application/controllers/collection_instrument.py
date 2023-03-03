@@ -326,9 +326,9 @@ class CollectionInstrument(object):
         return True
 
     @with_db_session
-    def delete_seft_collection_instrument(self, instrument_id: str, session: Session = None) -> None:
+    def delete_collection_instrument(self, instrument_id: str, session: Session = None) -> None:
         """
-        Deletes a seft collection instrument from the database and gcs
+        Deletes a collection instrument from the database and gcs (if the instrument is a SEFT)
         :param instrument_id: A collection instrument id (UUID)
         :param session: database session
         """
@@ -336,16 +336,13 @@ class CollectionInstrument(object):
 
         if not instrument:
             raise RasError(f"Collection instrument {instrument_id} not found", 404)
-        if instrument.type != "SEFT":
-            raise RasError(
-                f"Only SEFT collection instruments can be deleted {instrument_id} has type {instrument.type}",
-                405,
-            )
 
         session.delete(instrument)
-        gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
-        file_path = self._build_seft_file_path(instrument)
-        gcs_seft_bucket.delete_file_from_bucket(file_path)
+
+        if instrument.type == "SEFT":
+            gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            file_path = self._build_seft_file_path(instrument)
+            gcs_seft_bucket.delete_file_from_bucket(file_path)
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
