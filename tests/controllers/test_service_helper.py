@@ -46,8 +46,8 @@ class TestServiceHelper(TestClient):
                     service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce"
                 )
 
-        self.assertEquals(["survey-service returned a HTTPError"], exception.exception.errors)
-        self.assertEquals(500, exception.exception.status_code)
+        self.assertEqual(["survey-service returned a HTTPError"], exception.exception.errors)
+        self.assertEqual(500, exception.exception.status_code)
 
     def test_service_request_connection_error(self):
         # Given an external service is configured to return a connection error
@@ -59,8 +59,8 @@ class TestServiceHelper(TestClient):
                     service=SERVICE, endpoint="surveys", search_value="41320b22-b425-4fba-a90e-718898f718ce"
                 )
 
-        self.assertEquals(["survey-service returned a connection error"], exception.exception.errors)
-        self.assertEquals(503, exception.exception.status_code)
+        self.assertEqual(["survey-service returned a connection error"], exception.exception.errors)
+        self.assertEqual(503, exception.exception.status_code)
 
     def test_service_request_timeout_error(self):
         # Given an external service is configured to return a Timeout error
@@ -69,5 +69,5 @@ class TestServiceHelper(TestClient):
         with patch("requests.get", side_effect=requests.Timeout):
             with self.assertRaises(ServiceUnavailableException) as exception:
                 service_request(service=SERVICE, endpoint="surveys", search_value="test_case")
-        self.assertEquals(["survey-service has timed out"], exception.exception.errors)
-        self.assertEquals(504, exception.exception.status_code)
+        self.assertEqual(["survey-service has timed out"], exception.exception.errors)
+        self.assertEqual(504, exception.exception.status_code)

@@ -13,7 +13,7 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 collection_instrument_view = Blueprint("collection_instrument_view", __name__)
 
 COLLECTION_INSTRUMENT_NOT_FOUND = "Collection instrument not found"
-SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL = "SEFT collection instrument deleted successfully"
+COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL = "Collection instrument deleted successfully"
 NO_INSTRUMENT_FOR_EXERCISE = "There are no collection instruments for that exercise id"
 UPLOAD_SUCCESSFUL = "The upload was successful"
 PATCH_SUCCESSFUL = "The patch of the instrument was successful"
@@ -90,8 +90,8 @@ def unlink_collection_instrument(instrument_id, exercise_id):
 
 @collection_instrument_view.route("/delete/<instrument_id>", methods=["DELETE"])
 def delete_seft_collection_instrument(instrument_id):
-    CollectionInstrument().delete_seft_collection_instrument(instrument_id)
-    return make_response(SEFT_COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL, 200)
+    CollectionInstrument().delete_collection_instrument(instrument_id)
+    return make_response(COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route("/download_csv/<exercise_id>", methods=["GET"])

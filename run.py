@@ -68,7 +68,6 @@ def create_database(db_connection, db_schema):
     engine.session = session
 
     if db_connection.startswith("postgres"):
-
         for t in models.Base.metadata.sorted_tables:
             t.schema = db_schema
 
