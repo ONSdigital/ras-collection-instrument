@@ -269,18 +269,17 @@ class CollectionInstrument(object):
     @with_db_session
     def update_collection_exercise_instruments(self, instrument_selection, exercise_id, session=None):
         """
-        Link a collection instrument to a collection exercise
+        Both linking and unlinking of collection instruments is carried out here.
 
         :param instrument_selection: A list of instrument ids
         :param exercise_id: A collection exercise id (UUID)
         :param session: database session
-        :return: True if instrument has been successfully linked to exercise
         """
         validate_uuid(exercise_id)
 
         linked_instruments = []
 
-        # This query will eitheer create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
+        # This query will either create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
         # In question.
         exercise_and_instruments = self._find_or_create_exercise(exercise_id, session)
 
