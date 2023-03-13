@@ -82,7 +82,8 @@ def create_database(db_connection, db_schema):
         result = session().query(schemata_exists).scalar()
         if not result:
             logger.info("Creating schema ", db_schema=db_schema)
-            session.execute(text(f"CREATE SCHEMA {db_schema}"))
+            session().execute(text(f"CREATE SCHEMA {db_schema}"))
+            session().commit()
             logger.info("Creating database tables.")
             models.Base.metadata.create_all(engine)
             # If the db is created from scratch we don't need to update with alembic,

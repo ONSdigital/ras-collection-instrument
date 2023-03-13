@@ -4,9 +4,7 @@ from uuid import uuid4
 from sqlalchemy import Column, ForeignKey, Integer, Table
 from sqlalchemy.dialects.postgresql.json import JSONB
 from sqlalchemy.orm import declarative_base, relationship
-from sqlalchemy.types import TIMESTAMP, String
-
-from application.models import GUID
+from sqlalchemy.types import TIMESTAMP, UUID, String
 
 Base = declarative_base()
 
@@ -34,7 +32,7 @@ class InstrumentModel(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     type = Column(String(8))
-    instrument_id = Column(GUID, unique=True, index=True)
+    instrument_id = Column(UUID, unique=True, index=True)
     stamp = Column(TIMESTAMP)
     survey_id = Column(Integer, ForeignKey("survey.id"))
     classifiers = Column(JSONB)
@@ -127,7 +125,7 @@ class ExerciseModel(Base):
     __tablename__ = "exercise"
 
     id = Column(Integer, primary_key=True)
-    exercise_id = Column(GUID, index=True)
+    exercise_id = Column(UUID, index=True)
     instruments = relationship("InstrumentModel", secondary=instrument_exercise_table, back_populates="exercises")
 
     def __init__(self, exercise_id=None):
@@ -155,7 +153,7 @@ class SurveyModel(Base):
     __tablename__ = "survey"
 
     id = Column(Integer, primary_key=True)
-    survey_id = Column(GUID, index=True)
+    survey_id = Column(UUID, index=True)
     instruments = relationship("InstrumentModel", back_populates="survey")
 
     def __init__(self, survey_id=None):
@@ -174,7 +172,7 @@ class SEFTModel(Base):
     id = Column(Integer, primary_key=True)
     file_name = Column(String(32))
     len = Column(Integer)
-    instrument_id = Column(GUID, ForeignKey("instrument.instrument_id"))
+    instrument_id = Column(UUID, ForeignKey("instrument.instrument_id"))
 
     instrument = relationship("InstrumentModel", back_populates="seft_file")
 
