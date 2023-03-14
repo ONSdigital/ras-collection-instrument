@@ -31,7 +31,7 @@ def with_db_session(f):
         except Exception as e:
             log.error("Rolling-back database session", exc_info=True)
             session.rollback()
-            raise RasDatabaseError("There was an error committing the changes to the database. Details: {}".format(e))
+            raise RasDatabaseError(f"There was an error committing the changes to the database. Details: {e}")
         finally:
             current_app.db.session.remove()
 
