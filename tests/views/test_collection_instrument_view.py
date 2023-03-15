@@ -54,6 +54,12 @@ def collection_exercises_linked_to_collection_instrument(instrument_id, session=
     return ci.exercises
 
 
+@with_db_session
+def collection_exercises_and_collection_instrument(exercise_id, session=None):
+    ce = session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+    return ce.instruments, ce.exercise_id
+
+
 class TestCollectionInstrumentView(TestClient):
     """Collection Instrument view unit tests"""
 
@@ -827,8 +833,8 @@ class TestCollectionInstrumentView(TestClient):
 
     @requests_mock.mock()
     def test_unlink_eq_collection_instrument(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=200)
         # Given an eq instrument which is in the db is linked to a collection exercise
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
         eq_instrument_id = self.add_instrument_data(ci_type="EQ")
 
         # When the instrument is unlinked to an exercise
@@ -902,6 +908,75 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
     @requests_mock.mock()
+    def test_add_update_collection_exercise_instruments(self, mock_request):
+        # Given an instrument which is in the db is not linked to a collection exercise
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+        # When the instrument is linked to an exercise
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"instruments={str(instrument_id)}",
+            headers=self.get_auth_headers(),
+        )
+
+        # Then that instrument is successfully linked to the given collection exercise
+        self.assertStatus(response, 200)
+        linked_collection_instruments, collection_exercise_id = collection_exercises_and_collection_instrument(
+            exercise_id
+        )
+        linked_collection_instrument = [str(ci.instrument_id) for ci in linked_collection_instruments]
+        self.assertIn(str(instrument_id), linked_collection_instrument)
+        self.assertIn(exercise_id, str(collection_exercise_id))
+
+    @requests_mock.mock()
+    def test_publish_collection_instrument_to_collection_exercise_rest_failure_for_ci_http_error(self, mock_request):
+        mock_request.post(url_collection_instrument_link_url, status_code=400)
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"instruments={str(instrument_id)}",
+            headers=self.get_auth_headers(),
+        )
+
+        response_data = json.loads(response.data)
+        print("Test response: " + str(response_data))
+        self.assertStatus(response, 400)
+        self.assertEqual(response_data["errors"][0], "collection exercise responded with an http error")
+
+    @requests_mock.mock()
+    def test_remove_update_collection_exercise_instruments(self, mock_request):
+        # Given an instrument which is in the db is linked to a collection exercise
+        mock_request.post(url_collection_instrument_link_url, status_code=200)
+        instrument_id = self.add_instrument_without_exercise()
+        exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+        # And the instrument is linked to an exercise
+        self.client.post(
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"instruments={str(instrument_id)}",
+            headers=self.get_auth_headers(),
+        )
+
+        collection_exercises_and_collection_instrument(exercise_id)
+
+        # When the instrument is unlinked to an exercise
+        response = self.client.post(
+            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}",
+            headers=self.get_auth_headers(),
+        )
+
+        # Then that instrument and collection exercise are successfully unlinked
+        self.assertStatus(response, 200)
+        linked_collection_instruments, collection_exercise_id = collection_exercises_and_collection_instrument(
+            exercise_id
+        )
+        linked_collection_instrument = [str(ci.instrument_id) for ci in linked_collection_instruments]
+        self.assertIn(exercise_id, str(collection_exercise_id))
+        self.assertNotIn(str(instrument_id), linked_collection_instrument)
+
+    @requests_mock.mock()
     def test_patch_collection_instrument_empty_file(self, mock_request):
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
 
@@ -970,6 +1045,16 @@ class TestCollectionInstrumentView(TestClient):
         instrument.businesses.append(business)
         session.add(instrument)
         return instrument.instrument_id
+
+    @staticmethod
+    @with_db_session
+    def add_collection_exercise(session=None):
+        exercise_id = "fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040"
+        collection_exercise = ExerciseModel(exercise_id=exercise_id)
+        collection_instruments = InstrumentModel(ci_type="EQ", classifiers={"form_type": "001", "geography": "EN"})
+        collection_exercise.instruments.append(collection_instruments)
+        session.add(collection_exercise)
+        return collection_exercise
 
     @staticmethod
     @with_db_session
