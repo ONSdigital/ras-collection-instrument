@@ -19,6 +19,7 @@ UPLOAD_SUCCESSFUL = "The upload was successful"
 PATCH_SUCCESSFUL = "The patch of the instrument was successful"
 LINK_SUCCESSFUL = "Linked collection instrument to collection exercise"
 UNLINK_SUCCESSFUL = "collection instrument and collection exercise unlinked"
+COLLECTION_EXERCISE_CI_UPDATE_SUCCESSFUL = "Collection exercise collection instrument update successful"
 
 
 @collection_instrument_view.before_request
@@ -62,6 +63,13 @@ def upload_eq_collection_instrument():
     survey_id = request.args.get("survey_id")
     CollectionInstrument().upload_eq(survey_id, classifiers=classifiers)
     return make_response(UPLOAD_SUCCESSFUL, 200)
+
+
+@collection_instrument_view.route("/update_collection_exercise_instruments/<exercise_id>", methods=["POST"])
+def update_collection_exercise_instruments(exercise_id):
+    instruments = request.args.getlist("instruments")
+    CollectionInstrument().update_collection_exercise_instruments(instruments, exercise_id)
+    return make_response(COLLECTION_EXERCISE_CI_UPDATE_SUCCESSFUL, 200)
 
 
 @collection_instrument_view.route("/link-exercise/<instrument_id>/<exercise_id>", methods=["POST"])

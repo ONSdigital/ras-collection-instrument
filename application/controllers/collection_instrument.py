@@ -270,6 +270,51 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
+    def update_collection_exercise_instruments(self, instrument_selection, exercise_id, session=None):
+        """
+        Both linking and unlinking of collection instruments is carried out here.
+
+        :param instrument_selection: A list of instrument ids
+        :param exercise_id: A collection exercise id (UUID)
+        :param session: database session
+        """
+        validate_uuid(exercise_id)
+
+        linked_instruments = []
+
+        # This query will either create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
+        # In question.
+        exercise_and_instruments = self._find_or_create_exercise(exercise_id, session)
+
+        for i in exercise_and_instruments.instruments:
+            linked_instruments.append(str(i.instrument_id))
+
+        instruments_to_add = set(instrument_selection).difference(linked_instruments)
+        instruments_to_remove = set(linked_instruments).difference(instrument_selection)
+
+        if instruments_to_add:
+            self.update_collection_exercise_with_cis(instruments_to_add, True, exercise_and_instruments, session)
+
+        if instruments_to_remove:
+            self.update_collection_exercise_with_cis(instruments_to_remove, False, exercise_and_instruments, session)
+
+    def update_collection_exercise_with_cis(self, instruments, to_add, exercise_and_instruments, session):
+
+        for instrument_id in instruments:
+            validate_uuid(instrument_id)
+
+            instrument = self.get_instrument_by_id(instrument_id, session)
+
+            if to_add:
+                instrument.exercises.append(exercise_and_instruments)
+            else:
+                instrument.exercises.remove(exercise_and_instruments)
+
+        self.publish_collection_instrument_to_collection_exercise(
+            to_add, exercise_and_instruments.exercise_id, instrument.instrument_id
+        )
+
+    @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
         Link a collection instrument to a collection exercise
@@ -355,6 +400,23 @@ class CollectionInstrument(object):
         """
         log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
         json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
+        return collection_instrument_link(json_message)
+
+    @staticmethod
+    def publish_collection_instrument_to_collection_exercise(to_add, exercise_id, instrument_id):
+        """
+        Publish message to collection instrument link
+        :param to_add: A booleaan to tell of the CI needs to be added (linked) or removed (unlinked)
+        :param exercise_id: An exercise id (UUID)
+        :param instrument_id: The id (UUID) for the newly created collection instrument
+        :return True if message successfully linked
+        """
+        if to_add:
+            log.info("Publishing upload message", exercise_id=exercise_id, instrument_id=instrument_id)
+            json_message = {"action": "ADD", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
+        else:
+            log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
+            json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
         return collection_instrument_link(json_message)
 
     @staticmethod
