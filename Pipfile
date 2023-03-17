@@ -11,7 +11,7 @@ flask = "*"
 flask-cors = "*"
 gunicorn = "*"
 gevent = {version = "*", platform_python_implementation="=='CPython'"}
-sqlalchemy = "~=1.4"
+sqlalchemy = "*"
 psycopg2-binary = "*"
 structlog = "*"
 werkzeug = "*"

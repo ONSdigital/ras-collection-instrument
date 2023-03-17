@@ -16,12 +16,10 @@ def logger_initial_config(service_name=None, log_level=None, logger_format=None,
         logger_format = "%(message)s"
     try:
         indent = int(os.getenv("JSON_INDENT_LOGGING"))
-    except TypeError:
-        indent = None
-    except ValueError:
+    except (TypeError, ValueError):
         indent = None
 
-    def add_service(logger, method_name, event_dict):  # pylint: disable=unused-argument
+    def add_service(logger, method_name, event_dict):
         """
         Add the service name to the event dict.
         """

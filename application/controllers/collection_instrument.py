@@ -670,10 +670,10 @@ class CollectionInstrument(object):
         already_joined = []
         for classifier in json_search_parameters.keys():
             if classifier == "RU_REF" and BusinessModel not in already_joined:
-                query = query.join((BusinessModel, InstrumentModel.businesses))
+                query = query.join(BusinessModel, InstrumentModel.businesses)
                 already_joined.append(BusinessModel)
             elif classifier == "COLLECTION_EXERCISE" and ExerciseModel not in already_joined:
-                query = query.join((ExerciseModel, InstrumentModel.exercises))
+                query = query.join(ExerciseModel, InstrumentModel.exercises)
                 already_joined.append(ExerciseModel)
             elif classifier == "SURVEY_ID" and SurveyModel not in already_joined:
                 query = query.join(SurveyModel, InstrumentModel.survey)
