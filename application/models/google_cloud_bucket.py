@@ -64,7 +64,6 @@ class GoogleCloudSEFTCIBucket:
         prefix = f"{self.prefix}/{prefix}" if self.prefix else prefix
         try:
             self.bucket.delete_blobs(blobs=list(self.bucket.list_blobs(prefix=prefix)))
-
         except NotFound:
             raise GCPBucketException(f"No files were found with prefix {prefix} ", 404)
         return

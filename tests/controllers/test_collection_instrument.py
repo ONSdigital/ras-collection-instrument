@@ -158,9 +158,9 @@ class TestCollectionInstrument(TestClient):
     @patch("application.models.google_cloud_bucket.storage")
     @requests_mock.mock()
     def test_delete_collection_instruments_by_exercise_seft(self, mock_storage, mock_request):
-        self._mock_survey_service_request(mock_request)
         # Given a SEFT instrument and exercise are added at setup
         # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
+        self._mock_survey_service_request(mock_request)
         message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
 
         # Then the exercise is deleted in the DB and on GCP
@@ -172,8 +172,8 @@ class TestCollectionInstrument(TestClient):
     @patch("application.models.google_cloud_bucket.storage")
     @requests_mock.mock()
     def test_delete_collection_instruments_by_exercise_eq_and_seft(self, mock_storage, mock_request):
-        self._mock_survey_service_request(mock_request)
         # Given a SEFT instrument and exercise are added at setup, and an EQ instrument added to the exercise
+        self._mock_survey_service_request(mock_request)
         self._add_instrument_to_exercise(ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID)
 
         # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
@@ -215,8 +215,8 @@ class TestCollectionInstrument(TestClient):
     @patch("application.models.google_cloud_bucket.storage")
     @requests_mock.mock()
     def test_delete_collection_instruments_by_exercise_not_found_gcp(self, mock_storage, mock_request):
-        self._mock_survey_service_request(mock_request)
         # Given a collection exercise id that doesn't exist on GCP
+        self._mock_survey_service_request(mock_request)
         mock_storage.Client().bucket().delete_blobs.side_effect = NotFound("testing")
 
         # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id

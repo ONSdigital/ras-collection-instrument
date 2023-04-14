@@ -35,7 +35,7 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 COLLECTION_EXERCISE_NOT_FOUND_IN_DB = "Collection exercise not found in database"
 COLLECTION_EXERCISE_NOT_FOUND_ON_GCP = "Collection exercise not found on GCP"
 COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED = (
-    "Collection exercise and instruments successfully deleted from database and GCP(if applicable)"
+    "Collection exercise and instruments successfully deleted from database and GCP (if applicable)"
 )
 
 
