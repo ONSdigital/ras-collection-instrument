@@ -61,8 +61,13 @@ class GoogleCloudSEFTCIBucket:
         return
 
     def delete_files_by_prefix(self, prefix: str):
+        log.info(self.prefix)
+        log.info(list(self.bucket.list_blobs(prefix=prefix)))
+        log.info(list(self.bucket.list_blobs(prefix="babbal/062/f01ca355-0e66-4b71-86ce-ebe2829116d7")))
+
         try:
             self.bucket.delete_blobs(blobs=list(self.bucket.list_blobs(prefix=prefix)))
+
         except NotFound:
             raise GCPBucketException(f"No files were found with prefix {prefix} ", 404)
         return
