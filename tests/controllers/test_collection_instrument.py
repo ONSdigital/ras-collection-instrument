@@ -3,8 +3,14 @@ from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import requests_mock
+from google.cloud.exceptions import NotFound
 
-from application.controllers.collection_instrument import CollectionInstrument
+from application.controllers.collection_instrument import (
+    COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED,
+    COLLECTION_EXERCISE_NOT_FOUND_IN_DB,
+    COLLECTION_EXERCISE_NOT_FOUND_ON_GCP,
+    CollectionInstrument,
+)
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasDatabaseError, RasError
 from application.models.models import (
@@ -77,7 +83,7 @@ class TestCollectionInstrument(TestClient):
 
     def setUp(self):
         self.collection_instrument = CollectionInstrument()
-        self.instrument_id = self.add_instrument_data()
+        self.instrument_id = self._add_instrument_data()
 
     def test_get_instrument_by_search_string_collection_exercise_id(self):
         # Given there is an instrument in the db
@@ -137,6 +143,71 @@ class TestCollectionInstrument(TestClient):
 
         self.assertEqual(instrument, None)
 
+    @patch("application.models.google_cloud_bucket.storage")
+    def test_delete_collection_instruments_by_exercise_seft(self, mock_storage):
+        # Given a SEFT instrument and exercise are added at setup
+        # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
+        message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
+
+        # Then the exercise is deleted in the DB and on GCP
+        self.assertEqual(self._query_exercise_by_id(COLLECTION_EXERCISE_ID), None)
+        mock_storage.Client().bucket().delete_blobs.assert_called()
+        self.assertEqual(message, COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED)
+        self.assertEqual(status, 200)
+
+    @patch("application.models.google_cloud_bucket.storage")
+    def test_delete_collection_instruments_by_exercise_eq_and_seft(self, mock_storage):
+        # Given a SEFT instrument and exercise are added at setup, and an EQ instrument added to the exercise
+        self._add_instrument_to_exercise(ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID)
+
+        # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
+        message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
+
+        # Then the exercise is deleted in the DB and on GCP
+        self.assertEqual(self._query_exercise_by_id(COLLECTION_EXERCISE_ID), None)
+        self.assertEqual(message, COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED)
+        mock_storage.Client().bucket().delete_blobs.assert_called()
+        self.assertEqual(status, 200)
+
+    @patch("application.models.google_cloud_bucket.storage")
+    def test_delete_collection_instruments_by_exercise_eq(self, mock_storage):
+        # Given a EQ instrument and exercise are added
+        eq_collection_exercise_id = "901e837a-b3b7-420d-a5ab-7518f6868973"
+        self._add_instrument_data(ci_type="EQ", exercise_id=eq_collection_exercise_id)
+
+        # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
+        message, status = self.collection_instrument.delete_collection_instruments_by_exercise(
+            eq_collection_exercise_id
+        )
+        # Then the exercise is deleted in the DB but not on GCP (eQ's don't have CIs on GCP)
+        self.assertEqual(self._query_exercise_by_id(eq_collection_exercise_id), None)
+        self.assertEqual(message, COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED)
+        mock_storage.Client().bucket().delete_blobs.assert_not_called()
+        self.assertEqual(status, 200)
+
+    def test_delete_collection_instruments_by_exercise_not_found_db(
+        self,
+    ):
+        # Given a collection exercise that doesn't exist in the db
+        incorrect_ce_id = "228f41a1-8e65-4327-b579-6c531c7f97a3"
+
+        # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
+        message, status = self.collection_instrument.delete_collection_instruments_by_exercise(incorrect_ce_id)
+
+        # Then a 404 is returned
+        self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_IN_DB)
+        self.assertEqual(status, 404)
+
+    @patch("application.models.google_cloud_bucket.storage")
+    def test_delete_collection_instruments_by_exercise_not_found_gcp(self, mock_storage):
+        # Given a collection exercise id that doesn't exist in the db
+        mock_storage.Client().bucket().delete_blobs.side_effect = NotFound("testing")
+
+        self._add_instrument_data()
+        message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
+        self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_ON_GCP)
+        self.assertEqual(status, 404)
+
     def test_delete_collection_instrument_not_found(self):
         with self.assertRaises(RasError) as error:
             self.collection_instrument.delete_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
@@ -148,13 +219,13 @@ class TestCollectionInstrument(TestClient):
         )
 
     def test_delete_eq_collection_instrument(self):
-        eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")
+        eq_collection_instrument_id = self._add_instrument_data(ci_type="EQ")
         self.collection_instrument.delete_collection_instrument(str(eq_collection_instrument_id))
         instrument = self.collection_instrument.get_instrument_json(str(eq_collection_instrument_id))
         self.assertEqual(instrument, None)
 
     def test_unlink_instrument_from_exercise_seft(self):
-        eq_collection_instrument = self.add_instrument_data()
+        eq_collection_instrument = self._add_instrument_data()
         with self.assertRaises(RasError) as error:
             self.collection_instrument.unlink_instrument_from_exercise(
                 str(eq_collection_instrument), COLLECTION_EXERCISE_ID
@@ -190,18 +261,35 @@ class TestCollectionInstrument(TestClient):
         with self.assertRaises(Exception):
             publish_uploaded_collection_instrument(COLLECTION_EXERCISE_ID, self.instrument_id)
 
-    @staticmethod
     @with_db_session
-    def add_instrument_data(session=None, ci_type="SEFT"):
+    def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
         instrument = InstrumentModel(ci_type=ci_type)
-        exercise = ExerciseModel(exercise_id=COLLECTION_EXERCISE_ID)
+        exercise = ExerciseModel(exercise_id=exercise_id)
         instrument.exercises.append(exercise)
         if ci_type == "SEFT":
-            seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file")
-            business = BusinessModel(ru_ref="test_ru_ref")
-            instrument.seft_file = seft_file
-            instrument.businesses.append(business)
+            self._add_seft_details(instrument)
         survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
         instrument.survey = survey
         session.add(instrument)
         return instrument.instrument_id
+
+    @staticmethod
+    def _add_seft_details(instrument):
+        seft_file = SEFTModel(instrument_id=instrument.instrument_id, file_name="test_file")
+        business = BusinessModel(ru_ref="test_ru_ref")
+        instrument.seft_file = seft_file
+        instrument.businesses.append(business)
+
+    @with_db_session
+    def _add_instrument_to_exercise(self, session=None, ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID):
+        instrument = InstrumentModel(ci_type=ci_type)
+        exercise = self._query_exercise_by_id(exercise_id)
+        instrument.exercises.append(exercise)
+        if ci_type == "SEFT":
+            self._add_seft_details(instrument)
+        session.add(instrument)
+
+    @staticmethod
+    @with_db_session
+    def _query_exercise_by_id(exercise_id, session):
+        return session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
