@@ -132,19 +132,33 @@ class TestCollectionInstrument(TestClient):
     @requests_mock.mock()
     def test_delete_seft_collection_instrument(self, mock_bucket, mock_request):
         mock_bucket.delete_file_from_bucket.return_value = True
-        mock_request.get(
-            "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            status_code=200,
-            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
-        )
+        self._mock_survey_service_request(mock_request)
         seft_instrument_id = str(self.instrument_id)
         self.collection_instrument.delete_collection_instrument(seft_instrument_id)
         instrument = self.collection_instrument.get_instrument_json(seft_instrument_id)
 
         self.assertEqual(instrument, None)
 
+    def test_delete_collection_instrument_not_found(self):
+        with self.assertRaises(RasError) as error:
+            self.collection_instrument.delete_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
+
+        self.assertEqual(404, error.exception.status_code)
+        self.assertEqual(
+            ["Collection instrument 8b4a214b-466b-4882-90a1-fe90ad59e2fc not found"],
+            error.exception.errors,
+        )
+
+    def test_delete_eq_collection_instrument(self):
+        eq_collection_instrument_id = self._add_instrument_data(ci_type="EQ")
+        self.collection_instrument.delete_collection_instrument(str(eq_collection_instrument_id))
+        instrument = self.collection_instrument.get_instrument_json(str(eq_collection_instrument_id))
+        self.assertEqual(instrument, None)
+
     @patch("application.models.google_cloud_bucket.storage")
-    def test_delete_collection_instruments_by_exercise_seft(self, mock_storage):
+    @requests_mock.mock()
+    def test_delete_collection_instruments_by_exercise_seft(self, mock_storage, mock_request):
+        self._mock_survey_service_request(mock_request)
         # Given a SEFT instrument and exercise are added at setup
         # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
         message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
@@ -156,7 +170,9 @@ class TestCollectionInstrument(TestClient):
         self.assertEqual(status, 200)
 
     @patch("application.models.google_cloud_bucket.storage")
-    def test_delete_collection_instruments_by_exercise_eq_and_seft(self, mock_storage):
+    @requests_mock.mock()
+    def test_delete_collection_instruments_by_exercise_eq_and_seft(self, mock_storage, mock_request):
+        self._mock_survey_service_request(mock_request)
         # Given a SEFT instrument and exercise are added at setup, and an EQ instrument added to the exercise
         self._add_instrument_to_exercise(ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID)
 
@@ -197,7 +213,9 @@ class TestCollectionInstrument(TestClient):
         self.assertEqual(status, 404)
 
     @patch("application.models.google_cloud_bucket.storage")
-    def test_delete_collection_instruments_by_exercise_not_found_gcp(self, mock_storage):
+    @requests_mock.mock()
+    def test_delete_collection_instruments_by_exercise_not_found_gcp(self, mock_storage, mock_request):
+        self._mock_survey_service_request(mock_request)
         # Given a collection exercise id that doesn't exist on GCP
         mock_storage.Client().bucket().delete_blobs.side_effect = NotFound("testing")
 
@@ -207,22 +225,6 @@ class TestCollectionInstrument(TestClient):
         # Then a 404 is returned with the correct message
         self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_ON_GCP)
         self.assertEqual(status, 404)
-
-    def test_delete_collection_instrument_not_found(self):
-        with self.assertRaises(RasError) as error:
-            self.collection_instrument.delete_collection_instrument("8b4a214b-466b-4882-90a1-fe90ad59e2fc")
-
-        self.assertEqual(404, error.exception.status_code)
-        self.assertEqual(
-            ["Collection instrument 8b4a214b-466b-4882-90a1-fe90ad59e2fc not found"],
-            error.exception.errors,
-        )
-
-    def test_delete_eq_collection_instrument(self):
-        eq_collection_instrument_id = self._add_instrument_data(ci_type="EQ")
-        self.collection_instrument.delete_collection_instrument(str(eq_collection_instrument_id))
-        instrument = self.collection_instrument.get_instrument_json(str(eq_collection_instrument_id))
-        self.assertEqual(instrument, None)
 
     def test_unlink_instrument_from_exercise_seft(self):
         eq_collection_instrument = self._add_instrument_data()
@@ -293,3 +295,11 @@ class TestCollectionInstrument(TestClient):
     @with_db_session
     def _query_exercise_by_id(exercise_id, session):
         return session.query(ExerciseModel).filter(ExerciseModel.exercise_id == exercise_id).first()
+
+    @staticmethod
+    def _mock_survey_service_request(mock_request):
+        mock_request.get(
+            "http://localhost:8080/surveys/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            status_code=200,
+            json={"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87", "surveyRef": "139"},
+        )
