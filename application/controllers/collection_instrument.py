@@ -408,9 +408,12 @@ class CollectionInstrument(object):
         session.delete(exercise)
 
         if exercise.seft_instrument_in_exercise:
+            survey_id = exercise.instruments[0].survey.survey_id
+            survey_ref = get_survey_details(survey_id).get("surveyRef")
+            prefix = f"{survey_ref}/{ce_id}"
             gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             try:
-                gcs_seft_bucket.delete_files_by_prefix(ce_id)
+                gcs_seft_bucket.delete_files_by_prefix(prefix)
             except GCPBucketException:
                 return COLLECTION_EXERCISE_NOT_FOUND_ON_GCP, 404
 

@@ -185,26 +185,26 @@ class TestCollectionInstrument(TestClient):
         mock_storage.Client().bucket().delete_blobs.assert_not_called()
         self.assertEqual(status, 200)
 
-    def test_delete_collection_instruments_by_exercise_not_found_db(
-        self,
-    ):
+    def test_delete_collection_instruments_by_exercise_not_found_db(self):
         # Given a collection exercise that doesn't exist in the db
         incorrect_ce_id = "228f41a1-8e65-4327-b579-6c531c7f97a3"
 
         # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
         message, status = self.collection_instrument.delete_collection_instruments_by_exercise(incorrect_ce_id)
 
-        # Then a 404 is returned
+        # Then a 404 is returned with the correct message
         self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_IN_DB)
         self.assertEqual(status, 404)
 
     @patch("application.models.google_cloud_bucket.storage")
     def test_delete_collection_instruments_by_exercise_not_found_gcp(self, mock_storage):
-        # Given a collection exercise id that doesn't exist in the db
+        # Given a collection exercise id that doesn't exist on GCP
         mock_storage.Client().bucket().delete_blobs.side_effect = NotFound("testing")
 
-        self._add_instrument_data()
+        # When delete_collection_instruments_by_exercise is called with the relevant collection exercise id
         message, status = self.collection_instrument.delete_collection_instruments_by_exercise(COLLECTION_EXERCISE_ID)
+
+        # Then a 404 is returned with the correct message
         self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_ON_GCP)
         self.assertEqual(status, 404)
 
