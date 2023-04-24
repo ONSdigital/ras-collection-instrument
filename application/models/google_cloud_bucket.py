@@ -6,7 +6,7 @@ from flask import current_app
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
 
-from application.exceptions import RasError
+from application.exceptions import GCPBucketException, RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -58,4 +58,12 @@ class GoogleCloudSEFTCIBucket:
             log.info("Successfully deleted SEFT CI file")
         except NotFound:
             log.error("SEFT CI file not found when attempting to delete")
+        return
+
+    def delete_files_by_prefix(self, prefix: str):
+        prefix = f"{self.prefix}/{prefix}" if self.prefix else prefix
+        try:
+            self.bucket.delete_blobs(blobs=list(self.bucket.list_blobs(prefix=prefix)))
+        except NotFound:
+            raise GCPBucketException(f"No files were found with prefix {prefix} ", 404)
         return

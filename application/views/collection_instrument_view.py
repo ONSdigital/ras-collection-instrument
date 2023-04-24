@@ -94,6 +94,12 @@ def delete_seft_collection_instrument(instrument_id):
     return make_response(COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL, 200)
 
 
+@collection_instrument_view.route("/delete/collection-exercise/<exercise_id>", methods=["DELETE"])
+def delete_collection_instruments_by_exercise_id(exercise_id):
+    message, status = CollectionInstrument().delete_collection_instruments_by_exercise(exercise_id)
+    return make_response(message, status)
+
+
 @collection_instrument_view.route("/download_csv/<exercise_id>", methods=["GET"])
 def download_csv(exercise_id):
     csv = CollectionInstrument().get_instruments_by_exercise_id_csv(exercise_id)

@@ -8,6 +8,9 @@ from flask import current_app
 from requests.models import Response
 from six import BytesIO
 
+from application.controllers.collection_instrument import (
+    COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED,
+)
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasError
 from application.models.models import (
@@ -461,6 +464,24 @@ class TestCollectionInstrumentView(TestClient):
         # Then the instrument is deleted successfully
         self.assertStatus(response, 200)
         self.assertEqual(response.data.decode(), COLLECTION_INSTRUMENT_DELETED_SUCCESSFUL)
+
+    @mock.patch(
+        "application.controllers.collection_instrument.CollectionInstrument.delete_collection_instruments_by_exercise"
+    )
+    def test_delete_collection_instrument_by_exercise(self, delete_collection_instruments_by_exercise):
+        # Given delete_collection_instruments_by_exercise is mocked to return a successful deletion
+        delete_collection_instruments_by_exercise.return_value = COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED, 200
+
+        # When delete_collection_instruments_by_exercise is called
+        response = self.client.delete(
+            "/collection-instrument-api/1.0.2/delete/collection-exercise/fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040",
+            headers=self.get_auth_headers(),
+            content_type="multipart/form-data",
+        )
+
+        # Then the response is as expected
+        self.assertStatus(response, 200)
+        self.assertEqual(response.data.decode(), COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED)
 
     def test_delete_eq_collection_instrument(self):
         eq_collection_instrument_id = self.add_instrument_data(ci_type="EQ")

@@ -126,7 +126,11 @@ class ExerciseModel(Base):
 
     id = Column(Integer, primary_key=True)
     exercise_id = Column(UUID, index=True)
-    instruments = relationship("InstrumentModel", secondary=instrument_exercise_table, back_populates="exercises")
+    instruments = relationship(
+        "InstrumentModel",
+        secondary=instrument_exercise_table,
+        back_populates="exercises",
+    )
 
     def __init__(self, exercise_id=None):
         """Initialise the class with optionally supplied defaults"""
@@ -143,6 +147,10 @@ class ExerciseModel(Base):
     @property
     def instrument_ids(self):
         return [instrument.id for instrument in self.instruments]
+
+    @property
+    def seft_instrument_in_exercise(self):
+        return any(instrument.type == "SEFT" for instrument in self.instruments)
 
 
 class SurveyModel(Base):

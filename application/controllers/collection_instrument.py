@@ -20,7 +20,7 @@ from application.controllers.sql_queries import (
     query_instruments_form_type_with_different_survey_mode,
     query_survey_by_id,
 )
-from application.exceptions import RasError
+from application.exceptions import GCPBucketException, RasError
 from application.models.google_cloud_bucket import GoogleCloudSEFTCIBucket
 from application.models.models import (
     BusinessModel,
@@ -31,6 +31,12 @@ from application.models.models import (
 )
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
+
+COLLECTION_EXERCISE_NOT_FOUND_IN_DB = "Collection exercise not found in database"
+COLLECTION_EXERCISE_NOT_FOUND_ON_GCP = "Collection exercise not found on GCP"
+COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED = (
+    "Collection exercise and instruments successfully deleted from database and GCP (if applicable)"
+)
 
 
 class CollectionInstrument(object):
@@ -299,7 +305,6 @@ class CollectionInstrument(object):
             self.update_collection_exercise_with_cis(instruments_to_remove, False, exercise_and_instruments, session)
 
     def update_collection_exercise_with_cis(self, instruments, to_add, exercise_and_instruments, session):
-
         for instrument_id in instruments:
             validate_uuid(instrument_id)
 
@@ -388,6 +393,31 @@ class CollectionInstrument(object):
             gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             file_path = self._build_seft_file_path(instrument)
             gcs_seft_bucket.delete_file_from_bucket(file_path)
+
+    @with_db_session
+    def delete_collection_instruments_by_exercise(self, ce_id: str, session: Session = None):
+        """
+        Deletes all collection instruments associated with a collection exercise from the database and GCP
+        :param ce_id: A collection exercise id (UUID)
+        :param session: database session
+        """
+        exercise = self.get_exercise_by_id(ce_id, session)
+        if not exercise:
+            return COLLECTION_EXERCISE_NOT_FOUND_IN_DB, 404
+
+        session.delete(exercise)
+
+        if exercise.seft_instrument_in_exercise:
+            survey_id = exercise.instruments[0].survey.survey_id
+            survey_ref = get_survey_details(survey_id).get("surveyRef")
+            prefix = f"{survey_ref}/{ce_id}"
+            gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
+            try:
+                gcs_seft_bucket.delete_files_by_prefix(prefix)
+            except GCPBucketException:
+                return COLLECTION_EXERCISE_NOT_FOUND_ON_GCP, 404
+
+        return COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED, 200
 
     @staticmethod
     def publish_remove_collection_instrument(exercise_id, instrument_id):
