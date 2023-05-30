@@ -69,6 +69,9 @@ def upload_eq_collection_instrument():
 def update_collection_exercise_instruments(exercise_id):
     instruments = request.args.getlist("instruments")
     CollectionInstrument().update_collection_exercise_instruments(instruments, exercise_id)
+    CollectionInstrument().publish_collection_instrument_to_collection_exercise(
+        True, exercise_id, "4996115a-e4fa-4efd-a2b6-aaa2e38424b7"
+    )
     return make_response(COLLECTION_EXERCISE_CI_UPDATE_SUCCESSFUL, 200)
 
 

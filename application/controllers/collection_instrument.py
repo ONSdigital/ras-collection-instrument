@@ -315,10 +315,6 @@ class CollectionInstrument(object):
             else:
                 instrument.exercises.remove(exercise_and_instruments)
 
-        self.publish_collection_instrument_to_collection_exercise(
-            to_add, exercise_and_instruments.exercise_id, instrument.instrument_id
-        )
-
     @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
         """
