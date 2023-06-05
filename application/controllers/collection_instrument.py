@@ -274,7 +274,7 @@ class CollectionInstrument(object):
     @with_db_session
     def update_exercise_eq_instruments(self, exercise_id: str, instruments: list, session=None) -> bool:
         """
-        Updates eQ instruments used by an exercise. Current instruments are used to determine which ones should be
+        Updates eQ instruments for an exercise. Current instruments are used to determine which ones should be
         appended and/or removed.
         :param exercise_id: The collection exercise id
         :param instruments: A list of instruments that the collection exercise should now have

@@ -146,8 +146,6 @@ class ExerciseModel(Base):
 
     @property
     def instrument_ids(self):
-        print("ppeawfpapfpafpawepfpawefpawfpawpfwpefpawfpwpfapwfpwef")
-        print(self.instruments)
         return [instrument.id for instrument in self.instruments]
 
     @property

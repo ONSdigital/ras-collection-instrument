@@ -54,9 +54,9 @@ def service_request(service, endpoint, search_value):
     return response
 
 
-def collection_instrument_link(exercise_id):
+def collection_exercise_instrument_update_request(exercise_id: str) -> object:
     """
-    Posts a message to the collection exercise to notify of a collection instrument change
+    Posts a request to the collection exercise service to notify of a collection instrument change
     :param: json_message
     :type: json
     :return: response
@@ -68,7 +68,7 @@ def collection_instrument_link(exercise_id):
         collection_exercise_url = current_app.config["COLLECTION_EXERCISE_URL"]
         url = f"{collection_exercise_url}/collection-instrument/link"
         log.info("Making request to collection exercise to acknowledge instruments have changed")
-        response = requests.post(url, json={"exercise_id": str(exercise_id), "instrument_id": str(exercise_id)}, auth=auth)
+        response = requests.post(url, json={"exercise_id": str(exercise_id)}, auth=auth)
         response.raise_for_status()
     except KeyError:
         raise RasError("collection exercise service not configured", 500)

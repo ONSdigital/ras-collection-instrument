@@ -5,7 +5,9 @@ from flask import Blueprint, jsonify, make_response, request
 
 from application.controllers.basic_auth import auth
 from application.controllers.collection_instrument import CollectionInstrument
-from application.controllers.service_helper import collection_instrument_link
+from application.controllers.service_helper import (
+    collection_exercise_instrument_update_request,
+)
 from application.exceptions import RasError
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
@@ -35,7 +37,7 @@ def upload_seft_collection_instrument(exercise_id, ru_ref=None):
     classifiers = request.args.get("classifiers")
     instrument = CollectionInstrument().upload_seft_to_bucket(exercise_id, file, ru_ref=ru_ref, classifiers=classifiers)
 
-    if not collection_instrument_link(exercise_id):
+    if not collection_exercise_instrument_update_request(exercise_id):
         log.error(
             "Failed to publish upload message",
             instrument_id=instrument.instrument_id,
@@ -68,11 +70,10 @@ def upload_eq_collection_instrument():
 @collection_instrument_view.route("/update-eq-instruments/<exercise_id>", methods=["POST"])
 def update_exercise_eq_instruments_(exercise_id):
     instruments = request.args.getlist("instruments")
-    collection_instrument = CollectionInstrument()
-    instruments_updated = collection_instrument.update_exercise_eq_instruments(exercise_id, instruments)
+    instruments_updated = CollectionInstrument().update_exercise_eq_instruments(exercise_id, instruments)
 
     if instruments_updated:
-        collection_instrument_link(exercise_id)
+        collection_exercise_instrument_update_request(exercise_id)
 
     return make_response(COLLECTION_EXERCISE_CI_UPDATE_SUCCESSFUL, 200)
 
@@ -80,7 +81,7 @@ def update_exercise_eq_instruments_(exercise_id):
 @collection_instrument_view.route("/link-exercise/<instrument_id>/<exercise_id>", methods=["POST"])
 def link_collection_instrument(instrument_id, exercise_id):
     CollectionInstrument().link_instrument_to_exercise(instrument_id, exercise_id)
-    response = collection_instrument_link(exercise_id)
+    response = collection_exercise_instrument_update_request(exercise_id)
     if response.status_code != 200:
         log.error("Failed to publish upload message", instrument_id=instrument_id, collection_exercise_id=exercise_id)
         raise RasError("Failed to publish upload message", 500)
@@ -89,10 +90,9 @@ def link_collection_instrument(instrument_id, exercise_id):
 
 @collection_instrument_view.route("/unlink-exercise/<instrument_id>/<exercise_id>", methods=["PUT"])
 def unlink_collection_instrument(instrument_id, exercise_id):
-    collection_instrument = CollectionInstrument()
-    unlink_instrument = collection_instrument.unlink_instrument_from_exercise(instrument_id, exercise_id)
+    unlink_instrument = CollectionInstrument().unlink_instrument_from_exercise(instrument_id, exercise_id)
     if unlink_instrument:
-        collection_instrument_link(exercise_id)
+        collection_exercise_instrument_update_request(exercise_id)
     return make_response(UNLINK_SUCCESSFUL, 200)
 
 
