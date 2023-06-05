@@ -20,14 +20,10 @@ from application.models.models import (
     SEFTModel,
     SurveyModel,
 )
-from application.views.collection_instrument_view import (
-    publish_uploaded_collection_instrument,
-)
 from tests.test_client import TestClient
 
 TEST_FILE_LOCATION = "tests/files/test.xlsx"
 COLLECTION_EXERCISE_ID = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
-url_collection_instrument_link_url = "http://localhost:8145/collection-instrument/link"
 
 
 class TestCollectionInstrumentUnit(TestCase):
@@ -226,19 +222,6 @@ class TestCollectionInstrument(TestClient):
         self.assertEqual(message, COLLECTION_EXERCISE_NOT_FOUND_ON_GCP)
         self.assertEqual(status, 404)
 
-    def test_unlink_instrument_from_exercise_seft(self):
-        eq_collection_instrument = self._add_instrument_data()
-        with self.assertRaises(RasError) as error:
-            self.collection_instrument.unlink_instrument_from_exercise(
-                str(eq_collection_instrument), COLLECTION_EXERCISE_ID
-            )
-
-        self.assertEqual(405, error.exception.status_code)
-        self.assertEqual(
-            [f"{eq_collection_instrument} is of type SEFT which should be deleted and not unlinked"],
-            error.exception.errors,
-        )
-
     def test_get_instrument_by_incorrect_id(self):
         # Given there is an instrument in the db
         # When an incorrect instrument id is used to find that instrument
@@ -246,22 +229,6 @@ class TestCollectionInstrument(TestClient):
 
         # Then that instrument is not found
         self.assertEqual(instrument, None)
-
-    @requests_mock.mock()
-    def test_publish_uploaded_collection_instrument(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=200)
-        # Given there is an instrument in the db
-        result = publish_uploaded_collection_instrument(COLLECTION_EXERCISE_ID, self.instrument_id)
-
-        # Then the message is successfully published
-        self.assertEqual(result.status_code, 200)
-
-    @requests_mock.mock()
-    def test_publish_uploaded_collection_instrument_fails(self, mock_request):
-        mock_request.post(url_collection_instrument_link_url, status_code=500)
-        # Given there is an instrument in the db
-        with self.assertRaises(Exception):
-            publish_uploaded_collection_instrument(COLLECTION_EXERCISE_ID, self.instrument_id)
 
     @with_db_session
     def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):

@@ -6,11 +6,7 @@ from flask import current_app
 from sqlalchemy.orm import Session
 
 from application.controllers.helper import validate_uuid
-from application.controllers.service_helper import (
-    collection_instrument_link,
-    get_survey_details,
-    service_request,
-)
+from application.controllers.service_helper import get_survey_details, service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import (
     query_business_by_ru,
@@ -276,48 +272,34 @@ class CollectionInstrument(object):
         return instrument
 
     @with_db_session
-    def update_collection_exercise_instruments(self, instrument_selection, exercise_id, session=None):
+    def update_exercise_eq_instruments(self, exercise_id: str, instruments: list, session=None) -> bool:
         """
-        Both linking and unlinking of collection instruments is carried out here.
-
-        :param instrument_selection: A list of instrument ids
-        :param exercise_id: A collection exercise id (UUID)
+        Updates eQ instruments used by an exercise. Current instruments are used to determine which ones should be
+        appended and/or removed.
+        :param exercise_id: The collection exercise id
+        :param instruments: A list of instruments that the collection exercise should now have
         :param session: database session
+        :return: a bool
         """
+
         validate_uuid(exercise_id)
+        exercise = self._find_or_create_exercise(exercise_id, session)
+        current_instruments = [str(instrument.instrument_id) for instrument in exercise.instruments]
 
-        linked_instruments = []
+        instruments_to_add = set(instruments).difference(current_instruments)
+        instruments_to_remove = set(current_instruments).difference(instruments)
 
-        # This query will either create a CE (with no CIs attached) or will pull in all linked CIs for the exercise id
-        # In question.
-        exercise_and_instruments = self._find_or_create_exercise(exercise_id, session)
-
-        for i in exercise_and_instruments.instruments:
-            linked_instruments.append(str(i.instrument_id))
-
-        instruments_to_add = set(instrument_selection).difference(linked_instruments)
-        instruments_to_remove = set(linked_instruments).difference(instrument_selection)
-
-        if instruments_to_add:
-            self.update_collection_exercise_with_cis(instruments_to_add, True, exercise_and_instruments, session)
-
-        if instruments_to_remove:
-            self.update_collection_exercise_with_cis(instruments_to_remove, False, exercise_and_instruments, session)
-
-    def update_collection_exercise_with_cis(self, instruments, to_add, exercise_and_instruments, session):
-        for instrument_id in instruments:
-            validate_uuid(instrument_id)
-
+        for instrument_id in instruments_to_add:
             instrument = self.get_instrument_by_id(instrument_id, session)
+            instrument.exercises.append(exercise)
 
-            if to_add:
-                instrument.exercises.append(exercise_and_instruments)
-            else:
-                instrument.exercises.remove(exercise_and_instruments)
+        for instrument_id in instruments_to_remove:
+            instrument = self.get_instrument_by_id(instrument_id, session)
+            instrument.exercises.remove(exercise)
 
-        self.publish_collection_instrument_to_collection_exercise(
-            to_add, exercise_and_instruments.exercise_id, instrument.instrument_id
-        )
+        log.info("Collection instruments updated successfully", instruments=instruments, exercise_id=exercise_id)
+
+        return bool(instruments_to_add or instruments_to_remove)
 
     @with_db_session
     def link_instrument_to_exercise(self, instrument_id, exercise_id, session=None):
@@ -369,9 +351,6 @@ class CollectionInstrument(object):
             )
 
         instrument.exercises.remove(exercise)
-        response = self.publish_remove_collection_instrument(exercise_id, instrument.instrument_id)
-        if response.status_code != 200:
-            raise RasError("Failed to publish upload message", 500)
         bound_logger.info("Successfully unlinked instrument to exercise")
         return True
 
@@ -418,36 +397,6 @@ class CollectionInstrument(object):
                 return COLLECTION_EXERCISE_NOT_FOUND_ON_GCP, 404
 
         return COLLECTION_EXERCISE_AND_ASSOCIATED_FILES_DELETED, 200
-
-    @staticmethod
-    def publish_remove_collection_instrument(exercise_id, instrument_id):
-        """
-        Publish message to collection exercise for instrument unlinked
-
-        :param exercise_id: An exercise id (UUID)
-        :param instrument_id: The id (UUID) of collection instrument
-        :return: True if message successfully sent to collection exercise
-        """
-        log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
-        json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
-        return collection_instrument_link(json_message)
-
-    @staticmethod
-    def publish_collection_instrument_to_collection_exercise(to_add, exercise_id, instrument_id):
-        """
-        Publish message to collection instrument link
-        :param to_add: A booleaan to tell of the CI needs to be added (linked) or removed (unlinked)
-        :param exercise_id: An exercise id (UUID)
-        :param instrument_id: The id (UUID) for the newly created collection instrument
-        :return True if message successfully linked
-        """
-        if to_add:
-            log.info("Publishing upload message", exercise_id=exercise_id, instrument_id=instrument_id)
-            json_message = {"action": "ADD", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
-        else:
-            log.info("Publishing remove message", exercise_id=exercise_id, instrument_id=instrument_id)
-            json_message = {"action": "REMOVE", "exercise_id": str(exercise_id), "instrument_id": str(instrument_id)}
-        return collection_instrument_link(json_message)
 
     @staticmethod
     def _find_or_create_survey_from_exercise_id(exercise_id, session):
