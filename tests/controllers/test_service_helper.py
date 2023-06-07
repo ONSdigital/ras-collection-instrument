@@ -83,7 +83,7 @@ class TestServiceHelper(TestClient):
         # Given a 200 response from the collection exercise service is mocked
         mock_request.post(COLLECTION_EXERCISE_LINK_URL, status_code=200)
         # When a message is posted to that service
-        result = collection_exercise_instrument_update_request(COLLECTION_EXERCISE_ID)
+        result = collection_exercise_instrument_update_request("ADD", COLLECTION_EXERCISE_ID)
         # Then the service responds correctly
         self.assertEqual(result.status_code, 200)
 
@@ -94,4 +94,4 @@ class TestServiceHelper(TestClient):
         # When a message is posted to that service
         # Then a RasError is raised
         with self.assertRaises(RasError):
-            collection_exercise_instrument_update_request(COLLECTION_EXERCISE_ID)
+            collection_exercise_instrument_update_request("ADD", COLLECTION_EXERCISE_ID)
