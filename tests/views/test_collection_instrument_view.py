@@ -929,14 +929,14 @@ class TestCollectionInstrumentView(TestClient):
         self.assertEqual(response_data["errors"][0], "Unable to find instrument or exercise")
 
     @requests_mock.mock()
-    def test_add_update_collection_exercise_instruments(self, mock_request):
+    def test_update_eq_instruments(self, mock_request):
         # Given an instrument which is in the db is not linked to a collection exercise
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         instrument_id = self.add_instrument_without_exercise()
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
         # When the instrument is linked to an exercise
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"/collection-instrument-api/1.0.2/update-eq-instruments/{exercise_id}?"
             f"instruments={str(instrument_id)}",
             headers=self.get_auth_headers(),
         )
@@ -957,7 +957,7 @@ class TestCollectionInstrumentView(TestClient):
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
 
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"/collection-instrument-api/1.0.2/update-eq-instruments/{exercise_id}?"
             f"instruments={str(instrument_id)}",
             headers=self.get_auth_headers(),
         )
@@ -975,7 +975,7 @@ class TestCollectionInstrumentView(TestClient):
         exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
         # And the instrument is linked to an exercise
         self.client.post(
-            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}?"
+            f"/collection-instrument-api/1.0.2/update-eq-instruments/{exercise_id}?"
             f"instruments={str(instrument_id)}",
             headers=self.get_auth_headers(),
         )
@@ -984,7 +984,7 @@ class TestCollectionInstrumentView(TestClient):
 
         # When the instrument is unlinked to an exercise
         response = self.client.post(
-            f"/collection-instrument-api/1.0.2/update_collection_exercise_instruments/{exercise_id}",
+            f"/collection-instrument-api/1.0.2/update-eq-instruments/{exercise_id}",
             headers=self.get_auth_headers(),
         )
 

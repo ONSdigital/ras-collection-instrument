@@ -1,13 +1,19 @@
 from unittest.mock import patch
 
 import requests
+import requests_mock
 from requests.models import Response
 
-from application.controllers.service_helper import service_request
+from application.controllers.service_helper import (
+    collection_exercise_instrument_update_request,
+    service_request,
+)
 from application.exceptions import RasError, ServiceUnavailableException
 from tests.test_client import TestClient
 
 SERVICE = "survey-service"
+COLLECTION_EXERCISE_LINK_URL = "http://localhost:8145/collection-instrument/link"
+COLLECTION_EXERCISE_ID = "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
 
 
 class TestServiceHelper(TestClient):
@@ -71,3 +77,21 @@ class TestServiceHelper(TestClient):
                 service_request(service=SERVICE, endpoint="surveys", search_value="test_case")
         self.assertEqual(["survey-service has timed out"], exception.exception.errors)
         self.assertEqual(504, exception.exception.status_code)
+
+    @requests_mock.mock()
+    def test_publish_uploaded_collection_instrument(self, mock_request):
+        # Given a 200 response from the collection exercise service is mocked
+        mock_request.post(COLLECTION_EXERCISE_LINK_URL, status_code=200)
+        # When a message is posted to that service
+        result = collection_exercise_instrument_update_request("ADD", COLLECTION_EXERCISE_ID)
+        # Then the service responds correctly
+        self.assertEqual(result.status_code, 200)
+
+    @requests_mock.mock()
+    def test_publish_uploaded_collection_instrument_fails(self, mock_request):
+        # Given a 500 response from the collection exercise service is mocked
+        mock_request.post(COLLECTION_EXERCISE_LINK_URL, status_code=500)
+        # When a message is posted to that service
+        # Then a RasError is raised
+        with self.assertRaises(RasError):
+            collection_exercise_instrument_update_request("ADD", COLLECTION_EXERCISE_ID)

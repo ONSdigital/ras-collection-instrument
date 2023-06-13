@@ -54,20 +54,20 @@ def service_request(service, endpoint, search_value):
     return response
 
 
-def collection_instrument_link(json_message):
+def collection_exercise_instrument_update_request(action, exercise_id: str) -> object:
     """
-    Makes a post request to collection exercise service acknowledging collection instrument load
+    Posts a request to the collection exercise service to notify of a collection instrument change
     :param: json_message
     :type: json
     :return: response
     """
-
     auth = (current_app.config.get("SECURITY_USER_NAME"), current_app.config.get("SECURITY_USER_PASSWORD"))
+    json_message = {"action": action, "exercise_id": str(exercise_id)}
 
     try:
         collection_exercise_url = current_app.config["COLLECTION_EXERCISE_URL"]
         url = f"{collection_exercise_url}/collection-instrument/link"
-        log.info("Making request to collection exercise to acknowledge instrument load")
+        log.info("Making request to collection exercise to acknowledge instruments have been changed", action=action)
         response = requests.post(url, json=json_message, auth=auth)
         response.raise_for_status()
     except KeyError:
