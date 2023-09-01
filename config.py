@@ -12,12 +12,16 @@ class Config(object):
     SECURITY_USER_NAME = os.getenv("SECURITY_USER_NAME", "admin")
     SECURITY_USER_PASSWORD = os.getenv("SECURITY_USER_PASSWORD", "secret")
     MAX_UPLOAD_FILE_NAME_LENGTH = os.getenv("MAX_UPLOAD_FILE_NAME_LENGTH", 50)
-    DATABASE_URI = os.getenv("DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
+    DATABASE_URI = os.getenv("DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres")
     DATABASE_SCHEMA = os.getenv("DATABASE_SCHEMA", "ras_ci")
 
-    SEFT_DOWNLOAD_BUCKET_NAME = os.getenv("SEFT_DOWNLOAD_BUCKET_NAME")
-    GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
-    SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_DOWNLOAD_BUCKET_FILE_PREFIX")
+    SEFT_DOWNLOAD_BUCKET_NAME = "ras-rm-seft-ci-dev"
+    GOOGLE_CLOUD_PROJECT = "ras-rm-dev"
+    SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = "scorfs"
+    #
+    # SEFT_DOWNLOAD_BUCKET_NAME = os.getenv("SEFT_DOWNLOAD_BUCKET_NAME")
+    # GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT")
+    # SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = os.getenv("SEFT_DOWNLOAD_BUCKET_FILE_PREFIX")
 
     UPLOAD_FILE_EXTENSIONS = "xls,xlsx"
 
@@ -38,9 +42,9 @@ class TestingConfig(Config):
     LOGGING_LEVEL = "ERROR"
     SECURITY_USER_NAME = "admin"
     SECURITY_USER_PASSWORD = "secret"
-    DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:6432/postgres")
+    DATABASE_URI = os.getenv("TEST_DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres")
     DATABASE_SCHEMA = "ras_ci"
     ONS_CRYPTOKEY = "somethingsecure"
-    SEFT_DOWNLOAD_BUCKET_NAME = "TEST_BUCKET"
-    GOOGLE_CLOUD_PROJECT = "TEST_PROJECT"
-    SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = ""
+    SEFT_DOWNLOAD_BUCKET_NAME = "ras-rm-seft-ci-dev"
+    GOOGLE_CLOUD_PROJECT = "ras-rm-dev"
+    SEFT_DOWNLOAD_BUCKET_FILE_PREFIX = "scorfs"

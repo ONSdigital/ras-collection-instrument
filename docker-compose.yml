@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
-      - "6432:5432"
+      - "5432:5432"
 
   ras-collection-instrument:
     container_name: ras-collection-instrument
