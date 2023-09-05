@@ -230,6 +230,50 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is not found
         self.assertEqual(instrument, None)
 
+    def test_remove_only_eq_not_seft_cis(self):
+        # Given there is an instrument in the db for a SEFT
+        # When an eQ is added to collection exercise id
+        eq_instrument_to_add = []
+        self._add_instrument_to_exercise(ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID)
+        self._add_instrument_to_exercise(ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID)
+        eq_instrument = str(self._add_instrument_data(ci_type="EQ"))
+        eq_instrument_to_add.append(eq_instrument)
+        # self.assertEqual(test, "Test")
+        self.collection_instrument.update_exercise_eq_instruments(
+            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            eq_instrument_to_add
+        )
+
+        # Then the eQ is unselected
+        instrument_list_without_eq = []
+
+        # Then the exercise instrument is updated
+        self.collection_instrument.update_exercise_eq_instruments(
+            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            instrument_list_without_eq
+        )
+
+        # And the eQ is removed but the SEFT is still present
+        instrument = self.collection_instrument.get_instrument_json(str(self.instrument_id))
+
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
+        self.assertIn("SEFT", json.dumps(str(instrument)))
+        self.assertNotIn("EQ", json.dumps(str(instrument)))
+
+    @with_db_session
+    def _add_eq_and_seft_instrument_data(self, session=None, exercise_id=COLLECTION_EXERCISE_ID):
+        instrument_eq = InstrumentModel(ci_type="EQ")
+        instrument_seft = InstrumentModel(ci_type="SEFT")
+        exercise = ExerciseModel(exercise_id=exercise_id)
+        instrument_eq.exercises.append(exercise)
+        self._add_seft_details(instrument_seft)
+        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
+        instrument_eq.survey = survey
+        instrument_seft.survey = survey
+        session.add(instrument_eq)
+        session.add(instrument_seft)
+        return instrument_eq, instrument_seft
+
     @with_db_session
     def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
         instrument = InstrumentModel(ci_type=ci_type)
@@ -257,6 +301,18 @@ class TestCollectionInstrument(TestClient):
         if ci_type == "SEFT":
             self._add_seft_details(instrument)
         session.add(instrument)
+
+    @with_db_session
+    def _update_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
+        instrument = InstrumentModel(ci_type=ci_type)
+        exercise = ExerciseModel(exercise_id=exercise_id)
+        instrument.exercises.append(exercise)
+        if ci_type == "SEFT":
+            self._add_seft_details(instrument)
+        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
+        instrument.survey = survey
+        session.add(instrument)
+        return instrument
 
     @staticmethod
     @with_db_session
