@@ -230,13 +230,13 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is not found
         self.assertEqual(instrument, None)
 
-    def test_remove_only_eq_not_seft_cis(self):
+    def test_update_exercise_eq_instruments_doesnt_remove_seft(self):
         # Given there is an instrument in the db for a SEFT
-        # And an eQ is added to collection exercise id
+        # When an eQ is added to collection exercise id
         self._add_instrument_data(ci_type="EQ")
 
         # Then the user unselects this eQ and exercise instrument is updated
-        self.collection_instrument.update_exercise_eq_instruments("db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", [])
+        self.collection_instrument.update_exercise_eq_instruments(COLLECTION_EXERCISE_ID, [])
 
         # And the eQ is removed but the SEFT is still present
         instrument = self.collection_instrument.get_instrument_json(str(self.instrument_id))
@@ -272,18 +272,6 @@ class TestCollectionInstrument(TestClient):
         if ci_type == "SEFT":
             self._add_seft_details(instrument)
         session.add(instrument)
-
-    @with_db_session
-    def _update_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
-        instrument = InstrumentModel(ci_type=ci_type)
-        exercise = ExerciseModel(exercise_id=exercise_id)
-        instrument.exercises.append(exercise)
-        if ci_type == "SEFT":
-            self._add_seft_details(instrument)
-        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
-        instrument.survey = survey
-        session.add(instrument)
-        return instrument
 
     @staticmethod
     @with_db_session
