@@ -230,6 +230,21 @@ class TestCollectionInstrument(TestClient):
         # Then that instrument is not found
         self.assertEqual(instrument, None)
 
+    def test_update_exercise_eq_instruments_doesnt_remove_seft(self):
+        # Given there is an instrument in the db for a SEFT
+        # When an eQ is added to collection exercise id
+        self._add_instrument_data(ci_type="EQ")
+
+        # Then the user unselects this eQ and exercise instrument is updated
+        self.collection_instrument.update_exercise_eq_instruments(COLLECTION_EXERCISE_ID, [])
+
+        # And the eQ is removed but the SEFT is still present
+        instrument = self.collection_instrument.get_instrument_json(str(self.instrument_id))
+
+        self.assertIn(str(self.instrument_id), json.dumps(str(instrument)))
+        self.assertIn("SEFT", json.dumps(str(instrument)))
+        self.assertNotIn("EQ", json.dumps(str(instrument)))
+
     @with_db_session
     def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
         instrument = InstrumentModel(ci_type=ci_type)

@@ -284,7 +284,9 @@ class CollectionInstrument(object):
 
         validate_uuid(exercise_id)
         exercise = self._find_or_create_exercise(exercise_id, session)
-        current_instruments = [str(instrument.instrument_id) for instrument in exercise.instruments]
+        current_instruments = [
+            str(instrument.instrument_id) for instrument in exercise.instruments if instrument.type == "EQ"
+        ]
 
         instruments_to_add = set(instruments).difference(current_instruments)
         instruments_to_remove = set(current_instruments).difference(instruments)
