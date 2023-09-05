@@ -235,7 +235,7 @@ class TestCollectionInstrument(TestClient):
         # And an eQ is added to collection exercise id
         self._add_instrument_data(ci_type="EQ")
 
-        # Then the eQ is unselected and exercise instrument is updated
+        # Then the user unselects this eQ and exercise instrument is updated
         self.collection_instrument.update_exercise_eq_instruments("db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", [])
 
         # And the eQ is removed but the SEFT is still present
