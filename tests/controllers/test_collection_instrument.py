@@ -232,24 +232,11 @@ class TestCollectionInstrument(TestClient):
 
     def test_remove_only_eq_not_seft_cis(self):
         # Given there is an instrument in the db for a SEFT
-        # When an eQ is added to collection exercise id
-        eq_instrument_to_add = []
-        self._add_instrument_to_exercise(ci_type="EQ", exercise_id=COLLECTION_EXERCISE_ID)
-        self._add_instrument_to_exercise(ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID)
-        eq_instrument = str(self._add_instrument_data(ci_type="EQ"))
-        eq_instrument_to_add.append(eq_instrument)
-        # self.assertEqual(test, "Test")
-        self.collection_instrument.update_exercise_eq_instruments(
-            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", eq_instrument_to_add
-        )
+        # And an eQ is added to collection exercise id
+        self._add_instrument_data(ci_type="EQ")
 
-        # Then the eQ is unselected
-        instrument_list_without_eq = []
-
-        # Then the exercise instrument is updated
-        self.collection_instrument.update_exercise_eq_instruments(
-            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", instrument_list_without_eq
-        )
+        # Then the eQ is unselected and exercise instrument is updated
+        self.collection_instrument.update_exercise_eq_instruments("db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", [])
 
         # And the eQ is removed but the SEFT is still present
         instrument = self.collection_instrument.get_instrument_json(str(self.instrument_id))
