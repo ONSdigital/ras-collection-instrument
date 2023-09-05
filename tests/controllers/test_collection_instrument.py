@@ -259,20 +259,6 @@ class TestCollectionInstrument(TestClient):
         self.assertNotIn("EQ", json.dumps(str(instrument)))
 
     @with_db_session
-    def _add_eq_and_seft_instrument_data(self, session=None, exercise_id=COLLECTION_EXERCISE_ID):
-        instrument_eq = InstrumentModel(ci_type="EQ")
-        instrument_seft = InstrumentModel(ci_type="SEFT")
-        exercise = ExerciseModel(exercise_id=exercise_id)
-        instrument_eq.exercises.append(exercise)
-        self._add_seft_details(instrument_seft)
-        survey = SurveyModel(survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87")
-        instrument_eq.survey = survey
-        instrument_seft.survey = survey
-        session.add(instrument_eq)
-        session.add(instrument_seft)
-        return instrument_eq, instrument_seft
-
-    @with_db_session
     def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
         instrument = InstrumentModel(ci_type=ci_type)
         exercise = ExerciseModel(exercise_id=exercise_id)
