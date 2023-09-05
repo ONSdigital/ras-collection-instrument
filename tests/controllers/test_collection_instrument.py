@@ -240,8 +240,7 @@ class TestCollectionInstrument(TestClient):
         eq_instrument_to_add.append(eq_instrument)
         # self.assertEqual(test, "Test")
         self.collection_instrument.update_exercise_eq_instruments(
-            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            eq_instrument_to_add
+            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", eq_instrument_to_add
         )
 
         # Then the eQ is unselected
@@ -249,8 +248,7 @@ class TestCollectionInstrument(TestClient):
 
         # Then the exercise instrument is updated
         self.collection_instrument.update_exercise_eq_instruments(
-            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
-            instrument_list_without_eq
+            "db0711c3-0ac8-41d3-ae0e-567e5ea1ef87", instrument_list_without_eq
         )
 
         # And the eQ is removed but the SEFT is still present
