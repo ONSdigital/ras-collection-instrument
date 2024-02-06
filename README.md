@@ -92,3 +92,5 @@ Navigate to /developer_scripts and run import.py, answer the prompts on the comm
 * A couple of the endpoints have fairly useless functionality. For example, all the `/collectioninstrument/count` endpoint does is return the number of collection instruments. Why is this something the service needs to do? Could this not be accomplished by a database query?
 * Given the service's heavy reliance on collection exercises, could this service not be combined with the collection exercise service during the ras-rm redesign?
 
+
+Force bot build
