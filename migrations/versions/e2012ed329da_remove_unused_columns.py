@@ -5,6 +5,7 @@ Revises: d975ea83b712
 Create Date: 2021-10-21 10:01:56.565921
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.types import Enum, Integer
