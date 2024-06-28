@@ -8,7 +8,7 @@ python_version = "3.11"
 
 [packages]
 flask = "*"
-flask-cors = "*"
+flask-cors = "4.0.1"
 gunicorn = "*"
 gevent = {version = "*", platform_python_implementation="=='CPython'"}
 sqlalchemy = "*"
@@ -25,6 +25,7 @@ pycryptodome = "*"
 requestsdefaulter = "*"
 google-cloud-storage = "*"
 google-cloud-pubsub = "*"
+jinja2 = "*"
 
 [dev-packages]
 black = "*"
