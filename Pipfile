@@ -25,6 +25,7 @@ pycryptodome = "*"
 requestsdefaulter = "*"
 google-cloud-storage = "*"
 google-cloud-pubsub = "*"
+jinja2 = "*"
 
 [dev-packages]
 black = "*"
