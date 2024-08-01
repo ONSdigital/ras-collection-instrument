@@ -40,7 +40,7 @@ pipenv run tox
 To run the service with the required dependencies:
 
 ```bash
-docker-compose up -d db
+docker-compose up -d db 
 pipenv run python run.py
 ```
 
