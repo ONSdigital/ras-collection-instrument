@@ -40,7 +40,7 @@ pipenv run tox
 To run the service with the required dependencies:
 
 ```bash
-docker-compose up -d db 
+docker compose up -d db 
 pipenv run python run.py
 ```
 
@@ -57,7 +57,7 @@ The database will automatically be created when starting the application.
 To run the service in a Docker container a Compose script is included:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ## Configuration
