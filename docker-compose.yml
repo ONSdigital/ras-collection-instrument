@@ -11,9 +11,8 @@ services:
 
   ras-collection-instrument:
     container_name: ras-collection-instrument
-    build:
-      context: ./_infra/docker
-      dockerfile: ./Dockerfile
+    build: ./
+      dockerfile: ./_infra/docker/Dockerfile
     restart: always
     depends_on:
       - db
