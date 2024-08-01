@@ -8,7 +8,9 @@ build-kubernetes:
 	docker build -f _infra/docker/Dockerfile .
 
 lint:
-	pipenv check ./application ./tests
+# remove -i 70624 once flask-cors is updated beyond v4.0.1 to solve vulnerability
+# remove -i 70612 once jinja2 is updated beyond v3.1.4 to solve vulnerability
+	pipenv check ./application ./tests -i 70624 -i 70612
 	pipenv run isort .
 	pipenv run black --line-length 120 .
 	pipenv run flake8 ./application ./tests
