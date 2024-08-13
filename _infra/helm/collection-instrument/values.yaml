@@ -57,3 +57,7 @@ gcp:
     bucket:
       name: "ras-rm-seft-ci-dev"
       prefix: ""
+
+loadBalancer:
+  ipAddress: 10.110.128.13
+  enabled: true

@@ -1,0 +1,22 @@
+{{ if .Values.loadBalancer.enabled }}
+
+  apiVersion: v1
+  kind: Service
+  metadata:
+    name: collection-instrument-lb
+    annotations:
+      networking.gke.io/load-balancer-type: "Internal"
+      networking.gke.io/load-balancer-ip-addresses: {{ .Values.loadBalancer.ipAddress }}
+  spec:
+    type: LoadBalancer
+    externalTrafficPolicy: Cluster
+    loadBalancerIP: {{ .Values.loadBalancer.ipAddress }}
+    selector:
+      app: collection-instrument
+    ports:
+      - name: tcp-port
+        protocol: TCP
+        port: 80
+        targetPort: 8080
+
+{{ end }}
