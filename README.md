@@ -91,4 +91,4 @@ Navigate to /developer_scripts and run import.py, answer the prompts on the comm
 * Apropos the previous point, many of the attributes in the schema have unclear names and purposes, like `entname1/2/3` and `runame1/2/3`, among others. The schema should be redesigned, or have more specific documentation.
 * A couple of the endpoints have fairly useless functionality. For example, all the `/collectioninstrument/count` endpoint does is return the number of collection instruments. Why is this something the service needs to do? Could this not be accomplished by a database query?
 * Given the service's heavy reliance on collection exercises, could this service not be combined with the collection exercise service during the ras-rm redesign?
-force build
+* 
