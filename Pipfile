@@ -10,7 +10,7 @@ python_version = "3.11"
 flask = "*"
 flask-cors = "*"
 gunicorn = "*"
-gevent = {version = "*", platform_python_implementation="=='CPython'"}
+gevent = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
 structlog = "*"
