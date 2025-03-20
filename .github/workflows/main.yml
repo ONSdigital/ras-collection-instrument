@@ -9,9 +9,10 @@ on:
     branches: [ main ]
 env:
   IMAGE: collection-instrument
-  REGISTRY_HOSTNAME: eu.gcr.io
-  HOST: ${{ secrets.GOOGLE_PROJECT_ID }}
-  RELEASE_HOST: ${{ secrets.RELEASE_PROJECT_ID }}
+  REGISTRY_HOSTNAME: europe-west2-docker.pkg.dev
+  SPINNAKER_GOOGLE_PROJECT_ID: ${{ secrets.SPINNAKER_GOOGLE_PROJECT_ID }}
+  GAR_REPOSITORY: images
+  GAR_GOOGLE_PROJECT_ID: ${{ secrets.GAR_GOOGLE_PROJECT_ID }}
   CHART_DIRECTORY: _infra/helm/collection-instrument
   SPINNAKER_TOPIC: ${{ secrets.SPINNAKER_TOPIC }}
   ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET }}
@@ -23,12 +24,12 @@ jobs:
     name: Build & Package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
         with:
           fetch-depth: '0'
           token: ${{ secrets.BOT_TOKEN }}
       - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b #v5.3.0
         with:
           python-version: '3.11'
       - name: Get Dependencies
@@ -39,13 +40,14 @@ jobs:
         run: make test
       - name: Authenticate with Google Cloud
         id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@6fc4af4b145ae7821d527454aa9bd537d1f2dc5f #v2.1.7
         with:
           credentials_json: ${{ secrets.GCR_KEY }}
       - name: Setup Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@6189d56e4096ee891640bb02ac264be376592d6a #v2.1.2
       - run: |
           gcloud auth configure-docker
+          gcloud auth configure-docker "$REGISTRY_HOSTNAME"
 
       - name: pr docker tag
         if: github.ref != 'refs/heads/main'
@@ -58,11 +60,11 @@ jobs:
       - name: Build Docker Image
         if: github.ref != 'refs/heads/main'
         run: |
-          docker build -t "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":${{ env.pr_number }} -f _infra/docker/Dockerfile .
+          docker build -f _infra/docker/Dockerfile -t "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":${{ env.pr_number }} .
       - name: Push dev image
         if: github.ref != 'refs/heads/main'
         run: |
-          docker push "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":${{ env.pr_number }}
+          docker push "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":${{ env.pr_number }}
       - name: template helm
         run: |
           helm template $CHART_DIRECTORY
@@ -149,7 +151,7 @@ jobs:
         shell: bash
         run: |
           echo "version=$(grep -E "appVersion:\s+" $CHART_DIRECTORY/Chart.yaml | cut -d" " -f2 | sed -r 's/"//g')" >> $GITHUB_ENV
-    
+
       - name: package helm
         run: |
           echo HELM_VERSION=$(grep -E "version:\s+" $CHART_DIRECTORY/Chart.yaml | cut -d" " -f2 | sed -r 's/"//g') >> $GITHUB_ENV
@@ -165,12 +167,12 @@ jobs:
       - name: Build Release Image
         if: github.ref == 'refs/heads/main'
         run: |
-          docker build -f _infra/docker/Dockerfile -t "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":latest -t "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ env.version }} .
+          docker build -f _infra/docker/Dockerfile -t "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":latest -t "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":${{ env.version }} .
       - name: Push Release image
         if: github.ref == 'refs/heads/main'
         run: |
-          docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":${{ env.version }}
-          docker push "$REGISTRY_HOSTNAME"/"$RELEASE_HOST"/"$IMAGE":latest
+          docker push "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":${{ env.version }}
+          docker push "$REGISTRY_HOSTNAME"/"$GAR_GOOGLE_PROJECT_ID"/"$GAR_REPOSITORY"/"$IMAGE":latest
 
       - name: Publish Charts
         if: github.ref == 'refs/heads/main'
@@ -187,6 +189,6 @@ jobs:
       - name: CD hook
         if: github.ref == 'refs/heads/main'
         run: |
-          gcloud pubsub topics publish $SPINNAKER_TOPIC --project $HOST \
+          gcloud pubsub topics publish $SPINNAKER_TOPIC --project $SPINNAKER_GOOGLE_PROJECT_ID \
           --message "{ \"kind\": \"storage#object\", \"name\": \"$IMAGE/$IMAGE-${{ env.HELM_VERSION }}.tgz\", \"bucket\": \"$ARTIFACT_BUCKET\" }" \
           --attribute cd="actions"
