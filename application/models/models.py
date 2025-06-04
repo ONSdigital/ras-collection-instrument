@@ -217,6 +217,7 @@ class RegistryInstrumentModel(Base):
     classifier_value = Column(String, primary_key=True)
     ci_version = Column(Integer, nullable=False)
     guid = Column(UUID, nullable=False)
+    published_at = Column(TIMESTAMP, nullable=False)
 
     def __init__(
         self,
@@ -227,6 +228,7 @@ class RegistryInstrumentModel(Base):
         classifier_value=None,
         ci_version=None,
         guid=None,
+        published_at=None,
     ):
         """Initialise the class with optionally supplied defaults"""
         self.survey_id = survey_id
@@ -236,3 +238,4 @@ class RegistryInstrumentModel(Base):
         self.classifier_value = classifier_value
         self.ci_version = ci_version
         self.guid = guid
+        self.published_at = published_at
