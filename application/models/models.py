@@ -239,3 +239,15 @@ class RegistryInstrumentModel(Base):
         self.ci_version = ci_version
         self.guid = guid
         self.published_at = published_at
+
+    def to_dict(self) -> dict:
+        return {
+            "survey_id": self.survey_id,
+            "exercise_id": self.exercise_id,
+            "instrument_id": self.instrument_id,
+            "classifier_type": self.classifier_type,
+            "classifier_value": self.classifier_value,
+            "ci_version": self.ci_version,
+            "guid": self.guid,
+            "published_at": self.published_at.isoformat() if self.published_at else None,
+        }
