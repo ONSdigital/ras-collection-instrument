@@ -36,8 +36,8 @@ def create_app(config=None, init_db=True):
     app.register_blueprint(info_view)
 
     from application.views.registry_instrument_view import registry_instrument_view
-    
-    app.register_blueprint(registry_instrument_view)
+
+    app.register_blueprint(registry_instrument_view, url_prefix="/collection-instrument-api/1.0.2")
 
     from application.error_handlers import error_blueprint
 
