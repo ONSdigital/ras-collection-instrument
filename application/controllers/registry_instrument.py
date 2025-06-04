@@ -1,0 +1,42 @@
+import logging
+
+import structlog
+
+from application.controllers.helper import validate_uuid
+from application.controllers.sql_queries import (
+    query_registry_instrument_by_exercise_id_and_formtype,
+    query_registry_instruments_by_exercise_id,
+)
+
+log = structlog.wrap_logger(logging.getLogger(__name__))
+
+
+class RegistryInstrument(object):
+    @staticmethod
+    def get_registry_instruments_by_exercise_id(exercise_id, session):
+        """
+        Retrieves a list of selected CIR instruments for the given collection exercise
+
+        :param exercise_id: An exercise id (UUID)
+        :param session: database session
+        :return: list of RegistryInstrumentModel objects
+        """
+        log.info("Retrieving list of selected CIR instruments", exercise_id=exercise_id)
+        validate_uuid(exercise_id)
+        registry_instruments = query_registry_instruments_by_exercise_id(exercise_id, session)
+        return registry_instruments
+
+    @staticmethod
+    def get_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type, session):
+        """
+        Retrieves a selected CIR instrument for the given collection exercise and form type
+
+        :param exercise_id: An exercise id (UUID)
+        :param form_type: The form type (e.g. "0001")
+        :param session: database session
+        :return: A RegistryInstrumentModel object
+        """
+        log.info("Retrieving a selected CIR instrument", exercise_id=exercise_id, form_type=form_type)
+        validate_uuid(exercise_id)
+        registry_instrument = query_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type, session)
+        return registry_instrument
