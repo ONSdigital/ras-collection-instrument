@@ -454,6 +454,18 @@ paths:
         '404':
           description: No registry instruments found for the given exercise ID
   "/collection-instrument-api/1.0.2/registryinstrument/exercise-id/{exercise_id}/formtype/{form_type}":
+    put:
+      summary: Save a selected registry instrument for the given exercise UUID and form type classifier value.
+      tags:
+        - registry-instrument
+    delete:
+      summary: Deletes a selected registry instrument for the given exercise UUID and form type classifier value.
+      tags:
+        - registry-instrument
+    patch:
+      summary: Updates the selected registry instrument for the given exercise UUID and form type classifier value.
+      tags:
+        - registry-instrument
     get:
       summary: Get a selected registry instrument for the given exercise UUID and form type classifier value.
       tags:
