@@ -428,7 +428,7 @@ paths:
                     type: string
                     format: uuid
                     example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
-  "/collection-instrument-api/1.0.2/registryinstrument/exercise-id/{exercise_id}":
+  "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}":
     get:
       summary: Get a list of selected registry instruments for the given exercise UUID.
       tags:
@@ -453,7 +453,7 @@ paths:
                   $ref: '#/components/schemas/RegistryInstrument'
         '404':
           description: No registry instruments found for the given exercise ID
-  "/collection-instrument-api/1.0.2/registryinstrument/exercise-id/{exercise_id}/formtype/{form_type}":
+  "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type}":
     put:
       summary: Save a selected registry instrument for the given exercise UUID and form type classifier value.
       tags:
