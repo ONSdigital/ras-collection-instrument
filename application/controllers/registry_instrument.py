@@ -14,7 +14,7 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 
 class RegistryInstrument(object):
     @with_db_session
-    def get_registry_instruments_by_exercise_id(exercise_id, session):
+    def get_registry_instruments_by_exercise_id(exercise_id, session=None):
         """
         Retrieves a list of selected CIR instruments for the given collection exercise
 
@@ -24,7 +24,7 @@ class RegistryInstrument(object):
         """
         log.info("Retrieving list of selected CIR instruments", exercise_id=exercise_id)
         validate_uuid(exercise_id)
-        registry_instruments = query_registry_instruments_by_exercise_id(exercise_id, session=None)
+        registry_instruments = query_registry_instruments_by_exercise_id(exercise_id, session)
         return registry_instruments
 
     @with_db_session
