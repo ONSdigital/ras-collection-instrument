@@ -429,33 +429,8 @@ paths:
                     format: uuid
                     example: 'cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87'
   "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}":
-    get:
-      summary: Get a list of selected registry instruments for the given exercise UUID.
-      tags:
-        - registry-instrument
-      parameters:
-        - in: path
-          name: exercise_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
-          description: The collection exercise ID.
-      responses:
-        '200':
-          description: Returns a list of selected registry instruments for the given exercise UUID.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RegistryInstrument'
-        '404':
-          description: No registry instruments found for the given exercise ID
-  "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type}":
     put:
-      summary: Save a selected registry instrument for the given exercise UUID and form type classifier value.
+      summary: Save a selected registry instrument for the given exercise UUID.
       tags:
         - registry-instrument
       parameters:
@@ -489,10 +464,31 @@ paths:
               schema:
                 type: string
                 example: 'Successfully saved registry instrument'
-    delete:
-      summary: Deletes a selected registry instrument for the given exercise UUID and form type classifier value.
+    get:
+      summary: Get a list of selected registry instruments for the given exercise UUID.
       tags:
         - registry-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The collection exercise ID.
+      responses:
+        '200':
+          description: Returns a list of selected registry instruments for the given exercise UUID.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RegistryInstrument'
+        '404':
+          description: No registry instruments found for the given exercise ID
+  "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type}":
     get:
       summary: Get a selected registry instrument for the given exercise UUID and form type classifier value.
       tags:
@@ -525,6 +521,10 @@ paths:
                   $ref: '#/components/schemas/RegistryInstrument'
         '404':
           description: No registry instrument found for the given exercise UUID and form type classifier value.
+    delete:
+      summary: Deletes a selected registry instrument for the given exercise UUID and form type classifier value.
+      tags:
+        - registry-instrument
   "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}":
     get:
       summary: Get collection instrument by instrument ID
