@@ -458,12 +458,39 @@ paths:
       summary: Save a selected registry instrument for the given exercise UUID and form type classifier value.
       tags:
         - registry-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The collection exercise UUID.
+      requestBody:
+        description: The registry instrument to save.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryInstrument'
+      responses:
+        '200':
+          description: Returns the result of the request to save the registry instrument for the given exercise UUID.
+          content:
+            application/text:
+              schema:
+                type: string
+                example: 'Successfully saved registry instrument'
+        '201':
+          description: Returns the result of the request to save the registry instrument for the given exercise UUID.
+          content:
+            application/text:
+              schema:
+                type: string
+                example: 'Successfully saved registry instrument'
     delete:
       summary: Deletes a selected registry instrument for the given exercise UUID and form type classifier value.
-      tags:
-        - registry-instrument
-    patch:
-      summary: Updates the selected registry instrument for the given exercise UUID and form type classifier value.
       tags:
         - registry-instrument
     get:
@@ -683,8 +710,9 @@ components:
           format: uuid
         classifier_type:
           type: string
-          enum: [FORM_TYPE]
+          enum: [form_type]
         classifier_value:
+          pattern: '^\d{4}$'
           type: string
         ci_version:
           type: integer

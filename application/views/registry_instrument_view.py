@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+from http import HTTPStatus
 
 import structlog
 from flask import Blueprint, jsonify, make_response, request
@@ -43,26 +44,28 @@ def get_registry_instrument(exercise_id, form_type):
     return make_response("Not Found", 404)
 
 
-@registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>", methods=["POST"])
-def post_registry_instrument(exercise_id):
+@registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>", methods=["PUT"])
+def put_registry_instrument(exercise_id):
     """
-    Create a selected CIR instrument for the given collection exercise
+    Creates or updates a selected CIR instrument for the given collection exercise and form type.
+    The exercise_id is a path parameter, and the form_type value is an attribute in the payload.
+    We currently only support "classifier_type": "form_type" (e.g. where "classifier_value" is "0001").
 
     :param exercise_id: An exercise id (UUID)
-    :return: HTTP Status 201 if successful,
-             400 if the payload is invalid,
-             409 if a selected registry instrument already exists
     :payload format example
     {
-        "ci_version": 1,
+        "survey_id": "0b1f8376-28e9-4884-bea5-acf9d709464e"
+        "exercise_id": "3ff59b73-7f15-406f-9e4d-7f00b41e85ce",
+        "instrument_id": "dfc3ddd7-3e79-4c6b-a8f8-1fa184cdd06b",
         "classifier_type": "form_type",
         "classifier_value": "0001",
-        "exercise_id": "3ff59b73-7f15-406f-9e4d-7f00b41e85ce",
+        "ci_version": 1,
         "guid": "c046861a-0df7-443a-a963-d9aa3bddf328",
-        "instrument_id": "dfc3ddd7-3e79-4c6b-a8f8-1fa184cdd06b",
         "published_at": "2025-12-31T00:00:00",
-        "survey_id": "0b1f8376-28e9-4884-bea5-acf9d709464e"
     }
+    :return: 201 if created successful,
+             200 if updated successful,
+             400 if the payload is invalid
     """
 
     try:
@@ -78,6 +81,8 @@ def post_registry_instrument(exercise_id):
     ci_version = None
     guid = None
     published_at = None
+
+    # Validate the payload, this will be moved to an appropriate class once stable
 
     if "classifier_type" in payload:
         classifier_type = payload["classifier_type"]
@@ -126,26 +131,23 @@ def post_registry_instrument(exercise_id):
             # TODO: check the exercise_id exists in the ras_ci.exercise table
             return make_response("Invalid exercise_id", 400)
 
-    registry_instrument = RegistryInstrument().get_registry_instrument_by_exercise_id_and_formtype(
-        exercise_id, payload["classifier_value"]
-    )
-
-    if registry_instrument:
-        return make_response("A selected registry instrument already exists for this exercise_id and form_type", 409)
-
-    log.info(
-        "The selected registry instrument would have been created, but the persistence layer is not implemented yet",
+    success, is_new = RegistryInstrument().save_registry_instrument_for_exercise_id_and_formtype(
         survey_id=survey_id,
         exercise_id=exercise_id,
         instrument_id=instrument_id,
-        classifier_type=classifier_type,
-        classifier_value=classifier_value,
+        form_type=classifier_value,
         ci_version=ci_version,
         published_at=published_at,
         guid=guid,
     )
 
-    return make_response(
-        "The selected registry instrument would have been created, but the persistence layer is not implemented yet",
-        201,
-    )
+    if success:
+        return make_response(
+            "Successfully saved registry instrument",
+            HTTPStatus.CREATED if is_new else HTTPStatus.OK,
+        )
+    else:
+        return make_response(
+            "Registry instrument failed to save successfully",
+            HTTPStatus.INTERNAL_SERVER_ERROR,
+        )
