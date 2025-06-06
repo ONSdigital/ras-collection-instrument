@@ -63,8 +63,8 @@ def put_registry_instrument(exercise_id):
         "guid": "c046861a-0df7-443a-a963-d9aa3bddf328",
         "published_at": "2025-12-31T00:00:00",
     }
-    :return: 201 if created successful,
-             200 if updated successful,
+    :return: 201 if created successfully,
+             200 if updated successfully,
              400 if the payload is invalid
     """
 
