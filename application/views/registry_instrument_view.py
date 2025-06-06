@@ -76,16 +76,37 @@ def put_registry_instrument(exercise_id):
     survey_id = None
     exercise_id = None
     instrument_id = None
-    classifier_type = None
     classifier_value = None
     ci_version = None
     guid = None
     published_at = None
 
-    # Validate the payload, this will be moved to an appropriate class once stable
+    # -------- Validate the payload --------
+
+    # TODO: this will be all moved to an appropriate class once stable before PR is opened for review
+
+    expected_keys = {
+        "survey_id",
+        "exercise_id",
+        "instrument_id",
+        "classifier_type",
+        "classifier_value",
+        "ci_version",
+        "guid",
+        "published_at",
+    }
+
+    payload_keys = set(payload.keys())
+
+    if payload_keys != expected_keys:
+        return make_response(
+            f"Invalid payload keys. Expected: {expected_keys}, Included: {payload_keys}",
+            400,
+        )
 
     if "classifier_type" in payload:
         classifier_type = payload["classifier_type"]
+        # currently we only support the "form_type" classifier
         if classifier_type not in ["form_type"]:
             return make_response("Invalid classifier type", 400)
 
@@ -130,6 +151,8 @@ def put_registry_instrument(exercise_id):
         if not validate_uuid(exercise_id):
             # TODO: check the exercise_id exists in the ras_ci.exercise table
             return make_response("Invalid exercise_id", 400)
+
+    # -------- Completed validating the payload --------
 
     success, is_new = RegistryInstrument().save_registry_instrument_for_exercise_id_and_formtype(
         survey_id=survey_id,
