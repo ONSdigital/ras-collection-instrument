@@ -27,9 +27,9 @@ def get_registry_instruments(exercise_id):
     registry_instruments = RegistryInstrument().get_registry_instruments_by_exercise_id(exercise_id)
 
     if registry_instruments:
-        return make_response(jsonify(registry_instruments), 200)
+        return make_response(jsonify(registry_instruments), HTTPStatus.OK)
 
-    return make_response("Not Found", 404)
+    return make_response("Not Found", HTTPStatus.NOT_FOUND)
 
 
 @registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>/formtype/<form_type>", methods=["GET"])
@@ -39,9 +39,9 @@ def get_registry_instrument(exercise_id, form_type):
     )
 
     if registry_instrument:
-        return make_response(jsonify(registry_instrument), 200)
+        return make_response(jsonify(registry_instrument), HTTPStatus.OK)
 
-    return make_response("Not Found", 404)
+    return make_response("Not Found", HTTPStatus.NOT_FOUND)
 
 
 @registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>", methods=["PUT"])
@@ -71,7 +71,7 @@ def put_registry_instrument(exercise_id):
     try:
         payload = request.get_json(force=True)
     except BadRequest:
-        return make_response("Invalid JSON payload", 400)
+        return make_response("Invalid JSON payload", HTTPStatus.BAD_REQUEST)
 
     survey_id = None
     instrument_id = None
