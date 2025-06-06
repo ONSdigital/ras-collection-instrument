@@ -108,18 +108,21 @@ def put_registry_instrument(exercise_id):
             return make_response("exercise_id in payload does not match path parameter", 400)
         if not validate_uuid(exercise_id):
             # TODO: check the exercise_id exists in the ras_ci.exercise table
+            #       once the constraint is in place we could just rely on SQLAlchemy exception handling
             return make_response("Invalid exercise_id", 400)
 
     if "survey_id" in payload:
         survey_id = payload["survey_id"]
         if not validate_uuid(survey_id):
             # TODO: check the survey_id exists in the ras_ci.survey table
+            #       once the constraint is in place we could just rely on SQLAlchemy exception handling
             return make_response("Invalid survey_id", 400)
 
     if "instrument_id" in payload:
         instrument_id = payload["instrument_id"]
         if not validate_uuid(instrument_id):
             # TODO: check the instrument_id exists in the ras_ci.instrument table
+            #       once the constraint is in place we could just rely on SQLAlchemy exception handling
             return make_response("Invalid instrument_id", 400)
 
     if "classifier_type" in payload:
