@@ -57,7 +57,7 @@ class RegistryInstrument(object):
         self, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session=None
     ):
         """
-        Saves a selected CIR instrument for the given collection exercise and form type
+        Save a selected CIR instrument for the given collection exercise and form type
 
         :param exercise_id: An exercise id (UUID)
         :param form_type: The form type (e.g. "0001")
@@ -78,6 +78,28 @@ class RegistryInstrument(object):
             return True, is_new
         else:
             return False, None
+
+    @with_db_session
+    def delete_registry_instrument_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
+        """
+        Delete the selected CIR instrument for the given collection exercise and form type
+
+        :param exercise_id: An exercise id (UUID)
+        :param form_type: The form type (e.g. "0001")
+        :param session: database session
+        :return: A boolean indicating success
+        """
+        log.info("Deleting a selected CIR instrument", exercise_id=exercise_id, form_type=form_type)
+        validate_uuid(exercise_id)
+        registry_instrument = query_registry_instrument_by_exercise_id_and_formtype(
+            exercise_id, form_type, session
+        ).first()
+
+        if registry_instrument is not None:
+            session.delete(registry_instrument)
+            return True
+        else:
+            return False
 
     @staticmethod
     def _find_or_create_registry_instrument(

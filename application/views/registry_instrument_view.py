@@ -174,3 +174,17 @@ def put_registry_instrument(exercise_id):
             "Registry instrument failed to save successfully",
             HTTPStatus.INTERNAL_SERVER_ERROR,
         )
+
+
+@registry_instrument_view.route(
+    "/registry-instrument/exercise-id/<exercise_id>/formtype/<form_type>", methods=["DELETE"]
+)
+def delete_registry_instrument(exercise_id, form_type):
+
+    if RegistryInstrument().delete_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type):
+        return make_response(
+            "Successfully deleted registry instrument",
+            HTTPStatus.OK,
+        )
+    else:
+        return make_response("Not Found", HTTPStatus.NOT_FOUND)
