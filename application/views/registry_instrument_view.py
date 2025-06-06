@@ -98,62 +98,59 @@ def put_registry_instrument(exercise_id):
     payload_keys = set(payload.keys())
 
     if payload_keys != expected_keys:
-        return make_response(
-            f"Invalid payload keys. Expected: {expected_keys}",
-            400,
-        )
+        return make_response(f"Invalid payload keys. Expected: {expected_keys}", HTTPStatus.BAD_REQUEST)
 
     if "exercise_id" in payload:
         if payload["exercise_id"] != exercise_id:
-            return make_response("exercise_id in payload does not match path parameter", 400)
+            return make_response("exercise_id in payload does not match path parameter", HTTPStatus.BAD_REQUEST)
         if not validate_uuid(exercise_id):
             # TODO: check the exercise_id exists in the ras_ci.exercise table
             #       once the constraint is in place we could just rely on SQLAlchemy exception handling
-            return make_response("Invalid exercise_id", 400)
+            return make_response("Invalid exercise_id", HTTPStatus.BAD_REQUEST)
 
     if "survey_id" in payload:
         survey_id = payload["survey_id"]
         if not validate_uuid(survey_id):
             # TODO: check the survey_id exists in the ras_ci.survey table
             #       once the constraint is in place we could just rely on SQLAlchemy exception handling
-            return make_response("Invalid survey_id", 400)
+            return make_response("Invalid survey_id", HTTPStatus.BAD_REQUEST)
 
     if "instrument_id" in payload:
         instrument_id = payload["instrument_id"]
         if not validate_uuid(instrument_id):
             # TODO: check the instrument_id exists in the ras_ci.instrument table
             #       once the constraint is in place we could just rely on SQLAlchemy exception handling
-            return make_response("Invalid instrument_id", 400)
+            return make_response("Invalid instrument_id", HTTPStatus.BAD_REQUEST)
 
     if "classifier_type" in payload:
         classifier_type = payload["classifier_type"]
         # currently we only support the "form_type" classifier
         if classifier_type not in ["form_type"]:
-            return make_response("Invalid classifier type", 400)
+            return make_response("Invalid classifier type", HTTPStatus.BAD_REQUEST)
 
     if "classifier_value" in payload:
         classifier_value = payload["classifier_value"]
         if not re.fullmatch(r"\d{4}", str(classifier_value)):
-            return make_response("Invalid classifier value", 400)
+            return make_response("Invalid classifier value", HTTPStatus.BAD_REQUEST)
 
     if "ci_version" in payload:
         ci_version = payload["ci_version"]
         try:
             ci_version = int(ci_version)
         except (ValueError, TypeError):
-            return make_response("Invalid ci_version", 400)
+            return make_response("Invalid ci_version", HTTPStatus.BAD_REQUEST)
 
     if "guid" in payload:
         guid = payload["guid"]
         if not validate_uuid(guid):
-            return make_response("Invalid guid", 400)
+            return make_response("Invalid guid", HTTPStatus.BAD_REQUEST)
 
     if "published_at" in payload:
         published_at = payload["published_at"]
         try:
             datetime.datetime.fromisoformat(published_at)
         except (ValueError, TypeError):
-            return make_response("Invalid published_at", 400)
+            return make_response("Invalid published_at", HTTPStatus.BAD_REQUEST)
 
     # -------- Completed validating the payload --------
 
