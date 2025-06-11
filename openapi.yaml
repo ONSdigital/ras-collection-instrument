@@ -479,7 +479,7 @@ paths:
           description: The collection exercise ID.
       responses:
         '200':
-          description: Returns a list of selected registry instruments for the given exercise UUID.
+          description: Returns a list of selected registry instruments for the given exercise UUID, and an empty list if no registry instruments have been selected for the exercise UUID.
           content:
             application/json:
               schema:
@@ -487,7 +487,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/RegistryInstrument'
         '404':
-          description: No registry instruments found for the given exercise ID
+          description: The given exercise ID does not exist
   "/collection-instrument-api/1.0.2/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type}":
     get:
       summary: Get a selected registry instrument for the given exercise UUID and form type classifier value.
