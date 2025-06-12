@@ -24,12 +24,17 @@ def before_registry_instrument_view():
 
 @registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>", methods=["GET"])
 def get_registry_instruments(exercise_id):
+    """
+    Returns an array of selected CIR instrument for the given collection exercise.
+
+    :param exercise_id: An exercise id (UUID)
+    """
     registry_instruments = RegistryInstrument().get_registry_instruments_by_exercise_id(exercise_id)
 
-    if registry_instruments:
-        return make_response(jsonify(registry_instruments), HTTPStatus.OK)
+    # TODO: (low priority) check the exercise_id exists in the ras_ci.exercise table
+    #       and return 404 if it does not exist
 
-    return make_response("Not Found", HTTPStatus.NOT_FOUND)
+    return make_response(jsonify(registry_instruments), HTTPStatus.OK)
 
 
 @registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>/formtype/<form_type>", methods=["GET"])
