@@ -34,7 +34,7 @@ def upgrade():
     )
 
     op.create_index(
-        "ix_registry_instrument_exercise_id", "registry_instrument", ["instrument_id"], unique=False, schema="ras_ci"
+        "ix_registry_instrument_exercise_id", "registry_instrument", ["exercise_id"], unique=False, schema="ras_ci"
     )
 
 
