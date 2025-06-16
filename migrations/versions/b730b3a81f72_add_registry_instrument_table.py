@@ -33,6 +33,10 @@ def upgrade():
         schema="ras_ci",
     )
 
+    op.create_index(
+        "ix_registry_instrument_exercise_id", "registry_instrument", ["instrument_id"], unique=False, schema="ras_ci"
+    )
+
 
 def downgrade():
     op.drop_table("registry_instrument", schema="ras_ci")
