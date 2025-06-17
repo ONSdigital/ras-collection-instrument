@@ -82,6 +82,38 @@ class TestRegistryInstrumentView(TestClient):
             self.assertEqual(response.headers["Content-Type"], "application/json")
             mock_get_registry_instruments_by_exercise_id.assert_called_once_with(exercise_id)
 
+    def test_successful_delete_registry_instrument_returns_200(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.delete_registry_instrument_by_exercise_id_and_formtype"
+        ) as mock_delete_registry_instrument_by_exercise_id_and_formtype:
+            mock_delete_registry_instrument_by_exercise_id_and_formtype.return_value = True
+            response = self.client.delete(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type_exists}",
+                headers=self.get_auth_headers(),
+            )
+            self.assertEqual(response.data.decode(), "Successfully deleted registry instrument")
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+            mock_delete_registry_instrument_by_exercise_id_and_formtype.assert_called_once_with(
+                exercise_id, form_type_exists
+            )
+
+    def test_unsuccessful_delete_registry_instrument_returns_404(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.delete_registry_instrument_by_exercise_id_and_formtype"
+        ) as mock_delete_registry_instrument_by_exercise_id_and_formtype:
+            mock_delete_registry_instrument_by_exercise_id_and_formtype.return_value = False
+            response = self.client.delete(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type_does_not_exist}",
+                headers=self.get_auth_headers(),
+            )
+            self.assertEqual(response.data.decode(), "Not Found")
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+            mock_delete_registry_instrument_by_exercise_id_and_formtype.assert_called_once_with(
+                exercise_id, form_type_does_not_exist
+            )
+
     @staticmethod
     def get_auth_headers():
         auth = "{}:{}".format(
