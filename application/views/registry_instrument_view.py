@@ -81,21 +81,14 @@ def put_registry_instrument(exercise_id):
     except BadRequest:
         return make_response("Invalid JSON payload", HTTPStatus.BAD_REQUEST)
 
-    survey_id = None
-    instrument_id = None
-    classifier_value = None
-    ci_version = None
-    guid = None
-    published_at = None
-
     success, is_new = RegistryInstrument().save_registry_instrument_for_exercise_id_and_formtype(
-        survey_id=survey_id,
-        exercise_id=exercise_id,
-        instrument_id=instrument_id,
-        form_type=classifier_value,
-        ci_version=ci_version,
-        published_at=published_at,
-        guid=guid,
+        survey_id=payload["survey_id"],
+        exercise_id=payload["exercise_id"],
+        instrument_id=payload["instrument_id"],
+        form_type=payload["classifier_value"],
+        ci_version=payload["ci_version"],
+        published_at=payload["published_at"],
+        guid=payload["guid"],
     )
 
     if success:
