@@ -8,7 +8,7 @@ from flask import current_app
 from tests.test_client import TestClient
 
 api_root = "/collection-instrument-api/1.0.2"
-exercise_id = "c3c0403a-6e9c-46f6-af5e-5f67fefb2a9d"
+exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
 form_type_exists = "0001"
 form_type_does_not_exist = "9999"
 
@@ -113,6 +113,60 @@ class TestRegistryInstrumentView(TestClient):
             mock_delete_registry_instrument_by_exercise_id_and_formtype.assert_called_once_with(
                 exercise_id, form_type_does_not_exist
             )
+
+    def test_put_new_registry_instrument_returns_201(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+        ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
+            mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (True, True)
+            with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
+                body = json.load(f)
+            response = self.client.put(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}",
+                data=json.dumps(body),
+                headers=self.get_auth_headers(),
+            )
+            self.assertStatus(response, 201)
+            self.assertEqual(response.data.decode(), "Successfully saved registry instrument")
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+            mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
+
+    def test_put_existing_registry_instrument_returns_200(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+        ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
+            mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (True, False)
+            with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
+                body = json.load(f)
+            response = self.client.put(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}",
+                data=json.dumps(body),
+                headers=self.get_auth_headers(),
+            )
+            self.assertStatus(response, 200)
+            self.assertEqual(response.data.decode(), "Successfully saved registry instrument")
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+            mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
+
+    def test_put_existing_registry_instrument_returns_500(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+        ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
+            mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
+            with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
+                body = json.load(f)
+            response = self.client.put(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}",
+                data=json.dumps(body),
+                headers=self.get_auth_headers(),
+            )
+            self.assertStatus(response, 500)
+            self.assertEqual(response.data.decode(), "Registry instrument failed to save successfully")
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+            mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
 
     @staticmethod
     def get_auth_headers():
