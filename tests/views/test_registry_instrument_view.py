@@ -114,7 +114,7 @@ class TestRegistryInstrumentView(TestClient):
                 exercise_id, form_type_does_not_exist
             )
 
-    def test_put_new_registry_instrument_returns_201(self):
+    def test_successful_put_new_registry_instrument_returns_201(self):
         with patch(
             "application.views.registry_instrument_view."
             "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
@@ -132,7 +132,7 @@ class TestRegistryInstrumentView(TestClient):
             self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
             mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
 
-    def test_put_existing_registry_instrument_returns_200(self):
+    def test_successful_put_existing_registry_instrument_returns_200(self):
         with patch(
             "application.views.registry_instrument_view."
             "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
@@ -150,7 +150,7 @@ class TestRegistryInstrumentView(TestClient):
             self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
             mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
 
-    def test_put_existing_registry_instrument_returns_500(self):
+    def test_unsuccessful_put_registry_instrument_returns_500(self):
         with patch(
             "application.views.registry_instrument_view."
             "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
@@ -167,6 +167,36 @@ class TestRegistryInstrumentView(TestClient):
             self.assertEqual(response.data.decode(), "Registry instrument failed to save successfully")
             self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
             mock_save_registry_instrument_for_exercise_id_and_formtype.assert_called_once()
+
+    def test_put_registry_instrument_wrong_payload_returns_400(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+        ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
+            mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
+            response = self.client.put(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}",
+                data=json.dumps({"invalid_key": "invalid_value"}),
+                headers=self.get_auth_headers(),
+            )
+            self.assertStatus(response, 400)
+            self.assertIn("Invalid payload keys. Expected", response.data.decode())
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
+
+    def test_put_registry_instrument_invalid_json_payload_returns_400(self):
+        with patch(
+            "application.views.registry_instrument_view."
+            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+        ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
+            mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
+            response = self.client.put(
+                f"{api_root}/registry-instrument/exercise-id/{exercise_id}",
+                data="not_valid_json",
+                headers=self.get_auth_headers(),
+            )
+            self.assertStatus(response, 400)
+            self.assertIn("Invalid JSON payload", response.data.decode())
+            self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
 
     @staticmethod
     def get_auth_headers():
