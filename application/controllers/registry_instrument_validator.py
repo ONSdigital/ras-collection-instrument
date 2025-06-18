@@ -17,16 +17,17 @@ EXPECTED_KEYS = {
 
 def validate_registry_instrument_payload(payload, exercise_id):
     payload_keys = set(payload.keys())
+
     if payload_keys != EXPECTED_KEYS:
         return False, f"Invalid payload keys. Expected: {EXPECTED_KEYS}"
     if payload["exercise_id"] != exercise_id:
         return False, "exercise_id in payload does not match path parameter"
-    if not validate_uuid(exercise_id):
-        return False, "Invalid exercise_id"
-    if not validate_uuid(payload["survey_id"]):
-        return False, "Invalid survey_id"
-    if not validate_uuid(payload["instrument_id"]):
-        return False, "Invalid instrument_id"
+
+    validate_uuid(payload["survey_id"])
+    validate_uuid(payload["exercise_id"])
+    validate_uuid(payload["instrument_id"])
+    validate_uuid(payload["guid"])
+
     if payload["classifier_type"] not in ["form_type"]:
         return False, "Invalid classifier type"
     if not re.fullmatch(r"\d{4}", str(payload["classifier_value"])):
@@ -35,8 +36,6 @@ def validate_registry_instrument_payload(payload, exercise_id):
         int(payload["ci_version"])
     except (ValueError, TypeError):
         return False, "Invalid ci_version"
-    if not validate_uuid(payload["guid"]):
-        return False, "Invalid guid"
     try:
         datetime.datetime.fromisoformat(payload["published_at"])
     except (ValueError, TypeError):
