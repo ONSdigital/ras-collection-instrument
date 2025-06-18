@@ -153,3 +153,44 @@ class TestRegistryInstrumentController(TestCase):
         self.assertEqual(mock_registry_instrument.guid, "678a583a-87f6-4c57-9f5b-12c5ced30c1e")
         self.assertEqual(mock_registry_instrument.published_at, "2028-01-30T12:00:00")
         session.add.assert_called_once()
+
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_delete_existing_registry_instrument_by_exercise_id_and_formtype(self, mock_query):
+        session = MagicMock()
+
+        form_type = "0002"
+        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+
+        # Mock the existing registry instrument to be deleted
+        mock_registry_instrument = MagicMock()
+        mock_query.return_value.first.return_value = mock_registry_instrument
+
+        controller = RegistryInstrument()
+
+        result = controller.delete_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
+            controller, exercise_id, form_type, session
+        )
+
+        mock_query.assert_called_once()
+        self.assertEqual(result, True)
+        session.delete.assert_called_once()
+
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_delete_non_existent_registry_instrument_by_exercise_id_and_formtype(self, mock_query):
+        session = MagicMock()
+
+        form_type = "0002"
+        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+
+        # Mock the non-existent registry instrument to be deleted
+        mock_query.return_value.first.return_value = None
+
+        controller = RegistryInstrument()
+
+        result = controller.delete_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
+            controller, exercise_id, form_type, session
+        )
+
+        mock_query.assert_called_once()
+        self.assertEqual(result, False)
+        session.delete.assert_not_called()
