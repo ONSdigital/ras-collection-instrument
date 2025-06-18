@@ -9,7 +9,6 @@ class TestRegistryInstrumentController(TestCase):
 
     @patch("application.controllers.registry_instrument.query_registry_instruments_by_exercise_id")
     def test_get_registry_instruments_by_exercise_id_returns_list_of_dicts(self, mock_query):
-
         session = MagicMock()
 
         mock_registry_instrument1 = MagicMock()
@@ -45,7 +44,6 @@ class TestRegistryInstrumentController(TestCase):
 
     @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
     def test_get_registry_instrument_by_exercise_id_and_formtype_returns_dict(self, mock_query):
-
         session = MagicMock()
 
         mock_registry_instrument = MagicMock()
@@ -66,7 +64,6 @@ class TestRegistryInstrumentController(TestCase):
 
     @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
     def test_get_registry_instrument_by_exercise_id_and_formtype_returns_none(self, mock_query):
-
         session = MagicMock()
 
         mock_registry_instrument = MagicMock()
@@ -83,3 +80,76 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.assert_called_once()
         mock_registry_instrument.to_dict.assert_not_called()
         self.assertEqual(result, None)
+
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_save_new_registry_instrument_for_exercise_id_and_formtype(self, mock_query):
+        session = MagicMock()
+
+        # Mock a registry instrument as NOT in the database
+        mock_query.return_value.first.return_value = None
+
+        # Set up the validated data from the posted payload
+        ci_version = 99
+        form_type = "0002"
+        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        guid = "678a583a-87f6-4c57-9f5b-12c5ced30c1e"
+        published_at = "2028-01-30T12:00:00"
+        survey_id = "0b1f8376-28e9-4884-bea5-acf9d709464e"
+        instrument_id = "77c1e406-716a-488d-bfc9-b5b988fbaccf"
+
+        controller = RegistryInstrument()
+
+        with patch(
+            "application.controllers.registry_instrument.RegistryInstrumentModel"
+        ) as mock_registry_instrument_model:
+            result = controller.save_registry_instrument_for_exercise_id_and_formtype.__wrapped__(
+                controller, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
+            )
+
+        # Assert that a new instrument was created and saved
+        mock_query.assert_called_once()
+        mock_registry_instrument_model.assert_called_once()
+        self.assertEqual(mock_registry_instrument_model.return_value.ci_version, ci_version)
+        self.assertEqual(mock_registry_instrument_model.return_value.guid, guid)
+        self.assertEqual(mock_registry_instrument_model.return_value.published_at, published_at)
+        self.assertEqual(mock_registry_instrument_model.return_value.classifier_type, "form_type")
+        self.assertEqual(mock_registry_instrument_model.return_value.survey_id, survey_id)
+        self.assertEqual(mock_registry_instrument_model.return_value.exercise_id, exercise_id)
+        self.assertEqual(mock_registry_instrument_model.return_value.instrument_id, instrument_id)
+        self.assertEqual(mock_registry_instrument_model.return_value.classifier_value, form_type)
+        self.assertEqual(result, (True, True))
+        session.add.assert_called_once()
+
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_save_existing_registry_instrument_for_exercise_id_and_formtype(self, mock_query):
+        session = MagicMock()
+
+        # Mock the existing registry instrument already in the database
+        mock_registry_instrument = MagicMock()
+        mock_registry_instrument.to_dict.return_value = {
+            "ci_version": 3,
+            "guid": "ac3c5a3a-2ebb-47dc-9727-22c473086a82",
+            "published_at": "2025-12-31T12:00:00",
+        }
+        mock_query.return_value.first.return_value = mock_registry_instrument
+
+        # Set up the validated data from the posted payload
+        ci_version = 99
+        form_type = "0002"
+        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        guid = "678a583a-87f6-4c57-9f5b-12c5ced30c1e"
+        published_at = "2028-01-30T12:00:00"
+
+        controller = RegistryInstrument()
+
+        result = controller.save_registry_instrument_for_exercise_id_and_formtype.__wrapped__(
+            controller, None, exercise_id, None, form_type, ci_version, published_at, guid, session
+        )
+
+        # Assert that the existing instrument was updated and saved
+        mock_query.assert_called_once()
+        self.assertEqual(result, (True, False))
+        self.assertEqual(mock_registry_instrument.ci_version, 99)
+        self.assertEqual(mock_registry_instrument.guid, "678a583a-87f6-4c57-9f5b-12c5ced30c1e")
+        self.assertEqual(mock_registry_instrument.published_at, "2028-01-30T12:00:00")
+        session.add.assert_called_once()

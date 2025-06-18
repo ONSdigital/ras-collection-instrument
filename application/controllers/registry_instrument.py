@@ -122,16 +122,15 @@ class RegistryInstrument(object):
 
         if not registry_instrument:
             log.info("Registry instrument NOT found, creating new object", exercise_id=exercise_id, form_type=form_type)
-            registry_instrument = RegistryInstrumentModel(
-                survey_id=survey_id,
-                exercise_id=exercise_id,
-                instrument_id=instrument_id,
-                classifier_type="form_type",
-                classifier_value=form_type,
-                ci_version=ci_version,
-                guid=guid,
-                published_at=published_at,
-            )
+            registry_instrument = RegistryInstrumentModel()
+            registry_instrument.survey_id = survey_id
+            registry_instrument.exercise_id = exercise_id
+            registry_instrument.instrument_id = instrument_id
+            registry_instrument.classifier_type = "form_type"
+            registry_instrument.classifier_value = form_type
+            registry_instrument.ci_version = ci_version
+            registry_instrument.guid = guid
+            registry_instrument.published_at = published_at
             is_new = True
         else:
             log.info("Registry instrument found", exercise_id=exercise_id, form_type=form_type)
