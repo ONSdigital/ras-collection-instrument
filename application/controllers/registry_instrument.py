@@ -111,7 +111,13 @@ class RegistryInstrument(object):
             exercise_id, form_type, session
         ).first()
 
-        if not registry_instrument:
+        if registry_instrument:
+            log.info("Registry instrument found, updating", exercise_id=exercise_id, form_type=form_type)
+            registry_instrument.ci_version = ci_version
+            registry_instrument.guid = guid
+            registry_instrument.published_at = published_at
+            return registry_instrument, False
+        else:
             log.info("Registry instrument NOT found, creating", exercise_id=exercise_id, form_type=form_type)
             registry_instrument = RegistryInstrumentModel()
             registry_instrument.survey_id = survey_id
@@ -122,12 +128,4 @@ class RegistryInstrument(object):
             registry_instrument.ci_version = ci_version
             registry_instrument.guid = guid
             registry_instrument.published_at = published_at
-            is_new = True
-        else:
-            log.info("Registry instrument found, updating", exercise_id=exercise_id, form_type=form_type)
-            registry_instrument.ci_version = ci_version
-            registry_instrument.guid = guid
-            registry_instrument.published_at = published_at
-            is_new = False
-
-        return registry_instrument, is_new
+            return registry_instrument, True
