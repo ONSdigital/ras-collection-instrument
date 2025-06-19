@@ -69,15 +69,8 @@ class RegistryInstrument(object):
             survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
         )
 
-        if registry_instrument is not None:
-            if not is_new:
-                registry_instrument.ci_version = ci_version
-                registry_instrument.guid = guid
-                registry_instrument.published_at = published_at
-            session.add(registry_instrument)
-            return True, is_new
-        else:
-            return False, None
+        session.add(registry_instrument)
+        return True, is_new
 
     @with_db_session
     def delete_registry_instrument_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
@@ -121,7 +114,7 @@ class RegistryInstrument(object):
         ).first()
 
         if not registry_instrument:
-            log.info("Registry instrument NOT found, creating new object", exercise_id=exercise_id, form_type=form_type)
+            log.info("Registry instrument NOT found, creating", exercise_id=exercise_id, form_type=form_type)
             registry_instrument = RegistryInstrumentModel()
             registry_instrument.survey_id = survey_id
             registry_instrument.exercise_id = exercise_id
@@ -133,7 +126,10 @@ class RegistryInstrument(object):
             registry_instrument.published_at = published_at
             is_new = True
         else:
-            log.info("Registry instrument found", exercise_id=exercise_id, form_type=form_type)
+            log.info("Registry instrument found, updating", exercise_id=exercise_id, form_type=form_type)
+            registry_instrument.ci_version = ci_version
+            registry_instrument.guid = guid
+            registry_instrument.published_at = published_at
             is_new = False
 
         return registry_instrument, is_new
