@@ -88,11 +88,11 @@ class RegistryInstrument(object):
             exercise_id, form_type, session
         ).first()
 
-        if registry_instrument is not None:
-            session.delete(registry_instrument)
-            return True
-        else:
+        if registry_instrument is None:
             return False
+
+        session.delete(registry_instrument)
+        return True
 
     @staticmethod
     def _find_or_create(survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session):
