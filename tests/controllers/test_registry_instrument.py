@@ -22,7 +22,7 @@ class TestRegistryInstrumentController(TestCase):
         controller = RegistryInstrument()
         exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
 
-        result = controller.get_registry_instruments_by_exercise_id.__wrapped__(controller, exercise_id, session)
+        result = controller.get_by_exercise_id.__wrapped__(controller, exercise_id, session)
 
         mock_query.assert_called_once()
 
@@ -38,7 +38,7 @@ class TestRegistryInstrumentController(TestCase):
         exercise_id = "invalid_uuid"
 
         with self.assertRaises(RasError) as context:
-            controller.get_registry_instruments_by_exercise_id.__wrapped__(controller, exercise_id, session)
+            controller.get_by_exercise_id.__wrapped__(controller, exercise_id, session)
 
         self.assertEqual(context.exception.errors[0], "Value is not a valid UUID (invalid_uuid)")
 
@@ -54,9 +54,7 @@ class TestRegistryInstrumentController(TestCase):
         exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
         formtype = "0001"
 
-        result = controller.get_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
-            controller, exercise_id, formtype, session
-        )
+        result = controller.get_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, formtype, session)
 
         mock_query.assert_called_once()
         mock_registry_instrument.to_dict.assert_called_once()
@@ -73,9 +71,7 @@ class TestRegistryInstrumentController(TestCase):
         exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
         formtype = "0001"
 
-        result = controller.get_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
-            controller, exercise_id, formtype, session
-        )
+        result = controller.get_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, formtype, session)
 
         mock_query.assert_called_once()
         mock_registry_instrument.to_dict.assert_not_called()
@@ -102,7 +98,7 @@ class TestRegistryInstrumentController(TestCase):
         with patch(
             "application.controllers.registry_instrument.RegistryInstrumentModel"
         ) as mock_registry_instrument_model:
-            result = controller.save_registry_instrument_for_exercise_id_and_formtype.__wrapped__(
+            result = controller.save_for_exercise_id_and_formtype.__wrapped__(
                 controller, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
             )
 
@@ -142,7 +138,7 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        result = controller.save_registry_instrument_for_exercise_id_and_formtype.__wrapped__(
+        result = controller.save_for_exercise_id_and_formtype.__wrapped__(
             controller, None, exercise_id, None, form_type, ci_version, published_at, guid, session
         )
 
@@ -167,9 +163,7 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        result = controller.delete_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
-            controller, exercise_id, form_type, session
-        )
+        result = controller.delete_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, form_type, session)
 
         mock_query.assert_called_once()
         self.assertEqual(result, True)
@@ -187,9 +181,7 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        result = controller.delete_registry_instrument_by_exercise_id_and_formtype.__wrapped__(
-            controller, exercise_id, form_type, session
-        )
+        result = controller.delete_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, form_type, session)
 
         mock_query.assert_called_once()
         self.assertEqual(result, False)

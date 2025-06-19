@@ -29,7 +29,7 @@ def get_registry_instruments(exercise_id):
 
     :param exercise_id: An exercise id (UUID)
     """
-    registry_instruments = RegistryInstrument().get_registry_instruments_by_exercise_id(exercise_id)
+    registry_instruments = RegistryInstrument().get_by_exercise_id(exercise_id)
 
     # TODO: (low priority) check the exercise_id exists in the ras_ci.exercise table
     #       and return 404 if it does not exist
@@ -39,9 +39,7 @@ def get_registry_instruments(exercise_id):
 
 @registry_instrument_view.route("/registry-instrument/exercise-id/<exercise_id>/formtype/<form_type>", methods=["GET"])
 def get_registry_instrument(exercise_id, form_type):
-    registry_instrument = RegistryInstrument().get_registry_instrument_by_exercise_id_and_formtype(
-        exercise_id, form_type
-    )
+    registry_instrument = RegistryInstrument().get_by_exercise_id_and_formtype(exercise_id, form_type)
 
     if registry_instrument:
         return make_response(jsonify(registry_instrument), HTTPStatus.OK)
@@ -81,7 +79,7 @@ def put_registry_instrument(exercise_id):
     except BadRequest:
         return make_response("Invalid JSON payload", HTTPStatus.BAD_REQUEST)
 
-    success, is_new = RegistryInstrument().save_registry_instrument_for_exercise_id_and_formtype(
+    success, is_new = RegistryInstrument().save_for_exercise_id_and_formtype(
         survey_id=payload["survey_id"],
         exercise_id=payload["exercise_id"],
         instrument_id=payload["instrument_id"],
@@ -108,7 +106,7 @@ def put_registry_instrument(exercise_id):
 )
 def delete_registry_instrument(exercise_id, form_type):
 
-    if RegistryInstrument().delete_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type):
+    if RegistryInstrument().delete_by_exercise_id_and_formtype(exercise_id, form_type):
         return make_response(
             "Successfully deleted registry instrument",
             HTTPStatus.OK,

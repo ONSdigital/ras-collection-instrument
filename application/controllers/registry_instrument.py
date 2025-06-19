@@ -15,7 +15,7 @@ log = structlog.wrap_logger(logging.getLogger(__name__))
 
 class RegistryInstrument(object):
     @with_db_session
-    def get_registry_instruments_by_exercise_id(self, exercise_id, session=None):
+    def get_by_exercise_id(self, exercise_id, session=None):
         """
         Retrieves a list of selected CIR instruments for the given collection exercise
 
@@ -33,7 +33,7 @@ class RegistryInstrument(object):
         return response
 
     @with_db_session
-    def get_registry_instrument_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
+    def get_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
         """
         Retrieves the selected CIR instrument for the given collection exercise and form type
 
@@ -53,7 +53,7 @@ class RegistryInstrument(object):
         return None
 
     @with_db_session
-    def save_registry_instrument_for_exercise_id_and_formtype(
+    def save_for_exercise_id_and_formtype(
         self, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session=None
     ):
         """
@@ -65,7 +65,7 @@ class RegistryInstrument(object):
         :return: True if successful, and is_new indicating if a new object was created
         """
 
-        registry_instrument, is_new = self._find_or_create_registry_instrument(
+        registry_instrument, is_new = self._find_or_create(
             survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
         )
 
@@ -73,7 +73,7 @@ class RegistryInstrument(object):
         return True, is_new
 
     @with_db_session
-    def delete_registry_instrument_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
+    def delete_by_exercise_id_and_formtype(self, exercise_id, form_type, session=None):
         """
         Delete the selected CIR instrument for the given collection exercise and form type
 
@@ -95,9 +95,7 @@ class RegistryInstrument(object):
             return False
 
     @staticmethod
-    def _find_or_create_registry_instrument(
-        survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
-    ):
+    def _find_or_create(survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session):
         """
         Retrieves an existing selected RegistryInstrumentModel object from the db if it exists,
         or creates a new RegistryInstrumentModel object if it doesn't exist

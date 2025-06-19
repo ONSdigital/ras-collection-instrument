@@ -20,8 +20,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_get_registry_instrument_returns_200_and_object(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.get_registry_instrument_by_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.get_by_exercise_id_and_formtype"
         ) as mock_get_registry_instrument_by_exercise_id_and_formtype:
             with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
                 mock_get_registry_instrument_by_exercise_id_and_formtype.return_value = json.load(f)
@@ -38,8 +37,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_get_registry_instrument_returns_404(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.get_registry_instrument_by_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.get_by_exercise_id_and_formtype"
         ) as mock_get_registry_instrument_by_exercise_id_and_formtype:
             mock_get_registry_instrument_by_exercise_id_and_formtype.return_value = None
             response = self.client.get(
@@ -55,7 +53,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_get_registry_instruments_returns_200_and_empty_list(self):
         with patch(
-            "application.views.registry_instrument_view.RegistryInstrument.get_registry_instruments_by_exercise_id"
+            "application.views.registry_instrument_view.RegistryInstrument.get_by_exercise_id"
         ) as mock_get_registry_instruments_by_exercise_id:
             mock_get_registry_instruments_by_exercise_id.return_value = []
             response = self.client.get(
@@ -69,7 +67,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_get_registry_instruments_returns_200_and_list_of_objects(self):
         with patch(
-            "application.views.registry_instrument_view.RegistryInstrument.get_registry_instruments_by_exercise_id"
+            "application.views.registry_instrument_view.RegistryInstrument.get_by_exercise_id"
         ) as mock_get_registry_instruments_by_exercise_id:
             with open(Path(__file__).parent.parent / "test_data" / "registry_instruments.json") as f:
                 mock_get_registry_instruments_by_exercise_id.return_value = json.load(f)
@@ -84,8 +82,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_successful_delete_registry_instrument_returns_200(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.delete_registry_instrument_by_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.delete_by_exercise_id_and_formtype"
         ) as mock_delete_registry_instrument_by_exercise_id_and_formtype:
             mock_delete_registry_instrument_by_exercise_id_and_formtype.return_value = True
             response = self.client.delete(
@@ -100,8 +97,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_unsuccessful_delete_registry_instrument_returns_404(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.delete_registry_instrument_by_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.delete_by_exercise_id_and_formtype"
         ) as mock_delete_registry_instrument_by_exercise_id_and_formtype:
             mock_delete_registry_instrument_by_exercise_id_and_formtype.return_value = False
             response = self.client.delete(
@@ -116,8 +112,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_successful_put_new_registry_instrument_returns_201(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.save_for_exercise_id_and_formtype"
         ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
             mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (True, True)
             with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
@@ -134,8 +129,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_successful_put_existing_registry_instrument_returns_200(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.save_for_exercise_id_and_formtype"
         ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
             mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (True, False)
             with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
@@ -152,8 +146,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_unsuccessful_put_registry_instrument_returns_500(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.save_for_exercise_id_and_formtype"
         ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
             mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
             with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
@@ -170,8 +163,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_put_registry_instrument_wrong_payload_returns_400(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.save_for_exercise_id_and_formtype"
         ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
             mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
             response = self.client.put(
@@ -185,8 +177,7 @@ class TestRegistryInstrumentView(TestClient):
 
     def test_put_registry_instrument_invalid_json_payload_returns_400(self):
         with patch(
-            "application.views.registry_instrument_view."
-            "RegistryInstrument.save_registry_instrument_for_exercise_id_and_formtype"
+            "application.views.registry_instrument_view." "RegistryInstrument.save_for_exercise_id_and_formtype"
         ) as mock_save_registry_instrument_for_exercise_id_and_formtype:
             mock_save_registry_instrument_for_exercise_id_and_formtype.return_value = (False, None)
             response = self.client.put(
