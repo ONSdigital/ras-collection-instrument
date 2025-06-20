@@ -70,11 +70,12 @@ def put_registry_instrument(exercise_id):
 
     try:
         payload = request.get_json(force=True)
-        is_valid, error = validate_registry_instrument_payload(payload, exercise_id)
-        if not is_valid:
-            return make_response(error, HTTPStatus.BAD_REQUEST)
     except BadRequest:
         return make_response("Invalid JSON payload", HTTPStatus.BAD_REQUEST)
+
+    is_valid, error = validate_registry_instrument_payload(payload, exercise_id)
+    if not is_valid:
+        return make_response(error, HTTPStatus.BAD_REQUEST)
 
     success, is_new = RegistryInstrument().save_for_exercise_id_and_formtype(
         survey_id=payload["survey_id"],
