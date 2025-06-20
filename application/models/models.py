@@ -230,7 +230,7 @@ class RegistryInstrumentModel(Base):
         guid,
         published_at,
     ):
-        """Initialise the class with mandatory"""
+
         self.survey_id = survey_id
         self.exercise_id = exercise_id
         self.instrument_id = instrument_id
