@@ -78,7 +78,10 @@ class TestRegistryInstrumentController(TestCase):
         self.assertEqual(result, None)
 
     @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
-    def test_save_new_registry_instrument_for_exercise_id_and_formtype(self, mock_query):
+    @patch("application.controllers.registry_instrument.RegistryInstrumentModel")
+    def test_save_new_registry_instrument_for_exercise_id_and_formtype(
+        self, mock_registry_instrument_model, mock_query
+    ):
         session = MagicMock()
 
         # Mock a registry instrument as NOT in the database
@@ -95,12 +98,9 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        with patch(
-            "application.controllers.registry_instrument.RegistryInstrumentModel"
-        ) as mock_registry_instrument_model:
-            result = controller.save_for_exercise_id_and_formtype.__wrapped__(
-                controller, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
-            )
+        result = controller.save_for_exercise_id_and_formtype.__wrapped__(
+            controller, survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
+        )
 
         # Assert that a new instrument was created and saved
         mock_query.assert_called_once()
