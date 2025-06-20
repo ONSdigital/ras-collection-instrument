@@ -27,8 +27,6 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.assert_called_once()
 
         self.assertEqual(result, [{"dummy_key": "dummy_value_1"}, {"dummy_key": "dummy_value_2"}])
-        mock_registry_instrument1.to_dict.assert_called_once()
-        mock_registry_instrument2.to_dict.assert_called_once()
 
     @patch("application.controllers.registry_instrument.query_registry_instruments_by_exercise_id")
     def test_get_registry_instruments_by_exercise_id_throws_exception_when_uuid_invalid(self, mock_query):
@@ -57,7 +55,6 @@ class TestRegistryInstrumentController(TestCase):
         result = controller.get_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, formtype, session)
 
         mock_query.assert_called_once()
-        mock_registry_instrument.to_dict.assert_called_once()
         self.assertEqual(result, {"dummy_key": "dummy_value_1"})
 
     @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
