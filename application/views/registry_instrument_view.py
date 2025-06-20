@@ -31,9 +31,6 @@ def get_registry_instruments(exercise_id):
     """
     registry_instruments = RegistryInstrument().get_by_exercise_id(exercise_id)
 
-    # TODO: (low priority) check the exercise_id exists in the ras_ci.exercise table
-    #       and return 404 if it does not exist
-
     return make_response(jsonify(registry_instruments), HTTPStatus.OK)
 
 
