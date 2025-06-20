@@ -92,11 +92,7 @@ def put_registry_instrument(exercise_id):
             "Successfully saved registry instrument",
             HTTPStatus.CREATED if is_new else HTTPStatus.OK,
         )
-    else:
-        return make_response(
-            "Registry instrument failed to save successfully",
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-        )
+    return make_response("Registry instrument failed to save successfully", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 
 @registry_instrument_view.route(
@@ -109,5 +105,4 @@ def delete_registry_instrument(exercise_id, form_type):
             "Successfully deleted registry instrument",
             HTTPStatus.OK,
         )
-    else:
-        return make_response("Not Found", HTTPStatus.NOT_FOUND)
+    return make_response("Not Found", HTTPStatus.NOT_FOUND)
