@@ -95,7 +95,7 @@ class TestRegistryInstrumentView(TestClient):
                 exercise_id, form_type_exists
             )
 
-    def test_unsuccessful_delete_registry_instrument_returns_404(self):
+    def test_unsuccessful_delete_registry_instrument_missing_instrument(self):
         with patch(
             "application.views.registry_instrument_view." "RegistryInstrument.delete_by_exercise_id_and_formtype"
         ) as mock_delete_registry_instrument_by_exercise_id_and_formtype:
