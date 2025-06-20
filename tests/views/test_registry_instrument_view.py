@@ -23,13 +23,15 @@ class TestRegistryInstrumentView(TestClient):
             "application.views.registry_instrument_view." "RegistryInstrument.get_by_exercise_id_and_formtype"
         ) as mock_get_registry_instrument_by_exercise_id_and_formtype:
             with open(Path(__file__).parent.parent / "test_data" / "registry_instrument.json") as f:
-                mock_get_registry_instrument_by_exercise_id_and_formtype.return_value = json.load(f)
+                registry_instrument_json = json.load(f)
+                mock_get_registry_instrument_by_exercise_id_and_formtype.return_value = registry_instrument_json
             response = self.client.get(
                 f"{api_root}/registry-instrument/exercise-id/{exercise_id}/formtype/{form_type_exists}",
                 headers=self.get_auth_headers(),
             )
             self.assertStatus(response, 200)
             self.assertEqual(len(response.json), 8)  # The 8 fields of a registry instrument
+            self.assertEqual(response.json, registry_instrument_json)
             self.assertEqual(response.headers["Content-Type"], "application/json")
             mock_get_registry_instrument_by_exercise_id_and_formtype.assert_called_once_with(
                 exercise_id, form_type_exists
@@ -45,7 +47,7 @@ class TestRegistryInstrumentView(TestClient):
                 headers=self.get_auth_headers(),
             )
             self.assertStatus(response, 404)
-            self.assertEqual(response.data.decode(), "Not Found")  # The 8 fields of a registry instrument
+            self.assertEqual(response.data.decode(), "Not Found")
             self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
             mock_get_registry_instrument_by_exercise_id_and_formtype.assert_called_once_with(
                 exercise_id, form_type_does_not_exist
