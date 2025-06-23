@@ -209,10 +209,9 @@ class RegistryInstrumentModel(Base):
 
     # survey_id = Column(UUID, ForeignKey("survey.survey_id"))
     # exercise_id = Column(UUID, ForeignKey("exercise.exercise_id"), primary_key=True)
-    # instrument_id = Column(UUID, ForeignKey("instrument.instrument_id"))
+    instrument_id = Column(UUID, ForeignKey("instrument.instrument_id"))
     survey_id = Column(UUID, nullable=False)
     exercise_id = Column(UUID, primary_key=True)
-    instrument_id = Column(UUID, nullable=False)
     classifier_type = Column(String, primary_key=True)
     classifier_value = Column(String, primary_key=True)
     ci_version = Column(Integer, nullable=False)

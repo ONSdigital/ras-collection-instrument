@@ -29,7 +29,7 @@ def upgrade():
         sqlalchemy.Column("published_at", sqlalchemy.TIMESTAMP, nullable=False),
         # sqlalchemy.ForeignKeyConstraint(["survey_id"], ["ras_ci.survey.survey_id"]),
         # sqlalchemy.ForeignKeyConstraint(["exercise_id"], ["ras_ci.exercise.exercise_id"]),
-        # sqlalchemy.ForeignKeyConstraint(["instrument_id"], ["ras_ci.instrument.instrument_id"]),
+        sqlalchemy.ForeignKeyConstraint(["instrument_id"], ["ras_ci.instrument.instrument_id"]),
         schema="ras_ci",
     )
 
