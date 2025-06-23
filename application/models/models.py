@@ -207,8 +207,6 @@ class RegistryInstrumentModel(Base):
 
     __tablename__ = "registry_instrument"
 
-    # survey_id = Column(UUID, ForeignKey("survey.survey_id"))
-    # exercise_id = Column(UUID, ForeignKey("exercise.exercise_id"), primary_key=True)
     instrument_id = Column(UUID, ForeignKey("instrument.instrument_id"))
     survey_id = Column(UUID, nullable=False)
     exercise_id = Column(UUID, primary_key=True)
