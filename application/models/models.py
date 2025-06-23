@@ -221,14 +221,14 @@ class RegistryInstrumentModel(Base):
 
     def __init__(
         self,
-        survey_id,
-        exercise_id,
-        instrument_id,
-        classifier_type,
-        classifier_value,
-        ci_version,
-        guid,
-        published_at,
+        survey_id=None,
+        exercise_id=None,
+        instrument_id=None,
+        classifier_type=None,
+        classifier_value=None,
+        ci_version=None,
+        guid=None,
+        published_at=None,
     ):
 
         self.survey_id = survey_id
