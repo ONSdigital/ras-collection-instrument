@@ -64,8 +64,9 @@ class RegistryInstrument(object):
         :param session: database session
         :return: True if successful, and is_new indicating if a new object was created
         """
-
-        registry_instrument, is_new = self._find_or_create(
+        log.info("Saving a selected CIR instrument", exercise_id=exercise_id, form_type=form_type)
+        validate_uuid(exercise_id)
+        registry_instrument, is_new = self._find_and_update_or_create(
             survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
         )
 
@@ -95,10 +96,13 @@ class RegistryInstrument(object):
         return True
 
     @staticmethod
-    def _find_or_create(survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session):
+    def _find_and_update_or_create(
+        survey_id, exercise_id, instrument_id, form_type, ci_version, published_at, guid, session
+    ):
         """
-        Retrieves an existing selected RegistryInstrumentModel object from the db if it exists,
-        or creates a new RegistryInstrumentModel object if it doesn't exist
+        Retrieves an existing selected RegistryInstrumentModel object from the db if it exists
+        and updates it with the selected CIR values,
+        or creates a new RegistryInstrumentModel object with the selected CIR values if it doesn't exist
 
         :param exercise_id: An exercise id (UUID)
         :param form_type: The form type (e.g. "0001")
@@ -106,7 +110,6 @@ class RegistryInstrument(object):
         :return: RegistryInstrumentModel object
         """
 
-        validate_uuid(exercise_id)
         registry_instrument = query_registry_instrument_by_exercise_id_and_formtype(
             exercise_id, form_type, session
         ).first()
