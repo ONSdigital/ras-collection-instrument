@@ -189,3 +189,62 @@ class SEFTModel(Base):
         self.instrument_id = instrument_id
         self.file_name = file_name
         self.len = length
+
+
+class RegistryInstrumentModel(Base):
+    """This models the 'registry_instrument' table which holds the CIR instrument versions
+    selected by the Rops user for each EQ classifier for a given collection exercise.
+
+    * Keyed on the exercise_id, classifier_type and classifier_value, so for any given exercise_id, there can be
+      only one form_type classifier for a given classifier_value
+    * We currently only support "classifier_type": "form_type" (e.g. where "classifier_value" is "0001")
+    * The registry_instrument will only support a single classifier (as text)
+      and not multiple classifier combinations (as json)
+    * In RASRM the survey_id is a UUID, however in the context of the CIR object being returned, their survey_id is
+      what we know of as the three digit survey_ref e.g. "139". This table will hold OUR survey_id as a UUID and
+      not the three digit survey_ref returned by the CIR API.
+    """
+
+    __tablename__ = "registry_instrument"
+
+    instrument_id = Column(UUID, ForeignKey("instrument.instrument_id"))
+    survey_id = Column(UUID, nullable=False)
+    exercise_id = Column(UUID, primary_key=True)
+    classifier_type = Column(String, primary_key=True)
+    classifier_value = Column(String, primary_key=True)
+    ci_version = Column(Integer, nullable=False)
+    guid = Column(UUID, nullable=False)
+    published_at = Column(TIMESTAMP, nullable=False)
+
+    def __init__(
+        self,
+        survey_id=None,
+        exercise_id=None,
+        instrument_id=None,
+        classifier_type=None,
+        classifier_value=None,
+        ci_version=None,
+        guid=None,
+        published_at=None,
+    ):
+
+        self.survey_id = survey_id
+        self.exercise_id = exercise_id
+        self.instrument_id = instrument_id
+        self.classifier_type = classifier_type
+        self.classifier_value = classifier_value
+        self.ci_version = ci_version
+        self.guid = guid
+        self.published_at = published_at
+
+    def to_dict(self) -> dict:
+        return {
+            "survey_id": self.survey_id,
+            "exercise_id": self.exercise_id,
+            "instrument_id": self.instrument_id,
+            "classifier_type": self.classifier_type,
+            "classifier_value": self.classifier_value,
+            "ci_version": self.ci_version,
+            "guid": self.guid,
+            "published_at": self.published_at.isoformat() if self.published_at else None,
+        }

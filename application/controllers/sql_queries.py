@@ -2,6 +2,7 @@ from application.models.models import (
     BusinessModel,
     ExerciseModel,
     InstrumentModel,
+    RegistryInstrumentModel,
     SurveyModel,
 )
 
@@ -44,4 +45,16 @@ def query_instruments_form_type_with_different_survey_mode(survey_id, form_type,
             InstrumentModel.type != survey_mode,
         )
         .all()
+    )
+
+
+def query_registry_instruments_by_exercise_id(exercise_id, session):
+    return session.query(RegistryInstrumentModel).filter(RegistryInstrumentModel.exercise_id == exercise_id)
+
+
+def query_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type, session):
+    return session.query(RegistryInstrumentModel).filter(
+        RegistryInstrumentModel.exercise_id == exercise_id,
+        RegistryInstrumentModel.classifier_type == "form_type",
+        RegistryInstrumentModel.classifier_value == form_type,
     )
