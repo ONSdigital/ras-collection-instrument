@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, patch
 from application.controllers.registry_instrument import RegistryInstrument
 from application.exceptions import RasError
 
+EXERCISE_ID = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+
 
 class TestRegistryInstrumentController(TestCase):
 
@@ -20,7 +22,7 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.return_value = [mock_registry_instrument1, mock_registry_instrument2]
 
         controller = RegistryInstrument()
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
 
         result = controller.get_by_exercise_id.__wrapped__(controller, exercise_id, session)
 
@@ -49,7 +51,7 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.return_value.first.return_value = mock_registry_instrument
 
         controller = RegistryInstrument()
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
         formtype = "0001"
 
         result = controller.get_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, formtype, session)
@@ -65,7 +67,7 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.return_value.first.return_value = None
 
         controller = RegistryInstrument()
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
         formtype = "0001"
 
         result = controller.get_by_exercise_id_and_formtype.__wrapped__(controller, exercise_id, formtype, session)
@@ -87,7 +89,7 @@ class TestRegistryInstrumentController(TestCase):
         # Set up the validated data from the posted payload
         ci_version = 99
         form_type = "0002"
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
         guid = "678a583a-87f6-4c57-9f5b-12c5ced30c1e"
         published_at = "2028-01-30T12:00:00"
         survey_id = "0b1f8376-28e9-4884-bea5-acf9d709464e"
@@ -129,7 +131,7 @@ class TestRegistryInstrumentController(TestCase):
         # Set up the validated data from the posted payload
         ci_version = 99
         form_type = "0002"
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
         guid = "678a583a-87f6-4c57-9f5b-12c5ced30c1e"
         published_at = "2028-01-30T12:00:00"
 
@@ -152,7 +154,7 @@ class TestRegistryInstrumentController(TestCase):
         session = MagicMock()
 
         form_type = "0002"
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
 
         # Mock the existing registry instrument to be deleted
         mock_registry_instrument = MagicMock()
@@ -171,7 +173,7 @@ class TestRegistryInstrumentController(TestCase):
         session = MagicMock()
 
         form_type = "0002"
-        exercise_id = "3ff59b73-7f15-406f-9e4d-7f00b41e85ce"
+        exercise_id = EXERCISE_ID
 
         # Mock the non-existent registry instrument to be deleted
         mock_query.return_value.first.return_value = None
@@ -183,3 +185,21 @@ class TestRegistryInstrumentController(TestCase):
         mock_query.assert_called_once()
         self.assertEqual(result, False)
         session.delete.assert_not_called()
+
+    def test_count_by_exercise_id(self):
+        session = MagicMock()
+        session.execute.return_value.first.return_value = 1
+
+        controller = RegistryInstrument()
+        result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
+
+        self.assertEqual(result, {"registry_instrument_count": 1})
+
+    def test_count_by_exercise_id_no_instruments(self):
+        session = MagicMock()
+        session.execute.return_value.first.return_value = None
+
+        controller = RegistryInstrument()
+        result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
+
+        self.assertEqual(result, {"registry_instrument_count": 1})

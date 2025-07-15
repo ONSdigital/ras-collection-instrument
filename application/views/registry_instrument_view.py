@@ -2,7 +2,7 @@ import logging
 from http import HTTPStatus
 
 import structlog
-from flask import Blueprint, jsonify, make_response, request
+from flask import Blueprint, Response, jsonify, make_response, request
 from werkzeug.exceptions import BadRequest
 
 from application.controllers.basic_auth import auth
@@ -106,3 +106,8 @@ def delete_registry_instrument(exercise_id, form_type):
             HTTPStatus.OK,
         )
     return make_response("Not Found", HTTPStatus.NOT_FOUND)
+
+
+@registry_instrument_view.route("/registry-instrument/count/exercise_id/<exercise_id>", methods=["GET"])
+def registry_instrument_count(exercise_id: str) -> Response:
+    return make_response(RegistryInstrument().get_count_by_exercise_id(exercise_id), HTTPStatus.OK)
