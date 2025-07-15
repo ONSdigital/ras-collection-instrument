@@ -108,6 +108,6 @@ def delete_registry_instrument(exercise_id, form_type):
     return make_response("Not Found", HTTPStatus.NOT_FOUND)
 
 
-@registry_instrument_view.route("/registry-instrument/count/exercise_id/<exercise_id>", methods=["GET"])
+@registry_instrument_view.route("/registry-instrument/count/exercise-id/<exercise_id>", methods=["GET"])
 def registry_instrument_count(exercise_id: str) -> Response:
     return make_response(RegistryInstrument().get_count_by_exercise_id(exercise_id), HTTPStatus.OK)
