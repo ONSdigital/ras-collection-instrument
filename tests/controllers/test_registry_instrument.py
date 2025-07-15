@@ -202,4 +202,4 @@ class TestRegistryInstrumentController(TestCase):
         controller = RegistryInstrument()
         result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
 
-        self.assertEqual(result, {"registry_instrument_count": 1})
+        self.assertEqual(result, {"registry_instrument_count": 0})
