@@ -191,6 +191,16 @@ class TestRegistryInstrumentView(TestClient):
             self.assertIn("Invalid JSON payload", response.data.decode())
             self.assertEqual(response.headers["Content-Type"], "text/html; charset=utf-8")
 
+    @patch("application.views.registry_instrument_view.RegistryInstrument.get_count_by_exercise_id")
+    def test_registry_instrument_count(self, get_count_by_exercise_id):
+        get_count_by_exercise_id.return_value = {"registry_instrument_count": 1}
+        response = self.client.get(
+            f"{api_root}/registry-instrument/count/exercise-id/{exercise_id}", headers=self.get_auth_headers()
+        )
+
+        self.assertStatus(response, 200)
+        self.assertIn(response.data.decode(), '{\n  "registry_instrument_count": 1\n}\n')
+
     @staticmethod
     def get_auth_headers():
         auth = "{}:{}".format(
