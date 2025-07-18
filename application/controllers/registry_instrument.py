@@ -104,9 +104,8 @@ class RegistryInstrument(object):
         :param session: database session
         :return: registry_instrument_count dict
         """
-        registry_instrument_count = query_registry_instrument_count_by_exercise_id(exercise_id, session) or 0
 
-        return {"registry_instrument_count": registry_instrument_count}
+        return {"registry_instrument_count": query_registry_instrument_count_by_exercise_id(exercise_id, session)}
 
     @staticmethod
     def _find_and_update_or_create(

@@ -66,7 +66,8 @@ def query_registry_instrument_by_exercise_id_and_formtype(exercise_id, form_type
 
 
 def query_registry_instrument_count_by_exercise_id(exercise_id: str, session: Session) -> Optional[int]:
-    return session.execute(
+    row_result = session.execute(
         text("SELECT * FROM ras_ci.registry_instrument_count WHERE exercise_id = :exercise_id"),
-        {"exercise_id": exercise_id}
+        {"exercise_id": exercise_id},
     ).first()
+    return row_result[1] if row_result else 0

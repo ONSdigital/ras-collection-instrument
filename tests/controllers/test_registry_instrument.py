@@ -188,7 +188,7 @@ class TestRegistryInstrumentController(TestCase):
 
     def test_count_by_exercise_id(self):
         session = MagicMock()
-        session.execute.return_value.first.return_value = 1
+        session.execute.return_value.first.return_value = [EXERCISE_ID, 1]
 
         controller = RegistryInstrument()
         result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
