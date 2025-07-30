@@ -552,6 +552,31 @@ paths:
                 example: 'Successfully deleted registry instrument'
         '404':
           description: No registry instrument found for the given exercise UUID and form type classifier value.
+  "/collection-instrument-api/1.0.2/registry-instrument/count/exercise-id/{exercise_id}":
+    get:
+      summary: Get a count of registry instruments selected for the given exercise UUID.
+      tags:
+        - registry-instrument
+      parameters:
+        - in: path
+          name: exercise_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            example: 'fb2a9d3a-6e9c-46f6-af5e-5f67fec3c040'
+          description: The collection exercise UUID.
+      responses:
+        '200':
+          description: Returns a count of selected registry instruments for the given exercise UUID.
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/RegistryInstrumentCount'
+        '404':
+          description: No registry instrument found for the given exercise UUID and form type classifier value.
   "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}":
     get:
       summary: Get collection instrument by instrument ID
@@ -749,5 +774,11 @@ components:
         published_at:
           type: string
           format: date-time
+    RegistryInstrumentCount:
+      type: object
+      properties:
+        registry_instrument_count:
+          type: integer
+          example: 1
 security:
   - basicAuth: []
