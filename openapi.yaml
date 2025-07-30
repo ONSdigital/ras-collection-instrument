@@ -568,15 +568,13 @@ paths:
           description: The collection exercise UUID.
       responses:
         '200':
-          description: Returns a count of selected registry instruments for the given exercise UUID.
+          description: Returns a count of selected registry instruments for the given exercise UUI
           content:
             application/json:
               schema:
                 type: object
                 items:
                   $ref: '#/components/schemas/RegistryInstrumentCount'
-        '404':
-          description: No registry instrument found for the given exercise UUID and form type classifier value.
   "/collection-instrument-api/1.0.2/collectioninstrument/id/{instrument_id}":
     get:
       summary: Get collection instrument by instrument ID
