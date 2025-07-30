@@ -779,6 +779,6 @@ components:
       properties:
         registry_instrument_count:
           type: integer
-          example: 1
+          example: 0
 security:
   - basicAuth: []
