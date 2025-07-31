@@ -6,6 +6,7 @@ from application.controllers.helper import validate_uuid
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import (
     query_registry_instrument_by_exercise_id_and_formtype,
+    query_registry_instrument_count_by_exercise_id,
     query_registry_instruments_by_exercise_id,
 )
 from application.models.models import RegistryInstrumentModel
@@ -94,6 +95,17 @@ class RegistryInstrument(object):
 
         session.delete(registry_instrument)
         return True
+
+    @with_db_session
+    def get_count_by_exercise_id(self, exercise_id: str, session=None) -> dict:
+        """
+        Retrieves the count of registry instruments associated with an exercise_id
+        :param exercise_id: An exercise id (UUID)
+        :param session: database session
+        :return: registry_instrument_count dict
+        """
+
+        return {"registry_instrument_count": query_registry_instrument_count_by_exercise_id(exercise_id, session)}
 
     @staticmethod
     def _find_and_update_or_create(
