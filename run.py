@@ -91,7 +91,11 @@ def create_database(db_connection, db_schema):
             models.Base.metadata.create_all(engine)
             # If the db is created from scratch we don't need to update with alembic,
             # however we do need to record (stamp) the latest version for future migrations
-            command.stamp(alembic_cfg, "head")
+            # THE ABOVE HISTORICAL STATEMENT IS NOT TRUE AND IS NOW CAUSING AN ISSUE. IT DID NOT CONSIDER
+            # NON-TABLE MIGRATIONS SUCH AS VIEWS OR INDEXES (THESE ARE NOT DEFINED IN SQLALCHEMY)
+            # IT DOES NOT IMPACT PREPROD/PROD BUT THIS INTERIM HACK IS TO ALLOW EXISTING DEV ENVS TO WORK
+            command.stamp(alembic_cfg, "b730b3a81f72")
+            apply_explicit_migrations(alembic_cfg)
         else:
             logger.info("Updating database with Alembic")
             command.upgrade(alembic_cfg, "head")
@@ -102,6 +106,21 @@ def create_database(db_connection, db_schema):
 
     logger.info("Ok, database tables have been created")
     return engine
+
+
+def apply_explicit_migrations(alembic_cfg):
+    """
+    Interim fix to allow non-table migrations to be applied
+    """
+    revisions = [
+        "9a724381cde7",
+    ]
+    for revision in revisions:
+        try:
+            logger.info(f"Applying Alembic migration {revision}")
+            command.upgrade(alembic_cfg, revision)
+        except Exception as e:
+            logger.error(f"Failed to apply Alembic migration {revision}: {e}")
 
 
 def retry_if_database_error(exception):

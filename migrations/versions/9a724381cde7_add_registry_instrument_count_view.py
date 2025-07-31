@@ -20,6 +20,9 @@ def upgrade():
         """CREATE VIEW ras_ci.registry_instrument_count as SELECT exercise_id, count(*) as count
         FROM ras_ci.registry_instrument GROUP BY exercise_id; """
     )
+    op.create_index(
+        "ix_registry_instrument_exercise_id", "registry_instrument", ["exercise_id"], unique=False, schema="ras_ci"
+    )
 
 
 def downgrade():
