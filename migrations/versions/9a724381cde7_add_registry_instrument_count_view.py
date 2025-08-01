@@ -27,3 +27,4 @@ def upgrade():
 
 def downgrade():
     op.execute("""DROP VIEW registry_instrument_count""")
+    op.execute("""DROP INDEX ix_registry_instrument_exercise_id""")
