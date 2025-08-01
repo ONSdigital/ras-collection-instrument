@@ -91,7 +91,12 @@ def create_database(db_connection, db_schema):
             models.Base.metadata.create_all(engine)
             # If the db is created from scratch we don't need to update with alembic,
             # however we do need to record (stamp) the latest version for future migrations
-            command.stamp(alembic_cfg, "head")
+            # THE ABOVE HISTORICAL STATEMENT IS NOT TRUE AND IS NOW CAUSING AN ISSUE. IT DID NOT CONSIDER
+            # NON-TABLE MIGRATIONS SUCH AS VIEWS OR INDEXES (THESE ARE NOT DEFINED IN SQLALCHEMY)
+            # THIS DOES NOT IMPACT PREPROD/PROD BUT THIS INTERIM WORKAROUND IS TO ALLOW EXISTING DEV ENVS TO WORK
+            previous_revision = "b730b3a81f72"
+            command.stamp(alembic_cfg, previous_revision)
+            command.upgrade(alembic_cfg, "head")
         else:
             logger.info("Updating database with Alembic")
             command.upgrade(alembic_cfg, "head")
