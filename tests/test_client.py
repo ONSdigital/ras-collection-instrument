@@ -2,6 +2,7 @@ import logging
 
 import structlog
 from flask_testing import TestCase
+from sqlalchemy import text
 
 from application.models import models
 from run import create_app
@@ -15,6 +16,12 @@ class TestClient(TestCase):
         return create_app("TestingConfig")
 
     def tearDown(self):
+        session = self.app.db.session
+        try:
+            session.execute(text("DROP VIEW IF EXISTS ras_ci.registry_instrument_count CASCADE"))
+            session.commit()
+        finally:
+            session.close()
         models.Base.metadata.drop_all(self.app.db)
         models.Base.metadata.create_all(self.app.db)
         self.app.db.session.commit()
