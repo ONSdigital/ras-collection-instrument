@@ -280,7 +280,7 @@ class TestCollectionInstrument(TestClient):
             classifier_type="form_type",
             classifier_value="0001",
             ci_version=1,
-            guid="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            guid="9579fa25-d150-4566-9569-5c2ffabd787f",
             published_at="Thu, 07 Aug 2025 15:19:33 +0000",
         )
 
