@@ -71,3 +71,11 @@ def query_registry_instrument_count_by_exercise_id(exercise_id: str, session: Se
         {"exercise_id": exercise_id},
     ).first()
     return row_result[1] if row_result else 0
+
+
+def delete_registry_instrument_by_exercise_id_and_instrument_id(
+    exercise_id: str, instrument_id: str, session: Session
+) -> None:
+    session.query(RegistryInstrumentModel).filter(
+        RegistryInstrumentModel.exercise_id == exercise_id, RegistryInstrumentModel.instrument_id == instrument_id
+    ).delete()
