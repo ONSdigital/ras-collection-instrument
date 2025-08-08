@@ -11,12 +11,14 @@ from application.controllers.collection_instrument import (
     COLLECTION_EXERCISE_NOT_FOUND_ON_GCP,
     CollectionInstrument,
 )
+from application.controllers.registry_instrument import RegistryInstrument
 from application.controllers.session_decorator import with_db_session
 from application.exceptions import RasDatabaseError, RasError
 from application.models.models import (
     BusinessModel,
     ExerciseModel,
     InstrumentModel,
+    RegistryInstrumentModel,
     SEFTModel,
     SurveyModel,
 )
@@ -245,6 +247,18 @@ class TestCollectionInstrument(TestClient):
         self.assertIn("SEFT", json.dumps(str(instrument)))
         self.assertNotIn("EQ", json.dumps(str(instrument)))
 
+    def test_update_exercise_eq_instruments_remove_registry_instrument(self):
+        # Given there is a collection and registry instrument
+        instrument_id = self._add_instrument_data(ci_type="EQ")
+        self._add_registry_instrument(instrument_id)
+
+        # when the user unselects and updates the collection instrument
+        self.collection_instrument.update_exercise_eq_instruments(COLLECTION_EXERCISE_ID, [])
+        registry_instrument = RegistryInstrument().get_by_exercise_id_and_formtype(COLLECTION_EXERCISE_ID, "0001")
+
+        # Then the registry_instrument is deleted
+        self.assertIsNone(registry_instrument)
+
     @with_db_session
     def _add_instrument_data(self, session=None, ci_type="SEFT", exercise_id=COLLECTION_EXERCISE_ID):
         instrument = InstrumentModel(ci_type=ci_type)
@@ -256,6 +270,21 @@ class TestCollectionInstrument(TestClient):
         instrument.survey = survey
         session.add(instrument)
         return instrument.instrument_id
+
+    @with_db_session
+    def _add_registry_instrument(self, instrument_id, session=None):
+        registry_instrument = RegistryInstrumentModel(
+            survey_id="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            exercise_id=COLLECTION_EXERCISE_ID,
+            instrument_id=instrument_id,
+            classifier_type="form_type",
+            classifier_value="0001",
+            ci_version=1,
+            guid="cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87",
+            published_at="Thu, 07 Aug 2025 15:19:33 +0000",
+        )
+
+        session.add(registry_instrument)
 
     @staticmethod
     def _add_seft_details(instrument):
