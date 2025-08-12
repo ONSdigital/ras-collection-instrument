@@ -9,6 +9,7 @@ from application.controllers.helper import validate_uuid
 from application.controllers.service_helper import get_survey_details, service_request
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import (
+    delete_registry_instrument_by_exercise_id_and_instrument_id,
     query_business_by_ru,
     query_exercise_by_id,
     query_instrument,
@@ -298,6 +299,8 @@ class CollectionInstrument(object):
         for instrument_id in instruments_to_remove:
             instrument = self.get_instrument_by_id(instrument_id, session)
             instrument.exercises.remove(exercise)
+            delete_registry_instrument_by_exercise_id_and_instrument_id(exercise_id, instrument_id, session)
+            log.info("Collection and registry instrument deleted", instrument=instrument_id, exercise_id=exercise_id)
 
         log.info("Collection instruments updated successfully", instruments=instruments, exercise_id=exercise_id)
 
