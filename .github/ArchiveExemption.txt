@@ -1,0 +1,1 @@
+This is a core microservice which handles the processes around collection instruments (SEFT and EQ) within ras-rm
