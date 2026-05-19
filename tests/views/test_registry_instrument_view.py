@@ -199,7 +199,7 @@ class TestRegistryInstrumentView(TestClient):
         )
 
         self.assertStatus(response, 200)
-        self.assertEquals(json.loads(response.data), {"registry_instrument_count": 1})
+        self.assertEqual(json.loads(response.data), {"registry_instrument_count": 1})
 
     @staticmethod
     def get_auth_headers():
