@@ -10,7 +10,7 @@ servers:
 
 tags:
   - name: collection-instrument
-    description: Endpoints for getting, linking, unlinking, and dowloading collection instruments
+    description: Endpoints for getting, linking, unlinking, and downloading collection instruments
   - name: info
     description: Service information endpoints
   - name: survey-response
