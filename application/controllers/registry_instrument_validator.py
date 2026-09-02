@@ -17,7 +17,6 @@ EXPECTED_KEYS = {
 
 def validate_registry_instrument_payload(payload, exercise_id):
     payload_keys = set(payload.keys())
-
     if payload_keys != EXPECTED_KEYS:
         return False, f"Invalid payload keys. Expected: {EXPECTED_KEYS}"
     if payload["exercise_id"] != exercise_id:
@@ -27,6 +26,7 @@ def validate_registry_instrument_payload(payload, exercise_id):
     validate_uuid(payload["exercise_id"])
     validate_uuid(payload["instrument_id"])
     validate_uuid(payload["guid"])
+    print(payload["classifier_type"])
 
     if payload["classifier_type"] not in ["form_type"]:
         return False, "Invalid classifier type"

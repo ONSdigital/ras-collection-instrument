@@ -1,57 +1,21 @@
 import logging
+from typing import Any
 
 import requests
 import structlog
 from flask import current_app
 
 from application.exceptions import RasError, ServiceUnavailableException
+from application.oidc.oidc import OIDCCredentialsService
 
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def get_survey_details(survey_id):
-    """
-    :param survey_id: The survey_id UUID to search with
-    :return: survey reference
-    """
-    response = service_request(service="survey-service", endpoint="surveys", search_value=survey_id)
-    return response.json()
-
-
-def service_request(service, endpoint, search_value):
-    """
-    Makes a request to a different micro service
-
-    :param service: The micro service to call to
-    :param endpoint: The end point of the micro service
-    :param search_value: The value to search on
-    :return: response
-    """
-
-    auth = (current_app.config.get("SECURITY_USER_NAME"), current_app.config.get("SECURITY_USER_PASSWORD"))
-
-    try:
-        service_root = {
-            "survey-service": current_app.config["SURVEY_URL"],
-            "collectionexercise-service": current_app.config["COLLECTION_EXERCISE_URL"],
-            "case-service": current_app.config["CASE_URL"],
-            "party-service": current_app.config["PARTY_URL"],
-        }[service]
-        service_url = f"{service_root}/{endpoint}/{search_value}"
-        log.info(f"Making request to {service_url}")
-    except KeyError:
-        raise RasError(f"service '{service}' not configured", 500)
-
-    try:
-        response = requests.get(service_url, auth=auth)
-        response.raise_for_status()
-    except requests.HTTPError:
-        raise RasError(f"{service} returned a HTTPError")
-    except requests.ConnectionError:
-        raise ServiceUnavailableException(f"{service} returned a connection error", 503)
-    except requests.Timeout:
-        raise ServiceUnavailableException(f"{service} has timed out", 504)
-    return response
+def _get_auth() -> tuple[str, str]:
+    return (
+        current_app.config["SECURITY_USER_NAME"],
+        current_app.config["SECURITY_USER_PASSWORD"],
+    )
 
 
 def collection_exercise_instrument_update_request(action, exercise_id: str) -> object:
@@ -61,14 +25,13 @@ def collection_exercise_instrument_update_request(action, exercise_id: str) -> o
     :type: json
     :return: response
     """
-    auth = (current_app.config.get("SECURITY_USER_NAME"), current_app.config.get("SECURITY_USER_PASSWORD"))
     json_message = {"action": action, "exercise_id": str(exercise_id)}
 
     try:
         collection_exercise_url = current_app.config["COLLECTION_EXERCISE_URL"]
         url = f"{collection_exercise_url}/collection-instrument/link"
         log.info("Making request to collection exercise to acknowledge instruments have been changed", action=action)
-        response = requests.post(url, json=json_message, auth=auth)
+        response = requests.post(url, json=json_message, auth=_get_auth())
         response.raise_for_status()
     except KeyError:
         raise RasError("collection exercise service not configured", 500)
@@ -76,3 +39,84 @@ def collection_exercise_instrument_update_request(action, exercise_id: str) -> o
         raise RasError("collection exercise responded with an http error", response.status_code)
 
     return response
+
+
+def get_collection_exercise_by_id(exercise_id: str):
+    url = f"{current_app.config['COLLECTION_EXERCISE_URL']}" f"/collectionexercises/{exercise_id}"
+    return _get_json(url, "collection exercise", auth=_get_auth())
+
+
+def get_survey_details_by_id(survey_id):
+    """
+    :param survey_id: The survey_id UUID to search with
+    :return: survey reference
+    """
+    url = f"{current_app.config['SURVEY_URL']}" f"/surveys/{survey_id}"
+    return _get_json(url, "survey", auth=_get_auth())
+
+
+def get_collection_exercise_id(period_ref: str, survey_ref: str) -> str:
+    url = f"{current_app.config['COLLECTION_EXERCISE_URL']}" f"/collectionexercises/{period_ref}/survey/{survey_ref}"
+
+    response = _get_json(
+        url,
+        "collection exercise",
+        auth=_get_auth(),
+    )
+
+    return response["id"]
+
+
+def get_cir_metadata(form_type: str, survey_ref: str) -> list[dict[str, Any]]:
+    session = requests.Session()
+    fetch_and_apply_oidc_credentials(
+        session=session,
+        client_id=current_app.config["CIR_OAUTH2_CLIENT_ID"],
+    )
+    url = current_app.config["CIR_API_URL"] + current_app.config["CIR_API_PREFIX"]
+    params = {
+        "classifier_type": "form_type",
+        "classifier_value": form_type,
+        "language": "en",
+        "survey_id": survey_ref,
+    }
+
+    return _get_json(url, "CIR", session=session, params=params)
+
+
+def fetch_and_apply_oidc_credentials(session: requests.Session, client_id: str) -> None:
+    """
+    Raises:
+       GoogleAuthError: If there is an error fetching or applying OIDC credentials.
+    """
+    # Type ignore: oidc_credentials_service is a singleton of this application
+    oidc_credentials_service: OIDCCredentialsService = current_app.oidc["oidc_credentials_service"]  # type: ignore
+
+    credentials = oidc_credentials_service.get_credentials(iap_client_id=client_id)
+    credentials.apply(headers=session.headers)
+
+
+def _get_json(
+    url: str,
+    service: str,
+    *,
+    session: requests.Session | None = None,
+    auth: tuple[str, str] | None = None,
+    params: dict[str, str] | None = None,
+) -> Any:
+    client = session or requests
+
+    try:
+        response = client.get(url, auth=auth, params=params)
+        response.raise_for_status()
+
+    except requests.HTTPError:
+        raise RasError(f"{service} returned an HTTP error")
+
+    except requests.ConnectionError:
+        raise ServiceUnavailableException(f"{service} returned a connection error", 503)
+
+    except requests.Timeout:
+        raise ServiceUnavailableException(f"{service} timed out", 504)
+
+    return response.json()

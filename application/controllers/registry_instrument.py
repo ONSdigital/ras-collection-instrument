@@ -1,8 +1,14 @@
 import logging
+from typing import Any
 
 import structlog
+from sqlalchemy.orm import Session
 
 from application.controllers.helper import validate_uuid
+from application.controllers.service_helper import (
+    get_cir_metadata,
+    get_collection_exercise_id,
+)
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import (
     query_registry_instrument_by_exercise_id_and_formtype,
@@ -144,3 +150,36 @@ class RegistryInstrument(object):
             registry_instrument.guid = guid
             registry_instrument.published_at = published_at
             return registry_instrument, True
+
+    @with_db_session
+    def update_cir_version(
+        self,
+        period_ref: str,
+        survey_ref: str,
+        form_type: str,
+        ci_version: int,
+        session: Session | None = None,
+    ) -> None:
+
+        exercise_id = get_collection_exercise_id(period_ref, survey_ref)
+        registry_instrument = query_registry_instrument_by_exercise_id_and_formtype(
+            exercise_id, form_type, session
+        ).first()
+
+        if registry_instrument is None:
+            raise ValueError(
+                f"Registry instrument not found for period {period_ref}, " f"survey {survey_ref}, form type {form_type}"
+            )
+
+        cir_metadata: list[dict[str, Any]] = get_cir_metadata(
+            form_type,
+            survey_ref,
+        )
+        instrument = next((item for item in cir_metadata if item.get("ci_version") == ci_version), None)
+
+        if instrument is None:
+            raise ValueError(f"CI version {ci_version} not found for " f"survey {survey_ref}, form type {form_type}")
+
+        registry_instrument.ci_version = instrument["ci_version"]
+        registry_instrument.guid = instrument["guid"]
+        registry_instrument.published_at = instrument["published_at"]

@@ -26,6 +26,9 @@ class Config(object):
     COLLECTION_EXERCISE_URL = os.getenv("COLLECTION_EXERCISE_URL", "http://localhost:8145")
     PARTY_URL = os.getenv("PARTY_URL", "http://localhost:8081")
     SURVEY_URL = os.getenv("SURVEY_URL", "http://localhost:8080")
+    CIR_API_URL = os.getenv("CIR_API_URL", "http://localhost:3030")
+    CIR_OAUTH2_CLIENT_ID = os.getenv("CIR_OAUTH2_CLIENT_ID", "dummy_client_id")
+    CIR_API_PREFIX = os.getenv("CIR_API_PREFIX", "/collection-instruments/metadata")
 
 
 class DevelopmentConfig(Config):

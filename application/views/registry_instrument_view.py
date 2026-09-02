@@ -111,3 +111,22 @@ def delete_registry_instrument(exercise_id, form_type):
 @registry_instrument_view.route("/registry-instrument/count/exercise-id/<exercise_id>", methods=["GET"])
 def registry_instrument_count(exercise_id: str) -> Response:
     return make_response(RegistryInstrument().get_count_by_exercise_id(exercise_id), HTTPStatus.OK)
+
+
+@registry_instrument_view.route("/registry-instrument/update-cir-version", methods=["PUT"])
+def update_cir_version():
+    payload = request.get_json()
+    if not payload:
+        return jsonify({"error": "JSON body is required"}), 400
+
+    required_fields = ["survey_ref", "ce_period", "form_type", "cir_version"]
+    missing_fields = [field for field in required_fields if field not in payload]
+
+    if missing_fields:
+        return jsonify({"error": "Missing required fields", "fields": missing_fields}), 400
+
+    RegistryInstrument().update_cir_version(
+        payload["ce_period"], payload["survey_ref"], payload["form_type"], payload["cir_version"]
+    )
+
+    return jsonify({"message": "CIR version updated"}), 200
