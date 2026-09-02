@@ -4,7 +4,7 @@ from cachetools.func import ttl_cache
 from google.auth.credentials import Credentials
 from google.auth.transport.requests import Request
 from google.oauth2.id_token import fetch_id_token_credentials
-from response_operations_ui.oidc.oidc import OIDCCredentialsService
+from application.oidc.oidc import OIDCCredentialsService
 from structlog import wrap_logger
 
 from config import Config
