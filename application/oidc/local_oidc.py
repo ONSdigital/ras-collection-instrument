@@ -2,8 +2,9 @@ import logging
 from functools import lru_cache
 
 from google.auth.credentials import AnonymousCredentials, Credentials
-from application.oidc.oidc import OIDCCredentialsService
 from structlog import wrap_logger
+
+from application.oidc.oidc import OIDCCredentialsService
 
 logger = wrap_logger(logging.getLogger(__name__))
 
