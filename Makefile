@@ -1,17 +1,18 @@
 .PHONY: build build-docker build-kubernetes start-db lint lint-check test test-html start
+DOCKER ?= $(shell if [ "$$(uname -m)" = "arm64" ]; then echo podman; else echo docker; fi)
 
 build:
 	pipenv install --dev
 
 build-docker:
-	docker build .
+	$(DOCKER) build .
 
 build-kubernetes:
-	docker build -f _infra/docker/Dockerfile .
+	$(DOCKER) build -f _infra/docker/Dockerfile .
 
 # The postgres image version is read from _infra/postgres-image, which CI uses too.
 start-db:
-	docker compose --env-file _infra/postgres-image up -d db
+	$(DOCKER) compose --env-file _infra/postgres-image up -d db
 
 lint:
 	pipenv run isort .
