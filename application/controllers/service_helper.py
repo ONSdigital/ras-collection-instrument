@@ -11,13 +11,6 @@ from application.oidc.oidc import OIDCCredentialsService
 log = structlog.wrap_logger(logging.getLogger(__name__))
 
 
-def _get_auth() -> tuple[str, str]:
-    return (
-        current_app.config["SECURITY_USER_NAME"],
-        current_app.config["SECURITY_USER_PASSWORD"],
-    )
-
-
 def collection_exercise_instrument_update_request(action, exercise_id: str) -> object:
     """
     Posts a request to the collection exercise service to notify of a collection instrument change
@@ -46,24 +39,22 @@ def get_collection_exercise_by_id(exercise_id: str):
     return _get_json(url, "collection exercise", auth=_get_auth())
 
 
-def get_survey_details_by_id(survey_id):
-    """
-    :param survey_id: The survey_id UUID to search with
-    :return: survey reference
-    """
+def get_survey_details_by_id(survey_id: str):
     url = f"{current_app.config['SURVEY_URL']}" f"/surveys/{survey_id}"
     return _get_json(url, "survey", auth=_get_auth())
 
 
-def get_collection_exercise_id(period_ref: str, survey_ref: str) -> str:
+def get_collection_exercise_id_by_period_and_survey_ref(period_ref: str, survey_ref: str) -> str:
     url = f"{current_app.config['COLLECTION_EXERCISE_URL']}" f"/collectionexercises/{period_ref}/survey/{survey_ref}"
 
-    response = _get_json(
-        url,
-        "collection exercise",
-        auth=_get_auth(),
-    )
-
+    try:
+        response = _get_json(url, "collection exercise", auth=_get_auth())
+    except RasError as e:
+        if e.status_code == 404:
+            raise ValueError(
+                f"Collection exercise not found for survey {survey_ref} " f"and period {period_ref}"
+            ) from e
+        raise
     return response["id"]
 
 
@@ -80,18 +71,11 @@ def get_cir_metadata(form_type: str, survey_ref: str) -> list[dict[str, Any]]:
         "language": "en",
         "survey_id": survey_ref,
     }
-
     return _get_json(url, "CIR", session=session, params=params)
 
 
 def fetch_and_apply_oidc_credentials(session: requests.Session, client_id: str) -> None:
-    """
-    Raises:
-       GoogleAuthError: If there is an error fetching or applying OIDC credentials.
-    """
-    # Type ignore: oidc_credentials_service is a singleton of this application
-    oidc_credentials_service: OIDCCredentialsService = current_app.oidc["oidc_credentials_service"]  # type: ignore
-
+    oidc_credentials_service: OIDCCredentialsService = current_app.oidc["oidc_credentials_service"]
     credentials = oidc_credentials_service.get_credentials(iap_client_id=client_id)
     credentials.apply(headers=session.headers)
 
@@ -99,19 +83,19 @@ def fetch_and_apply_oidc_credentials(session: requests.Session, client_id: str) 
 def _get_json(
     url: str,
     service: str,
-    *,
     session: requests.Session | None = None,
     auth: tuple[str, str] | None = None,
     params: dict[str, str] | None = None,
-) -> Any:
-    client = session or requests
+):
+
+    client = session or requests  # oidc uses a session to authenticate
 
     try:
         response = client.get(url, auth=auth, params=params)
         response.raise_for_status()
 
-    except requests.HTTPError:
-        raise RasError(f"{service} returned an HTTP error")
+    except requests.HTTPError as e:
+        raise RasError(f"{service} returned an HTTP error", e.response.status_code) from e
 
     except requests.ConnectionError:
         raise ServiceUnavailableException(f"{service} returned a connection error", 503)
@@ -120,3 +104,10 @@ def _get_json(
         raise ServiceUnavailableException(f"{service} timed out", 504)
 
     return response.json()
+
+
+def _get_auth() -> tuple[str, str]:
+    return (
+        current_app.config["SECURITY_USER_NAME"],
+        current_app.config["SECURITY_USER_PASSWORD"],
+    )

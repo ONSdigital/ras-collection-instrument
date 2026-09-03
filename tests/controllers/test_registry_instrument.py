@@ -203,3 +203,174 @@ class TestRegistryInstrumentController(TestCase):
         result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
 
         self.assertEqual(result, {"registry_instrument_count": 0})
+
+    @patch("application.controllers.registry_instrument.get_cir_metadata")
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+        mock_get_cir_metadata,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 3
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+
+        mock_registry_instrument = MagicMock()
+        mock_query.return_value.first.return_value = mock_registry_instrument
+
+        mock_get_cir_metadata.return_value = [
+            {
+                "ci_version": 1,
+                "guid": "guid-version-1",
+                "published_at": "2025-01-01T12:00:00",
+            },
+            {
+                "ci_version": 3,
+                "guid": "guid-version-3",
+                "published_at": "2026-01-01T12:00:00",
+            },
+        ]
+
+        controller = RegistryInstrument()
+
+        controller.update_cir_version.__wrapped__(
+            controller,
+            period_ref,
+            survey_ref,
+            form_type,
+            ci_version,
+            session,
+        )
+
+        mock_get_collection_exercise_id.assert_called_once_with(
+            period_ref,
+            survey_ref,
+        )
+        mock_query.assert_called_once_with(
+            EXERCISE_ID,
+            form_type,
+            session,
+        )
+        mock_get_cir_metadata.assert_called_once_with(
+            form_type,
+            survey_ref,
+        )
+
+        self.assertEqual(mock_registry_instrument.ci_version, 3)
+        self.assertEqual(mock_registry_instrument.guid, "guid-version-3")
+        self.assertEqual(
+            mock_registry_instrument.published_at,
+            "2026-01-01T12:00:00",
+        )
+
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version_registry_instrument_not_found(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 3
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+        mock_query.return_value.first.return_value = None
+
+        controller = RegistryInstrument()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "Registry instrument not found for form type 0002",
+        ):
+            controller.update_cir_version.__wrapped__(
+                controller,
+                period_ref,
+                survey_ref,
+                form_type,
+                ci_version,
+                session,
+            )
+
+        mock_get_collection_exercise_id.assert_called_once_with(
+            period_ref,
+            survey_ref,
+        )
+        mock_query.assert_called_once_with(
+            EXERCISE_ID,
+            form_type,
+            session,
+        )
+
+    @patch("application.controllers.registry_instrument.get_cir_metadata")
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version_ci_version_not_found(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+        mock_get_cir_metadata,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 99
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+
+        mock_registry_instrument = MagicMock()
+        mock_query.return_value.first.return_value = mock_registry_instrument
+
+        mock_get_cir_metadata.return_value = [
+            {
+                "ci_version": 1,
+                "guid": "guid-version-1",
+                "published_at": "2025-01-01T12:00:00",
+            },
+            {
+                "ci_version": 3,
+                "guid": "guid-version-3",
+                "published_at": "2026-01-01T12:00:00",
+            },
+        ]
+
+        controller = RegistryInstrument()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "CI version 99 not found for survey 123 and form type 0002",
+        ):
+            controller.update_cir_version.__wrapped__(
+                controller,
+                period_ref,
+                survey_ref,
+                form_type,
+                ci_version,
+                session,
+            )
+
+        mock_get_collection_exercise_id.assert_called_once_with(
+            period_ref,
+            survey_ref,
+        )
+        mock_query.assert_called_once_with(
+            EXERCISE_ID,
+            form_type,
+            session,
+        )
+        mock_get_cir_metadata.assert_called_once_with(
+            form_type,
+            survey_ref,
+        )

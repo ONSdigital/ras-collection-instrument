@@ -115,7 +115,7 @@ def registry_instrument_count(exercise_id: str) -> Response:
 
 @registry_instrument_view.route("/registry-instrument/update-cir-version", methods=["PUT"])
 def update_cir_version():
-    payload = request.get_json()
+    payload = request.get_json(silent=True)
     if not payload:
         return jsonify({"error": "JSON body is required"}), 400
 

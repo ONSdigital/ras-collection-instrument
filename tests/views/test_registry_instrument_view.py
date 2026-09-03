@@ -201,6 +201,57 @@ class TestRegistryInstrumentView(TestClient):
         self.assertStatus(response, 200)
         self.assertEqual(json.loads(response.data), {"registry_instrument_count": 1})
 
+    @patch("application.views.registry_instrument_view.RegistryInstrument.update_cir_version")
+    def test_update_cir_version(self, update_cir_version):
+        payload = {
+            "survey_ref": "1",
+            "ce_period": "202609",
+            "form_type": "0001",
+            "cir_version": 2,
+        }
+
+        response = self.client.put(
+            f"{api_root}/registry-instrument/update-cir-version",
+            json=payload,
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 200)
+        self.assertEqual(json.loads(response.data), {"message": "CIR version updated"})
+        update_cir_version.assert_called_once_with("202609", "1", "0001", 2)
+
+    def test_update_cir_version_no_json(
+        self,
+    ):
+        response = self.client.put(
+            f"{api_root}/registry-instrument/update-cir-version",
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 400)
+
+    def test_update_cir_version_missing_fields(self):
+        payload = {"survey_ref": "1"}
+
+        response = self.client.put(
+            f"{api_root}/registry-instrument/update-cir-version",
+            json=payload,
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 400)
+        self.assertEqual(
+            json.loads(response.data),
+            {
+                "error": "Missing required fields",
+                "fields": [
+                    "ce_period",
+                    "form_type",
+                    "cir_version",
+                ],
+            },
+        )
+
     @staticmethod
     def get_auth_headers():
         auth = "{}:{}".format(
