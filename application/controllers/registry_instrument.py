@@ -1,5 +1,4 @@
 import logging
-from typing import Any
 
 import structlog
 from sqlalchemy.orm import Session
@@ -170,7 +169,7 @@ class RegistryInstrument(object):
         if registry_instrument is None:
             raise ValueError(f"Registry instrument not found for form type {form_type}")
 
-        cir_metadata = get_cir_metadata(form_type,survey_ref)
+        cir_metadata = get_cir_metadata(form_type, survey_ref)
         instrument = next((item for item in cir_metadata if item.get("ci_version") == ci_version), None)
 
         if instrument is None:
