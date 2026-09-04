@@ -34,12 +34,12 @@ def collection_exercise_instrument_update_request(action, exercise_id: str) -> o
     return response
 
 
-def get_collection_exercise_by_id(exercise_id: str):
+def get_collection_exercise_by_id(exercise_id: str) -> dict[str, Any]:
     url = f"{current_app.config['COLLECTION_EXERCISE_URL']}" f"/collectionexercises/{exercise_id}"
     return _get_json(url, "collection exercise", auth=_get_auth())
 
 
-def get_survey_details_by_id(survey_id: str):
+def get_survey_details_by_id(survey_id: str) -> dict[str, Any]:
     url = f"{current_app.config['SURVEY_URL']}" f"/surveys/{survey_id}"
     return _get_json(url, "survey", auth=_get_auth())
 

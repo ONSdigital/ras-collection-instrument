@@ -291,6 +291,7 @@ class CollectionInstrument(object):
         current_instruments = [
             str(instrument.instrument_id) for instrument in exercise.instruments if instrument.type == "EQ"
         ]
+
         instruments_to_add = set(instruments).difference(current_instruments)
         instruments_to_remove = set(current_instruments).difference(instruments)
 
