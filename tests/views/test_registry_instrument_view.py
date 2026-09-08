@@ -220,9 +220,27 @@ class TestRegistryInstrumentView(TestClient):
         self.assertEqual(json.loads(response.data), {"message": "CIR version updated"})
         update_cir_version.assert_called_once_with("202609", "1", "0001", 2)
 
-    def test_update_cir_version_no_json(
-        self,
-    ):
+    @patch("application.views.registry_instrument_view.RegistryInstrument.update_cir_version")
+    def test_update_cir_version_value_error(self, update_cir_version):
+        update_cir_version.side_effect = ValueError("Registry instrument not found for form type 0001")
+
+        payload = {
+            "survey_ref": "1",
+            "ce_period": "202609",
+            "form_type": "0001",
+            "cir_version": 2,
+        }
+
+        response = self.client.put(
+            f"{api_root}/registry-instrument/update-cir-version",
+            json=payload,
+            headers=self.get_auth_headers(),
+        )
+
+        self.assertStatus(response, 404)
+        assert response.get_json() == {"error": "Registry instrument not found for form type 0001"}
+
+    def test_update_cir_version_no_json(self):
         response = self.client.put(
             f"{api_root}/registry-instrument/update-cir-version",
             headers=self.get_auth_headers(),

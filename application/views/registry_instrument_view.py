@@ -125,8 +125,14 @@ def update_cir_version():
     if missing_fields:
         return jsonify({"error": "Missing required fields", "fields": missing_fields}), 400
 
-    RegistryInstrument().update_cir_version(
-        payload["ce_period"], payload["survey_ref"], payload["form_type"], payload["cir_version"]
-    )
+    try:
+        RegistryInstrument().update_cir_version(
+            payload["ce_period"],
+            payload["survey_ref"],
+            payload["form_type"],
+            payload["cir_version"],
+        )
+    except ValueError as error:
+        return jsonify({"error": str(error)}), 404
 
     return jsonify({"message": "CIR version updated"}), 200
