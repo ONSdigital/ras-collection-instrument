@@ -30,18 +30,19 @@ pip install pipenv
 
 ## Tests
 
-To run the tests a database server is required. The tox script creates and runs these dependencies inside Docker containers, which are destroyed after the unit tests are run.
+To run the tests a database server is required, running inside a Docker container:
 
 ```bash
-pipenv install --dev
-pipenv run tox
+make build
+make start-db
+make test
 ```
 
 To run the service with the required dependencies:
 
 ```bash
-docker compose up -d db 
-pipenv run python run.py
+make start-db
+make start
 ```
 
 To test the service is up:
