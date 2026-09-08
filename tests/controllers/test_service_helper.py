@@ -147,10 +147,7 @@ class TestServiceHelper(TestClient):
         }
         mock_get_json.side_effect = RasError("collection exercise returned an HTTP error", 404)
 
-        with self.assertRaisesRegex(
-            ValueError,
-            "Collection exercise not found for survey 123 and period 202601",
-        ):
+        with self.assertRaisesRegex(ValueError, "Collection exercise not found"):
             get_collection_exercise_id_by_period_and_survey_ref("202601", "123")
 
     @patch("application.controllers.service_helper._get_json")

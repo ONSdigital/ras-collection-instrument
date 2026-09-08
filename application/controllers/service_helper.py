@@ -49,11 +49,10 @@ def get_collection_exercise_id_by_period_and_survey_ref(period_ref: str, survey_
 
     try:
         response = _get_json(url, "collection exercise", auth=_get_auth())
-    except RasError as e:
-        if e.status_code == 404:
-            raise ValueError(
-                f"Collection exercise not found for survey {survey_ref} " f"and period {period_ref}"
-            ) from e
+    except RasError as error:
+        if error.status_code == 404:
+            log.info(f"Collection exercise not found for survey {survey_ref} and period {period_ref}")
+            raise ValueError("Collection exercise not found") from error
         raise
     return response["id"]
 

@@ -133,12 +133,6 @@ def update_cir_version():
             payload["cir_version"],
         )
     except ValueError:
-        log.exception(
-            "Failed to update CIR version",
-            survey_ref=payload.get("survey_ref"),
-            ce_period=payload.get("ce_period"),
-            form_type=payload.get("form_type"),
-        )
-        return jsonify({"error": "Resource not found"}), 404
+        return jsonify({"error": "Unable to update CIR version with supplied values"}), 404
 
     return jsonify({"message": "CIR version updated"}), 200

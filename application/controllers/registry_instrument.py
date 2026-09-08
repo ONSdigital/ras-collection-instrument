@@ -167,13 +167,15 @@ class RegistryInstrument(object):
         ).first()
 
         if registry_instrument is None:
-            raise ValueError(f"Registry instrument not found for form type {form_type}")
+            log.info(f"Registry instrument not found for form type {form_type}")
+            raise ValueError("Registry instrument not found")
 
         cir_metadata = get_cir_metadata(form_type, survey_ref)
         instrument = next((item for item in cir_metadata if item.get("ci_version") == ci_version), None)
 
         if instrument is None:
-            raise ValueError(f"CI version {ci_version} not found for survey {survey_ref} and form type {form_type}")
+            log.info(f"CI version {ci_version} not found for survey {survey_ref} and form type {form_type}")
+            raise ValueError("CI version not found")
 
         registry_instrument.ci_version = instrument["ci_version"]
         registry_instrument.guid = instrument["guid"]

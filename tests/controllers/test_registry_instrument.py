@@ -262,7 +262,7 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        with self.assertRaisesRegex(ValueError, "Registry instrument not found for form type 0002"):
+        with self.assertRaisesRegex(ValueError, "Registry instrument not found"):
             controller.update_cir_version.__wrapped__(
                 controller, period_ref, survey_ref, form_type, ci_version, session
             )
@@ -303,7 +303,7 @@ class TestRegistryInstrumentController(TestCase):
 
         controller = RegistryInstrument()
 
-        with self.assertRaisesRegex(ValueError, "CI version 99 not found for survey 123 and form type 0002"):
+        with self.assertRaisesRegex(ValueError, "CI version not found"):
             controller.update_cir_version.__wrapped__(
                 controller, period_ref, survey_ref, form_type, ci_version, session
             )

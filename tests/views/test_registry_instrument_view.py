@@ -238,7 +238,7 @@ class TestRegistryInstrumentView(TestClient):
         )
 
         self.assertStatus(response, 404)
-        assert response.get_json() == {"error": "Registry instrument not found for form type 0001"}
+        assert response.get_json() == {"error": "Unable to update CIR version with supplied values"}
 
     def test_update_cir_version_no_json(self):
         response = self.client.put(
