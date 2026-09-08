@@ -6,7 +6,10 @@ from flask import current_app
 from sqlalchemy.orm import Session
 
 from application.controllers.helper import validate_uuid
-from application.controllers.service_helper import get_survey_details, service_request
+from application.controllers.service_helper import (
+    get_collection_exercise_by_id,
+    get_survey_details_by_id,
+)
 from application.controllers.session_decorator import with_db_session
 from application.controllers.sql_queries import (
     delete_registry_instrument_by_exercise_id_and_instrument_id,
@@ -97,7 +100,7 @@ class CollectionInstrument(object):
 
         survey = self._find_or_create_survey_from_exercise_id(exercise_id, session)
         survey_id = survey.survey_id
-        survey_service_details = get_survey_details(survey_id)
+        survey_service_details = get_survey_details_by_id(survey_id)
         if survey_service_details["surveyMode"] == "EQ_AND_SEFT" and ru_ref is not None:
             raise RasError("Can't upload a reporting unit specific instrument for an EQ_AND_SEFT survey", 400)
 
@@ -187,7 +190,7 @@ class CollectionInstrument(object):
             log.error("Not a SEFT instrument")
             raise RasError("Not a SEFT instrument", 400)
 
-        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
+        survey_ref = get_survey_details_by_id(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
 
         seft_model = self._update_seft_file(instrument.seft_file, file, survey_ref, exercise_id)
@@ -253,7 +256,7 @@ class CollectionInstrument(object):
 
         validate_uuid(survey_id)
         survey = self._find_or_create_survey_from_survey_id(survey_id, session)
-        survey_service_details = get_survey_details(survey.survey_id)
+        survey_service_details = get_survey_details_by_id(survey.survey_id)
         ci_type = "EQ"
         instrument = InstrumentModel(ci_type=ci_type)
         instrument.survey = survey
@@ -393,7 +396,7 @@ class CollectionInstrument(object):
 
         if exercise.seft_instrument_in_exercise:
             survey_id = exercise.instruments[0].survey.survey_id
-            survey_ref = get_survey_details(survey_id).get("surveyRef")
+            survey_ref = get_survey_details_by_id(survey_id).get("surveyRef")
             prefix = f"{survey_ref}/{ce_id}"
             gcs_seft_bucket = GoogleCloudSEFTCIBucket(current_app.config)
             try:
@@ -412,11 +415,8 @@ class CollectionInstrument(object):
         :param session: database session
         :return: A survey record
         """
-        response = service_request(
-            service="collectionexercise-service", endpoint="collectionexercises", search_value=exercise_id
-        )
-        survey_id = response.json().get("surveyId")
-
+        response = get_collection_exercise_by_id(exercise_id)
+        survey_id = response.get("surveyId")
         survey = query_survey_by_id(survey_id, session)
         if not survey:
             log.info("creating survey", survey_id=survey_id)
@@ -666,6 +666,6 @@ class CollectionInstrument(object):
 
     @staticmethod
     def _build_seft_file_path(instrument) -> str:
-        survey_ref = get_survey_details(instrument.survey.survey_id).get("surveyRef")
+        survey_ref = get_survey_details_by_id(instrument.survey.survey_id).get("surveyRef")
         exercise_id = str(instrument.exids[0])
         return f"{survey_ref}/{exercise_id}/{instrument.seft_file.file_name}"
