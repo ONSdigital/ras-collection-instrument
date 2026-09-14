@@ -1,9 +1,13 @@
 services:
   db:
     container_name: postgres_collection_instrument
-    image: postgres:9.6
     environment:
       POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    # Single source of truth, shared with CI. Requires --env-file _infra/postgres-image,
+    # so start this with `make start-db` rather than a bare `docker compose up`.
+    image: ${POSTGRES_IMAGE}
     ports:
       - "6432:5432"
 
