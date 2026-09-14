@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 import requests_mock
 from flask import current_app
-from requests.models import Response
 from six import BytesIO
 
 from application.controllers.collection_instrument import (
@@ -76,12 +75,13 @@ class TestCollectionInstrumentView(TestClient):
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "test.xls")}
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
@@ -181,12 +181,13 @@ class TestCollectionInstrumentView(TestClient):
         mock_request.get(survey_url, status_code=200, json=survey_response_json)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
         # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "test.xls")}
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/9999"
@@ -211,13 +212,14 @@ class TestCollectionInstrumentView(TestClient):
         """Verify that uploading a collection instrument for a reporting unit twice for the same collection exercise
         will result in an error"""
         # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678900.xls")}
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
@@ -232,7 +234,10 @@ class TestCollectionInstrumentView(TestClient):
 
             self.assertEqual(len(collection_instruments()), 2)
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
@@ -258,13 +263,14 @@ class TestCollectionInstrumentView(TestClient):
         """Verify that uploading a collection instrument file that has the same name as a file already uploaded
         for that collection exercise results in an error"""
         # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
@@ -279,7 +285,10 @@ class TestCollectionInstrumentView(TestClient):
 
             self.assertEqual(len(collection_instruments()), 2)
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
@@ -303,13 +312,14 @@ class TestCollectionInstrumentView(TestClient):
         """Verify that uploading a collection exercise, bound to a reporting unit, for two separate collection exercises
         results in them both being saved"""
         # Given an upload file and a patched survey_id response
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "12345678901.xls")}
         data2 = {"file": (BytesIO(b"test data"), "12345678901.xls")}
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87/12345678901",
@@ -324,7 +334,10 @@ class TestCollectionInstrumentView(TestClient):
 
             self.assertEqual(len(collection_instruments()), 2)
 
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/5672aa9d-ae54-4cb9-a37b-5ce795522a54/12345678901",
@@ -362,13 +375,14 @@ class TestCollectionInstrumentView(TestClient):
         mock_request.post(url_collection_instrument_link_url, status_code=200)
         mock_request.get(survey_url, status_code=200, json=survey_response_json_EQ_AND_SEFT)
         mock_bucket.return_value.upload_file_to_bucket.return_value = "file_path.xlsx"
-        mock_survey_service = Response()
-        mock_survey_service.status_code = 200
-        mock_survey_service._content = b'{"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}'
+        mock_collection_exercise = {"surveyId": "cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"}
         data = {"file": (BytesIO(b"test data"), "test.xls")}
 
         # When a SEFT collection instrument is uploaded
-        with patch("application.controllers.collection_instrument.service_request", return_value=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            return_value=mock_collection_exercise,
+        ):
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"
                 '?classifiers={"form_type": "001"}',
@@ -770,7 +784,10 @@ class TestCollectionInstrumentView(TestClient):
         data = {"file": (BytesIO(b"test data"), "test.xls")}
         mock_survey_service = RasError("The service raised an error")
 
-        with patch("application.controllers.collection_instrument.service_request", side_effect=mock_survey_service):
+        with patch(
+            "application.controllers.collection_instrument.get_collection_exercise_by_id",
+            side_effect=mock_survey_service,
+        ):
             # When a post is made to the upload end point
             response = self.client.post(
                 "/collection-instrument-api/1.0.2/upload/cb0711c3-0ac8-41d3-ae0e-567e5ea1ef87"

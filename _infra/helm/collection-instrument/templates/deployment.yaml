@@ -163,5 +163,14 @@ spec:
             value: "{{ .Values.gcp.project }}"
           - name: SEFT_DOWNLOAD_BUCKET_FILE_PREFIX
             value: "{{ .Values.gcp.collectionInstrument.bucket.prefix }}"
+          - name: CIR_API_URL
+            {{ if .Values.cir.apiUrl }}
+            value: {{ .Values.cir.apiUrl }}
+            {{- else -}}
+            value: "http://wiremock.{{ .Values.namespace }}.svc.cluster.local:8080"
+            {{- end}}
+          - name: CIR_OAUTH2_CLIENT_ID
+            value: {{ .Values.cir.oauth2ClientId }}
           resources:
             {{ toYaml .Values.resources.application | nindent 12 }}
+

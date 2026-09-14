@@ -203,3 +203,107 @@ class TestRegistryInstrumentController(TestCase):
         result = controller.get_count_by_exercise_id.__wrapped__(controller, EXERCISE_ID, session)
 
         self.assertEqual(result, {"registry_instrument_count": 0})
+
+    @patch("application.controllers.registry_instrument.get_cir_metadata")
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id_by_period_and_survey_ref")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+        mock_get_cir_metadata,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 2
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+        mock_registry_instrument = MagicMock()
+        mock_query.return_value.first.return_value = mock_registry_instrument
+        mock_get_cir_metadata.return_value = [
+            {
+                "ci_version": 1,
+                "guid": "guid-version-1",
+                "published_at": "2025-01-01T12:00:00",
+            },
+            {
+                "ci_version": 2,
+                "guid": "guid-version-2",
+                "published_at": "2026-01-01T12:00:00",
+            },
+        ]
+
+        controller = RegistryInstrument()
+        controller.update_cir_version.__wrapped__(controller, period_ref, survey_ref, form_type, ci_version, session)
+
+        self.assertEqual(mock_registry_instrument.ci_version, 2)
+        self.assertEqual(mock_registry_instrument.guid, "guid-version-2")
+        self.assertEqual(mock_registry_instrument.published_at, "2026-01-01T12:00:00")
+
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id_by_period_and_survey_ref")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version_registry_instrument_not_found(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 2
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+        mock_query.return_value.first.return_value = None
+
+        controller = RegistryInstrument()
+
+        with self.assertRaisesRegex(ValueError, "Registry instrument not found"):
+            controller.update_cir_version.__wrapped__(
+                controller, period_ref, survey_ref, form_type, ci_version, session
+            )
+
+    @patch("application.controllers.registry_instrument.get_cir_metadata")
+    @patch("application.controllers.registry_instrument.get_collection_exercise_id_by_period_and_survey_ref")
+    @patch("application.controllers.registry_instrument.query_registry_instrument_by_exercise_id_and_formtype")
+    def test_update_cir_version_ci_version_not_found(
+        self,
+        mock_query,
+        mock_get_collection_exercise_id,
+        mock_get_cir_metadata,
+    ):
+        session = MagicMock()
+
+        period_ref = "202601"
+        survey_ref = "123"
+        form_type = "0002"
+        ci_version = 99
+
+        mock_get_collection_exercise_id.return_value = EXERCISE_ID
+
+        mock_registry_instrument = MagicMock()
+        mock_query.return_value.first.return_value = mock_registry_instrument
+
+        mock_get_cir_metadata.return_value = [
+            {
+                "ci_version": 1,
+                "guid": "guid-version-1",
+                "published_at": "2025-01-01T12:00:00",
+            },
+            {
+                "ci_version": 2,
+                "guid": "guid-version-2",
+                "published_at": "2026-01-01T12:00:00",
+            },
+        ]
+
+        controller = RegistryInstrument()
+
+        with self.assertRaisesRegex(ValueError, "CI version not found"):
+            controller.update_cir_version.__wrapped__(
+                controller, period_ref, survey_ref, form_type, ci_version, session
+            )
