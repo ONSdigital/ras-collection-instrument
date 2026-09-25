@@ -13,6 +13,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql import exists, select
 
 from application.logger_config import logger_initial_config
+from application.oidc.gcp_oidc import OIDCCredentialsServiceGCP
+from application.oidc.local_oidc import OIDCCredentialsServiceLocal
 
 logger = structlog.wrap_logger(logging.getLogger(__name__))
 
@@ -24,6 +26,9 @@ def create_app(config=None, init_db=True):
     config_name = config or os.environ.get("APP_SETTINGS", "Config")
     app_config = f"config.{config_name}"
     app.config.from_object(app_config)
+
+    app.oidc = {}
+    setup_oidc(app)
 
     # register view blueprints
 
@@ -118,6 +123,27 @@ def retry_if_database_error(exception):
 def initialise_db(app):
     # TODO: this isn't entirely safe, use a get_db() lazy initializer instead...
     app.db = create_database(app.config["DATABASE_URI"], app.config["DATABASE_SCHEMA"])
+
+
+class MissingEnvironmentVariable(Exception):
+    pass
+
+
+def setup_oidc(application):
+    if not (oidc_token_backend := application.config.get("OIDC_TOKEN_BACKEND")):
+        raise MissingEnvironmentVariable("OIDC_TOKEN_BACKEND Missing")
+
+    if oidc_token_backend == "gcp":
+        if not application.config.get("CIR_OAUTH2_CLIENT_ID"):
+            raise MissingEnvironmentVariable("CIR_OAUTH2_CLIENT_ID Missing")
+
+        application.oidc["oidc_credentials_service"] = OIDCCredentialsServiceGCP()
+
+    elif oidc_token_backend == "local":
+        application.oidc["oidc_credentials_service"] = OIDCCredentialsServiceLocal()
+
+    else:
+        raise NotImplementedError("Unknown OIDC_TOKEN_BACKEND")
 
 
 if __name__ == "__main__":
