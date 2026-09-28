@@ -86,7 +86,6 @@ def _get_json(
     auth: tuple[str, str] | None = None,
     params: dict[str, str] | None = None,
 ):
-
     client = session or requests  # oidc uses a session to authenticate
 
     try:
@@ -101,6 +100,15 @@ def _get_json(
 
     except requests.Timeout:
         raise ServiceUnavailableException(f"{service} timed out", 504)
+
+    logger.info(
+        "Response received from service",
+        service=service,
+        url=response.url,
+        status_code=response.status_code,
+        content_type=response.headers.get("Content-Type"),
+        response_body=response.text,
+    )
 
     return response.json()
 
