@@ -90,6 +90,14 @@ def _get_json(
 
     try:
         response = client.get(url, auth=auth, params=params)
+        log.info(
+            "Response received from service",
+            service=service,
+            url=response.url,
+            status_code=response.status_code,
+            content_type=response.headers.get("Content-Type"),
+            response_body=response.text,
+        )
         response.raise_for_status()
 
     except requests.HTTPError as e:
@@ -100,15 +108,6 @@ def _get_json(
 
     except requests.Timeout:
         raise ServiceUnavailableException(f"{service} timed out", 504)
-
-    log.info(
-        "Response received from service",
-        service=service,
-        url=response.url,
-        status_code=response.status_code,
-        content_type=response.headers.get("Content-Type"),
-        response_body=response.text,
-    )
 
     return response.json()
 
