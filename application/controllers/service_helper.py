@@ -101,7 +101,7 @@ def _get_json(
     except requests.Timeout:
         raise ServiceUnavailableException(f"{service} timed out", 504)
 
-    logger.info(
+    log.info(
         "Response received from service",
         service=service,
         url=response.url,
