@@ -91,11 +91,13 @@ def _get_json(
     auth: tuple[str, str] | None = None,
     params: dict[str, str] | None = None,
 ):
-    client = session or requests  # oidc uses a session to authenticate
 
     try:
-        log.info("url", service=service, url=url)
-        response = client.get(url, auth=auth, params=params)
+        if session is not None:
+            response = session.get(url, params=params)
+        else:
+            response = requests.get(url, auth=auth, params=params)
+
         if service == "CIR":
             log.info(
                 "CIR response",
