@@ -63,6 +63,11 @@ def get_cir_metadata(form_type: str, survey_ref: str) -> list[dict[str, Any]]:
         session=session,
         client_id=current_app.config["CIR_OAUTH2_CLIENT_ID"],
     )
+    log.info(
+        "CIR OAuth client ID prefix",
+        client_id=current_app.config["CIR_OAUTH2_CLIENT_ID"][:2],
+    )
+
     url = current_app.config["CIR_API_URL"] + current_app.config["CIR_API_PREFIX"]
     params = {
         "classifier_type": "form_type",
@@ -87,10 +92,19 @@ def _get_json(
     params: dict[str, str] | None = None,
 ):
 
-    client = session or requests  # oidc uses a session to authenticate
-
     try:
-        response = client.get(url, auth=auth, params=params)
+        if session is not None:
+            response = session.get(url, params=params)
+        else:
+            response = requests.get(url, auth=auth, params=params)
+
+        if service == "CIR":
+            log.info(
+                "CIR response",
+                url=response.url,
+                status_code=response.status_code,
+                content_type=response.headers.get("Content-Type"),
+            )
         response.raise_for_status()
 
     except requests.HTTPError as e:
