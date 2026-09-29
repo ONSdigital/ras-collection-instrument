@@ -96,7 +96,6 @@ def _get_json(
             url=response.url,
             status_code=response.status_code,
             content_type=response.headers.get("Content-Type"),
-            response_body=response.text,
         )
         response.raise_for_status()
 
