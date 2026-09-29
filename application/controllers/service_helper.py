@@ -96,6 +96,13 @@ def _get_json(
     try:
         log.info("url", service=service, url=url)
         response = client.get(url, auth=auth, params=params)
+        if service == "CIR":
+            log.info(
+                "CIR response",
+                url=response.url,
+                status_code=response.status_code,
+                content_type=response.headers.get("Content-Type"),
+            )
         response.raise_for_status()
 
     except requests.HTTPError as e:
