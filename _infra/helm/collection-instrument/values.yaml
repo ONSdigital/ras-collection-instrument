@@ -71,3 +71,5 @@ loadBalancer:
 cir:
   apiUrl: ""
   oauth2ClientId: "dummy_client_id"
+
+oidcTokenBackend: local
