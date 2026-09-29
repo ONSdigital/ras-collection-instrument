@@ -89,14 +89,8 @@ def _get_json(
     client = session or requests  # oidc uses a session to authenticate
 
     try:
+        log.info("url", service=service, url=url)
         response = client.get(url, auth=auth, params=params)
-        log.info(
-            "Response received from service",
-            service=service,
-            url=response.url,
-            status_code=response.status_code,
-            content_type=response.headers.get("Content-Type"),
-        )
         response.raise_for_status()
 
     except requests.HTTPError as e:
