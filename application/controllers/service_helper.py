@@ -63,6 +63,11 @@ def get_cir_metadata(form_type: str, survey_ref: str) -> list[dict[str, Any]]:
         session=session,
         client_id=current_app.config["CIR_OAUTH2_CLIENT_ID"],
     )
+    log.info(
+        "CIR OAuth client ID prefix",
+        client_id=current_app.config["CIR_OAUTH2_CLIENT_ID"][:2],
+    )
+
     url = current_app.config["CIR_API_URL"] + current_app.config["CIR_API_PREFIX"]
     params = {
         "classifier_type": "form_type",
