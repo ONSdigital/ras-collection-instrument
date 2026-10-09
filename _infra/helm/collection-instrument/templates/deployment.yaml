@@ -21,8 +21,6 @@ spec:
     spec:
       serviceAccountName: {{ .Values.serviceAccount.name }}
       nodeSelector:
-        iam.gke.io/gke-metadata-server-enabled: "true"      serviceAccountName: {{ .Values.serviceAccount.name }}
-      nodeSelector:
         iam.gke.io/gke-metadata-server-enabled: "true"
       containers:
         {{- if .Values.database.sqlProxyEnabled }}
