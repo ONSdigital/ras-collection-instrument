@@ -1,5 +1,5 @@
-namespace: minikube
-env: minikube
+namespace: dev
+env: dev
 
 serviceAccount:
   name: ras-rm-k8s-services
